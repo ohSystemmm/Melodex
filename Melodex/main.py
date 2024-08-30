@@ -1,0 +1,14 @@
+from Melodex.User.Usermanagement import UserManager
+
+# Testing
+User1 = UserManager()
+User1.addUser("Test0", "1", "2", "https")
+User1.addUser("Test1", "1", "2", "https")
+User1.showUser("Test0")
+User1.editUser("Test1", new_uri="unknown")
+User1.showUser("Test1")
+User1.showAllUsers()
+User1.removeUser("Test1")
+User1.showAllUsers()
+User1.selectUser("Test0")
+# User1.removeAllUsers()
