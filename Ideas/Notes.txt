@@ -8,8 +8,8 @@ by ohSystemmm <3 - 2024
 
  Melodex
     │
-    ├── config.json                     -> Entry point for the application
-    ├── main.py                         -> Configuration file for user settings, API keys, etc.
+    ├── config.json                     -> Configuration file for user settings, API keys, etc.
+    ├── main.py                         -> Entry point for the application
     │
     ├── Spotify                         -> Spotify-related functionalities
     │      ├── __init__.py              -> Makes the folder a package
