@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5537fb17-1659-4795-9d12-feccd90a3b89" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Ideas/Notes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Ideas/Notes.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Melodex/User/Usermanagement.py" beforeDir="false" afterPath="$PROJECT_DIR$/Melodex/User/UserManagement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Melodex/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Melodex/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="5537fb17-1659-4795-9d12-feccd90a3b89" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -77,7 +73,7 @@
       <option name="presentableId" value="Default" />
       <updated>1725017071148</updated>
       <workItem from="1725017072149" duration="240000" />
-      <workItem from="1725017351649" duration="5559000" />
+      <workItem from="1725017351649" duration="5897000" />
     </task>
     <servers />
   </component>
