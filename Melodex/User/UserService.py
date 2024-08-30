@@ -5,7 +5,7 @@ import toml
 USERFILEPATH = "../config/users/"
 GENERALFILEPATH = "../config/general.toml"
 
-class UserManager:
+class UserService:
     def __init__(self, user_filepath=USERFILEPATH, general_filepath=GENERALFILEPATH):
         self.user_filepath = user_filepath
         self.general_filepath = general_filepath

@@ -33,7 +33,7 @@ by ohSystemmm <3 - 2024
     │
     ├── User/                           -> User management
     │    ├── __init__.py                -> Makes the folder a package
-    │    └── UserManagement.py          -> Handles multiple users
+    │    └── UserService.py             -> Handles multiple users
     │
     └── YouTube/                        -> YouTube-related functionalities (e.g., downloading songs)
         ├── __init__.py                 -> Makes the folder a package
