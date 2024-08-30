@@ -6,31 +6,36 @@
 
 by ohSystemmm <3 - 2024
 
- Melodex
+ Melodex/
     │
-    ├── config.json                     -> Configuration file for user settings, API keys, etc.
+    ├── config/                         -> Configurations regarding user settings, API keys, etc.
+    │
     ├── main.py                         -> Entry point for the application
     │
-    ├── Spotify                         -> Spotify-related functionalities
+    ├── Spotify/                        -> Spotify-related functionalities
     │      ├── __init__.py              -> Makes the folder a package
     │      ├── Playlist.py              -> Handles playlist-related operations (e.g., conversion to JSON)
     │      └── Song.py                  -> Manages song metadata and individual song operations
     │
-    ├── Sync                            -> Handles syncing between JSON and local directory
+    ├── Sync/                           -> Handles syncing between JSON and local directory
     │    ├── __init__.py                -> Makes the folder a package
     │    ├── FolderOrganizer.py         -> Organizes files into folders based on tags/flags
     │    └── SyncManager.py             -> Syncs the JSON file with local music files and directories
     │
-    ├── Tags                            -> Custom flags/tags management
+    ├── Tags/                           -> Custom flags/tags management
     │     ├── __init__.py               -> Makes the folder a package
     │     └── TagManager.py             -> Handles adding, updating, and removing custom flags/tags
     │
-    ├── utils                           -> Utility functions and helpers
+    ├── utils/                          -> Utility functions and helpers
     │     ├── __init__.py               -> Makes the folder a package
     │     ├── FileManager.py            -> Handles file operations (read/write JSON, etc.)
     │     └── Logger.py                 -> Logs activities and errors
     │
-    └── YouTube                         -> YouTube-related functionalities (e.g., downloading songs)
+    ├── User/                           -> User management
+    │    ├── __init__.py                -> Makes the folder a package
+    │    └── UserManagement.py          -> Handles multiple users
+    │
+    └── YouTube/                        -> YouTube-related functionalities (e.g., downloading songs)
         ├── __init__.py                 -> Makes the folder a package
         ├── Audio.py                    -> Manages YouTube Audio metadata
         └── Downloader.py               -> Handles downloading songs from YouTube

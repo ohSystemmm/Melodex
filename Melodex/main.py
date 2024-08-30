@@ -1,4 +1,4 @@
-from Melodex.User.Usermanagement import UserManager
+from Melodex.User.UserManagement import UserManager
 
 # Testing
 User1 = UserManager()
