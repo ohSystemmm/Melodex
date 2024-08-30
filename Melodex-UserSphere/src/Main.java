@@ -3,6 +3,11 @@
 public class Main {
     public static void main(String[] args) {
 
-        System.out.println("Hello World!");
+        User Y1kun = new User();
+        User Y2kun = new User();
+        User Y3kun = new User();
+
+        Y3kun.addUser("Y2kun", "1", "IamGay", "https://gaysex.com");
+
     }
 }
