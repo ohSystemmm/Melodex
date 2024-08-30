@@ -6,7 +6,7 @@
 
 by ohSystemmm <3 - 2024
 
-Sound-Sync
+ Melodex
     │
     ├── config.json                     -> Entry point for the application
     ├── main.py                         -> Configuration file for user settings, API keys, etc.
