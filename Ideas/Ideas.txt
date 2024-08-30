@@ -13,13 +13,18 @@ integrate with a YouTube (or other source) downloader to download the songs to a
 
 Key features include:
 - Playlist Conversion: Convert Spotify playlists to a JSON format with song metadata.
+
 - Custom Flags: Users can add, update, or remove flags/tags in the JSON file to categorize songs
 (e.g., "Classical," "Rock," "Summer").
+
 - Selective Downloading: When the JSON file is updated with new songs, the tool syncs the changes and downloads only the
 new additions.
+
 - Ignore Flags**: Users can set ignore flags for specific songs to prevent them from being downloaded.
+
 - Automatic Folder Organization: Based on the flags, the tool will create subdirectories (e.g., "fav-Songs") and copy
 songs with the corresponding flags to these folders.
+
 - Multi-language Support: Primarily written in Python and shell scripting, but expandable to other languages if needed.
 
 This tool will help users efficiently manage and organize their music library by syncing and categorizing songs based
