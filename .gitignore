@@ -3,6 +3,3 @@
 
 # Python
 .venv/
-
-# Go
-build/
