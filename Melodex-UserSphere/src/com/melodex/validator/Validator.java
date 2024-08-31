@@ -1,3 +1,5 @@
+package com.melodex.validator;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -17,5 +19,3 @@ public class Validator {
         return matcher.matches();
     }
 }
-
-
