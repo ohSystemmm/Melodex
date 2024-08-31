@@ -1,27 +1,44 @@
 package com.melodex;
 
-import com.melodex.user.AllUsers;
-import com.melodex.user.User;
+import com.melodex.exception.CustomException;
+import com.melodex.validator.Validator;
+
+import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
-        AllUsers allUsers = new AllUsers();
+        System.out.println("Welcome to Melodex!\n");
+    }
 
-        User user1 = new User("Test1234", "clientID123", "clientSecret123", "http://localhost:8080/callback");
-        User user2 = new User("Test5678", "clientID456", "clientSecret456", "http://localhost:8080/callback");
+    private static void createUser() {
+    }
 
-        allUsers.addUser(user1);
-        allUsers.addUser(user2);
+    private static void deleteUser() {
+    }
 
-        System.out.println("All users:");
-        allUsers.printAllUsers();
+    private static void modifyUser() {
+    }
 
-        System.out.println("Number of users: " + allUsers.getSize());
+    private static void listUsers() {
+    }
 
-        allUsers.removeUser(user1);
-        System.out.println("All users after removal:");
-        allUsers.printAllUsers();
-        System.out.println("Number of users: " + allUsers.getSize());
+    private static void switchUser() {
+    }
+
+    private static String input(String message) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print(message);
+        return scanner.nextLine();
+    }
+
+    private static boolean isInputValid(String regex, String content) {
+        Validator validator = new Validator(regex);
+        try {
+            return validator.checkRegex(content);
+        } catch (Exception e) {
+            System.out.println("Error validating input: " + e.getMessage());
+            return false;
+        }
     }
 }
-

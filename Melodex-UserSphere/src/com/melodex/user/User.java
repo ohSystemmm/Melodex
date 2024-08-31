@@ -1,5 +1,7 @@
 package com.melodex.user;
 
+import java.util.Objects;
+
 public class User {
     private final String username;
     private final String clientID;
@@ -7,10 +9,10 @@ public class User {
     private final String redirectURI;
 
     public User(String username, String clientID, String clientSecret, String redirectURI) {
-        this.username = username;
-        this.clientID = clientID;
-        this.clientSecret = clientSecret;
-        this.redirectURI = redirectURI;
+        this.username = Objects.requireNonNull(username, "Username cannot be empty");
+        this.clientID = Objects.requireNonNull(clientID, "Client-ID cannot be empty");
+        this.clientSecret = Objects.requireNonNull(clientSecret, "Client-Secret cannot be empty");
+        this.redirectURI = Objects.requireNonNull(redirectURI, "Redirect-URI cannot be empty");
     }
 
     public String getUsername() {
@@ -31,11 +33,11 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                ", clientID='" + clientID + '\'' +
-                ", clientSecret='" + clientSecret + '\'' +
-                ", redirectURI='" + redirectURI + '\'' +
-                '}';
+        return "{\n" +
+                "  \"Username\": \"" + username + "\",\n" +
+                "  \"Client-ID\": \"" + clientID + "\",\n" +
+                "  \"Client-Secret\": \"" + clientSecret + "\",\n" +
+                "  \"Redirect-URI\": \"" + redirectURI + "\"\n" +
+                "}";
     }
 }
