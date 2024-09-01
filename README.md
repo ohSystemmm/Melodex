@@ -1,7 +1,4 @@
-<div align="center">
-
-# Melodex
-</div>
+# MELODEX
 
 <br>
 
