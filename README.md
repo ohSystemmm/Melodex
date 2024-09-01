@@ -1,10 +1,6 @@
-# MELODEX
-
-<br>
-
-<div align="center">
+# Melodex
 
 by ohSystemmm <3 - 2024
 
-### Comming Soon
-</div>
+> [!WARNING]
+> - Comming Soon
