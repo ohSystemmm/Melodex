@@ -3,4 +3,13 @@
 # Melodex
 </div>
 
-Comming Soon
+<br>
+
+<div align="center">
+
+by ohSystemmm <3 - 2024
+
+Lang: Golang
+
+### Comming Soon
+</div>

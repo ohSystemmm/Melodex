@@ -1,3 +1,0 @@
-spotipy
-pytube
-toml
