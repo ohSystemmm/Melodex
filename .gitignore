@@ -1,2 +1,8 @@
-# Jetbrains
+# JetBrains
 .idea/
+
+# Virtual Enviroment
+.venv/
+
+# Java
+out/
