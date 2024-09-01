@@ -9,7 +9,5 @@
 
 by ohSystemmm <3 - 2024
 
-Lang: Golang
-
 ### Comming Soon
 </div>
