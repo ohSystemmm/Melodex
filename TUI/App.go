@@ -7,7 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 )
 
@@ -23,25 +23,7 @@ func List() model {
 	// the Columns + the tiles + the width, more should probably not be explained
 	columns := []table.Column{
 		{Title: "Title", Width: 40},
-		// {Title: "Category", Width: 8},
-		// {Title: "Rating", Width: 8},
-		// {Title: "Started", Width: 14},
-		// {Title: "Finished", Width: 14},
-		// {Title: "Status", Width: 12},
-		// {Title: "Notes", Width: 40},
 	}
-
-	// rows := []table.Row{
-	// 	{"1 2", "Anime", "100/99", "Sometime", "Sometime", "Finished", "Was good"},
-	// 	{"1 2 Entry", "Manga", "90/100", "Yesterday", "Today", "In Progress", "Interesting!"},
-	// 	{"1 2 Bad", "TV Show", "98/100", "Last Year", "Last Week", "Finished", "Amazing plot!"},
-	// 	{"1 2", "Anime", "85/100", "2010", "2015", "Finished", "Classic, but long."},
-	// 	{"1 2 Piece", "Anime", "99/100", "2000", "Ongoing", "Ongoing", "The adventure never ends!"},
-	// 	{"1 2 Note", "Anime", "95/100", "2015", "2015", "Finished", "Thrilling!"},
-	// 	{"1 2 on Titan", "Anime", "100/100", "2017", "2023", "Finished", "Unbelievable twists!"},
-	// 	{"1 2 Name", "Movie", "92/100", "2018", "2018", "Finished", "Beautiful and emotional."},
-	// 	{"1 2 Slayer", "Anime", "95/100", "2019", "Ongoing", "Ongoing", "Incredible animation."},
-	// }
 
 	// these should be in the future filled automaticly by the backend, and updated when neccesary
 	rows := []table.Row{
@@ -93,10 +75,10 @@ func List() model {
 func defineTableStyles() table.Styles {
 	styles := table.DefaultStyles()
 	styles.Selected = styles.Selected.
-		Foreground(lipgloss.Color("230")).
-		Background(lipgloss.Color("63")).
+		Foreground(lipg.Color("230")).
+		Background(lipg.Color("63")).
 		Bold(true)
-	styles.Header = styles.Header.Bold(true).Background(lipgloss.Color("60"))
+	styles.Header = styles.Header.Bold(true).Background(lipg.Color("60"))
 	return styles
 }
 
@@ -134,12 +116,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// listens for keypresses
 	case tea.KeyMsg:
 		switch msg.String() {
+		// exits Update
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up":
 			m.list.MoveUp(1)
 		case "down":
 			m.list.MoveDown(1)
+		case "pgup":
+			// THe number could use some tweaking
+			m.list.MoveUp(10)
+		case "pgdown":
+			// THe number could use some tweaking
+			m.list.MoveDown(10)
+		case "home":
+			// FIXME MY EYES, this should be fixed to function regardless of length
+			m.list.MoveUp(1000000000)
+		case "end":
+			// FIXME MY EYES, this should be fixed to function regardless of length
+			m.list.MoveDown(1000000000)
+		case "enter":
+			fmt.Printf("Selected Entry")
+			// m.list.
 		}
 
 	// listens for the mouse
@@ -152,11 +150,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+	// a long time ago I attempted to make scroll wheel events but tghey failed, catastrophicaly, if it can be implemented pelase do it
+
 	// Sets the Size of the window, via msgs
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		// the tableheight
-		m.list.SetHeight((m.height / 1) - 2)
+		m.list.SetHeight((m.height / 1) - 5)
 	}
 
 	return m, cmd
@@ -164,6 +164,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // this is waht ultimatly decides gets to be applied to the output, via the view of the modules
 func (m model) View() string {
-	return lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(m.list.View())
+	return lipg.NewStyle().BorderStyle(lipg.RoundedBorder()).Render("PLAYLISTNAME                 󰉹 SEARCH  ") + "\n" +
+		lipg.NewStyle().BorderStyle(lipg.RoundedBorder()).Render(m.list.View())
 }
 */
