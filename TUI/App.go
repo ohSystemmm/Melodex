@@ -4,6 +4,7 @@ package TUI
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,48 +14,63 @@ import (
 
 // Defines variables that can be used via model, oftentimes
 type model struct {
-	list   table.Model
-	width  int
-	height int
+	list           table.Model
+	totalListWidth int
+	width          int
+	height         int
 }
 
 // The List function that defines the properties of the table
 func List() model {
 	// the Columns + the tiles + the width, more should probably not be explained
-	columns := []table.Column{
-		{Title: "Title", Width: 40},
-	}
-
 	// these should be in the future filled automaticly by the backend, and updated when neccesary
 	rows := []table.Row{
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
+		{"ASqwfwasdqwdqwdwqdq", "3:40"},
+		{"asdwqr", "3:40"},
+		{"rfewsd", "3:40"},
+		{"fgdgsd", "3:40"},
+		{"qwdsaq", "3:40"},
+		{"frsdgd", "3:40"},
+		{"h56aea", "3:40"},
+		{"ASDtyu", "3:40"},
+		{"asdwqr", "3:40"},
+		{"ASDasd", "3:40"},
+		{"asdwqr", "3:40"},
+		{"rfewsd", "3:40"},
+		{"fgdgsd", "3:40"},
+		{"qwdsaq", "3:40"},
+		{"frsdgd", "3:40"},
+		{"h56aea", "3:40"},
+		{"ASDtyu", "3:40"},
+		{"asdwqr", "3:40"},
+		{"ASDasd", "3:40"},
+		{"asdwqr", "3:40"},
+		{"rfewsd", "3:40"},
+		{"fgdgsd", "3:40"},
+		{"qwdsaq", "3:40"},
+		{"frsdgd", "3:40"},
+		{"h56aea", "3:40"},
+		{"ASDtyu", "3:40"},
+		{"asdwqr", "3:40"},
+	}
+
+	longestTitle := 5 + 13
+	for _, row := range rows {
+		if len(row[0]) > longestTitle {
+			longestTitle = len(row[0])
+		}
+	}
+
+	longestTime := 6
+	for _, row := range rows {
+		if len(row[1]) > longestTime {
+			longestTime = len(row[1])
+		}
+	}
+
+	columns := []table.Column{
+		{Title: "Title", Width: longestTitle},
+		{Title: "Length", Width: longestTime},
 	}
 
 	// here the configuration of the table gets applied
@@ -68,7 +84,12 @@ func List() model {
 	// here the style gets applied
 	t.SetStyles(defineTableStyles())
 
-	return model{list: t}
+	tLW := 0
+	for _, col := range columns {
+		tLW += col.Width
+	}
+
+	return model{list: t, totalListWidth: tLW}
 }
 
 // the style of the table, done via lipgloss
@@ -130,28 +151,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// THe number could use some tweaking
 			m.list.MoveDown(10)
 		case "home":
-			// FIXME MY EYES, this should be fixed to function regardless of length
-			m.list.MoveUp(1000000000)
+			m.list.GotoTop()
 		case "end":
-			// FIXME MY EYES, this should be fixed to function regardless of length
-			m.list.MoveDown(1000000000)
+			m.list.GotoBottom()
 		case "enter":
 			fmt.Printf("Selected Entry")
-			// m.list.
 		}
 
 	// listens for the mouse
 	case tea.MouseMsg:
-		if msg.Type == tea.MouseLeft {
-			// thi9 is currently to set the row in the list via mouse when to lazy for keys
-			if msg.Y >= 2 && msg.Y < (2+m.list.Height()) {
-				rowIdx := msg.Y - 2
+		// Mouse Type is depracated but I don't know how to use the others
+		switch msg.Type {
+		case tea.MouseLeft:
+			if msg.Y >= 5 && msg.Y < (5+m.list.Height()) {
+				rowIdx := msg.Y - 5
 				m.list.SetCursor(rowIdx)
 			}
+		case tea.MouseWheelUp:
+			m.list.MoveUp(1)
+		case tea.MouseWheelDown:
+			m.list.MoveDown(1)
 		}
-
-	// a long time ago I attempted to make scroll wheel events but tghey failed, catastrophicaly, if it can be implemented pelase do it
-
 	// Sets the Size of the window, via msgs
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
@@ -164,7 +184,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // this is waht ultimatly decides gets to be applied to the output, via the view of the modules
 func (m model) View() string {
-	return lipg.NewStyle().BorderStyle(lipg.RoundedBorder()).Render("PLAYLISTNAME                 󰉹 SEARCH  ") + "\n" +
+	playlistName := "PLAYLISTNAME"
+	staticText := " 󰉹 SEARCH  "
+
+	// the len method does not count unicode characters correctly, the last number aims to offset this
+	padding := m.totalListWidth - len(playlistName) - len(staticText) + 13
+
+	if padding < 0 {
+		padding = 0
+	}
+
+	rendered := lipg.NewStyle().BorderStyle(lipg.RoundedBorder()).Render(
+		playlistName+strings.Repeat(" ", padding)+staticText) + "\n" +
 		lipg.NewStyle().BorderStyle(lipg.RoundedBorder()).Render(m.list.View())
+
+	return rendered
 }
 */
