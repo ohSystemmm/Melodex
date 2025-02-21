@@ -47,7 +47,7 @@ Fork the repository to your GitHub account.
 
 *Clone your fork to your local machine:*
 ```bash
-$ git clone https://github.com/your-username/melodex.git
+$ git clone https://github.com/ohSystemmm/Melodex.git
 ```
 
 *Create a new branch for your changes:*
