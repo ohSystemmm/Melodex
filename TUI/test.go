@@ -1,6 +1,5 @@
 package TUI
 
-/*
 import (
 	"fmt"
 	"os"
@@ -11,85 +10,43 @@ import (
 	bzone "github.com/lrstanley/bubblezone"
 )
 
-// Defines variables that can be used via model, oftentimes
+var TableStyle = func(row, col int) lipgloss.Style {
+	switch {
+	case row == -1:
+		return lipgloss.NewStyle().Padding(0, 1).Align(lipgloss.Center)
+	case row%2 == 0:
+		return lipgloss.NewStyle().Padding(0, 1)
+	default:
+		return lipgloss.NewStyle().Padding(0, 1)
+	}
+}
+
 type model struct {
 	list   table.Model
 	width  int
 	height int
+	index  int8
 }
 
-// The List function that defines the properties of the table
 func List() model {
-	// the Columns + the tiles + the width, more should probably not be explained
 	columns := []table.Column{
 		{Title: "Title", Width: 40},
-		// {Title: "Category", Width: 8},
-		// {Title: "Rating", Width: 8},
-		// {Title: "Started", Width: 14},
-		// {Title: "Finished", Width: 14},
-		// {Title: "Status", Width: 12},
-		// {Title: "Notes", Width: 40},
 	}
-
-	// rows := []table.Row{
-	// 	{"1 2", "Anime", "100/99", "Sometime", "Sometime", "Finished", "Was good"},
-	// 	{"1 2 Entry", "Manga", "90/100", "Yesterday", "Today", "In Progress", "Interesting!"},
-	// 	{"1 2 Bad", "TV Show", "98/100", "Last Year", "Last Week", "Finished", "Amazing plot!"},
-	// 	{"1 2", "Anime", "85/100", "2010", "2015", "Finished", "Classic, but long."},
-	// 	{"1 2 Piece", "Anime", "99/100", "2000", "Ongoing", "Ongoing", "The adventure never ends!"},
-	// 	{"1 2 Note", "Anime", "95/100", "2015", "2015", "Finished", "Thrilling!"},
-	// 	{"1 2 on Titan", "Anime", "100/100", "2017", "2023", "Finished", "Unbelievable twists!"},
-	// 	{"1 2 Name", "Movie", "92/100", "2018", "2018", "Finished", "Beautiful and emotional."},
-	// 	{"1 2 Slayer", "Anime", "95/100", "2019", "Ongoing", "Ongoing", "Incredible animation."},
-	// }
-
-	// these should be in the future filled automaticly by the backend, and updated when neccesary
 	rows := []table.Row{
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
-		{"ASD"},
-		{"asdwqr"},
-		{"rfew"},
-		{"fgdgs"},
-		{"qwdsa"},
-		{"frsd"},
-		{"h56a"},
+		{"---"},
+		{"***"},
+		{"BEEP"},
 	}
-
-	// here the configuration of the table gets applied
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(2),
 	)
-
-	// here the style gets applied
 	t.SetStyles(defineTableStyles())
 
 	return model{list: t}
 }
-
-// the style of the table, done via lipgloss
 func defineTableStyles() table.Styles {
 	styles := table.DefaultStyles()
 	styles.Selected = styles.Selected.
@@ -99,9 +56,7 @@ func defineTableStyles() table.Styles {
 	styles.Header = styles.Header.Bold(true).Background(lipgloss.Color("60"))
 	return styles
 }
-
-// the function run in the main.go to start the TUI
-func Run() {
+func Runb() {
 	bzone.NewGlobal()
 	// the bubbletea "Heart", here the properties of the TUI get defined and the Modules get included
 	p := tea.NewProgram(
@@ -116,16 +71,12 @@ func Run() {
 		os.Exit(1)
 	}
 }
-
-// Runs when the Bubbletea gets initialized
 func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		// Sets the TItle to MElodex, probably no changes needed in the future
 		tea.SetWindowTitle("Melodex"),
 	)
 }
-
-// the update function that reapeats its actions, duh
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -161,9 +112,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, cmd
 }
-
-// this is waht ultimatly decides gets to be applied to the output, via the view of the modules
 func (m model) View() string {
-	return lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(m.list.View())
+	//return lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(m.list.View())
+
+	return lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Align(lipgloss.Right).Render(m.list.View()), lipgloss.JoinHorizontal(lipgloss.Bottom)
 }
-*/
