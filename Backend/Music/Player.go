@@ -134,15 +134,15 @@ func (mp *Player) waitForCommands() {
 		case cmd := <-mp.commandChan:
 			switch cmd {
 			case "n":
-				mp.NextTrack()
+				mp.NextSong()
 				songFinished = true
 			case "p":
-				mp.PauseTrack()
+				mp.PauseSong()
 			case "s":
 				mp.Stop()
 				songFinished = true
 			case "b":
-				mp.PreviousTrack()
+				mp.PreviousSong()
 				songFinished = true
 			default:
 				fmt.Println("Unknown command. Press 'n' to skip, 'p' to pause/resume, 's' to stop, 'b' to go back.")
@@ -151,7 +151,7 @@ func (mp *Player) waitForCommands() {
 	}
 }
 
-func (mp *Player) PauseTrack() {
+func (mp *Player) PauseSong() {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	mp.paused = !mp.paused
@@ -162,7 +162,7 @@ func (mp *Player) PauseTrack() {
 	}
 }
 
-func (mp *Player) NextTrack() {
+func (mp *Player) NextSong() {
 	mp.stop <- true
 	<-mp.done
 	mp.currentIndex++
@@ -172,7 +172,7 @@ func (mp *Player) NextTrack() {
 	fmt.Println("Skipping to next track.")
 }
 
-func (mp *Player) PreviousTrack() {
+func (mp *Player) PreviousSong() {
 	mp.stop <- true
 	<-mp.done
 	mp.currentIndex--
