@@ -16,6 +16,8 @@ type Model struct {
 	List      table.Model
 	SearchBar textinput.Model
 
+	OriginalRows []table.Row
+
 	PlaylistName   string
 	TotalListWidth int
 
@@ -60,13 +62,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		} else {
 			switch msg.String() {
+			case "q":
+				return m, tea.Quit
 			case "enter":
-				// Handle selection
+				// NOTE Handle selection
 			case "f":
 				m.SharedState.Searching = true
 				return m, m.SearchBar.Focus()
-			case "q":
-				return m, tea.Quit
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -75,28 +77,53 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.List.SetHeight(m.Height - 5)
 		newColumns := m.List.Columns()
 
-		// availableWidth := m.width - 10
-		// titleWidth := int(0.3 * float64(availableWidth))
-		// lengthWidth := int(0.2 * float64(titleWidth))
+		elseWidth := 68
+		titleWidth := max(m.Width-elseWidth, 33)
+		// lengthWidth := int(0.1 * float64(availableWidth))
+		lengthWidth := 6
 
-		// newColumns[0].Width = titleWidth
-		// newColumns[1].Width = lengthWidth
+		newColumns[0].Width = titleWidth
+		newColumns[1].Width = lengthWidth
 
-		// m.TotalListWidth = titleWidth + lengthWidth
+		m.TotalListWidth = titleWidth + lengthWidth
 		m.List.SetColumns(newColumns)
 
 	}
 	m.SearchBar, cmd = m.SearchBar.Update(msg)
 
+	// NOTE case unsensitive
+	searchTerm := strings.ToLower(m.SearchBar.Value())
+	if searchTerm != "" {
+		filteredRows := m.filterRows(searchTerm)
+		m.List.SetRows(filteredRows)
+	} else {
+		m.List.SetRows(m.OriginalRows)
+	}
+
 	return m, cmd
+}
+
+func (m Model) filterRows(searchTerm string) []table.Row {
+	var filteredRows []table.Row
+	for _, row := range m.OriginalRows {
+		for _, cell := range row {
+			if strings.Contains(strings.ToLower(cell), searchTerm) {
+				filteredRows = append(filteredRows, row)
+				break
+			}
+		}
+	}
+	return filteredRows
 }
 
 // View renders the music list
 func (m Model) View() string {
-	// FIX Text input fileed from bubbles for search
 	searchBar := m.SearchBar.View()
+
+	// NOTE May not be needed
+	// NOTE Possible chars for the diffrent filters
 	// filtering := " 󰉹 "
-	filtering := " "
+	// filtering := " "
 	// filtering := " "
 
 	// filtering := " "
@@ -107,15 +134,20 @@ func (m Model) View() string {
 	// filtering := "󱕊 "
 	// filtering := "󱕌 "
 
-	padding := m.TotalListWidth - lipg.Width(m.PlaylistName) - lipg.Width(filtering) - lipg.Width(searchBar) + 4
+	// HACK This should be temporary and be in a seperate function (the rest of the function):
+	padding := m.TotalListWidth - lipg.Width(m.PlaylistName) - lipg.Width(searchBar) + 4
 	padding = max(padding, 0)
 
 	header := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(
-		lipg.NewStyle().Bold(true).Render(m.PlaylistName) + strings.Repeat(" ", padding) + filtering + searchBar)
+		lipg.NewStyle().Bold(true).Render(m.PlaylistName) + strings.Repeat(" ", padding) + searchBar)
 
 	musicList := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(m.List.View())
 
-	return lipg.JoinVertical(lipg.Top, header, musicList)
+	if m.Width > 101 {
+		return lipg.JoinVertical(lipg.Top, header, musicList)
+	} else {
+		return ""
+	}
 }
 
 // New initializes the music list
@@ -129,7 +161,8 @@ func New(sharedState *SharedState.SharedState) Model {
 		{"Song C", "2:50"},
 	}
 
-	longestTitle, longestTime := 98, 15
+	// longestTitle, longestTime := 98, 15
+	longestTitle, longestTime := 35, 6
 
 	for _, row := range rows {
 		longestTitle = max(longestTitle, len(row[0]))
@@ -164,6 +197,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	return Model{
 		SharedState:    sharedState,
 		List:           t,
+		OriginalRows:   rows,
 		TotalListWidth: tLW,
 		PlaylistName:   "Example Playlistname",
 		SearchBar:      sB,
