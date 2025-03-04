@@ -1,10 +1,5 @@
 # JetBrains
 .idea/
 
-# Virtual Enviroment
-.venv/
-
-# Java
-out/
-=======
-.idea/
+# Testing Music
+TestMusic/
