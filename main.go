@@ -8,9 +8,10 @@ import (
 )
 
 func main() {
+	greeter()
 	Backend.Run()
 	TUI.Application()
-	greeter()
+
 }
 
 func greeter() {
