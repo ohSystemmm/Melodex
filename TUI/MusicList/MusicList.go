@@ -1,7 +1,12 @@
 package MusicList
 
 import (
+	"Melodex/Backend/Music"
+	"Melodex/Services"
 	"Melodex/TUI/SharedState"
+	"fmt"
+	"github.com/hajimehoshi/oto"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -23,11 +28,33 @@ type Model struct {
 
 	Width  int
 	Height int
+
+	context     *oto.Context
+	musicPlayer *Music.Player
+}
+
+var tempPath = "./Backend/Music/mp3_songs/"
+
+func NewModel(context *oto.Context) Model {
+	fmt.Println("Initializing Model and Music Player")
+
+	return Model{
+		SharedState:    &SharedState.SharedState{},
+		List:           table.New(),
+		SearchBar:      textinput.New(),
+		OriginalRows:   []table.Row{},
+		PlaylistName:   "",
+		TotalListWidth: 0,
+		Width:          0,
+		Height:         0,
+		context:        context,
+		musicPlayer:    Music.NewMusicPlayer(context),
+	}
 }
 
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
-	return nil // No initial command needed
+	return nil
 }
 
 // Update handles input events
@@ -65,7 +92,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
-				// NOTE Handle selection
+				song := m.List.SelectedRow()
+				Services.PlaySelectedSong(tempPath, song[0])
 			case "f":
 				m.SharedState.Searching = true
 				return m, m.SearchBar.Focus()
@@ -91,7 +119,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	m.SearchBar, cmd = m.SearchBar.Update(msg)
 
-	// NOTE case unsensitive
+	// NOTE case-unsensitive
 	searchTerm := strings.ToLower(m.SearchBar.Value())
 	if searchTerm != "" {
 		filteredRows := m.filterRows(searchTerm)
@@ -139,7 +167,7 @@ func (m Model) View() string {
 	padding = max(padding, 0)
 
 	header := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(
-		lipg.NewStyle().Bold(true).Render(m.PlaylistName) + strings.Repeat(" ", padding) + searchBar)
+		lipg.NewStyle().Bold(true).Render(" "+m.PlaylistName) + strings.Repeat(" ", padding) + searchBar)
 
 	musicList := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(m.List.View())
 
@@ -152,14 +180,16 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := []table.Row{
-		{"Song A", "3:40"},
-		{"Song B", "4:20"},
-		{"Song C", "2:50"},
-		{"Song A", "3:40"},
-		{"Song B", "4:20"},
-		{"Song C", "2:50"},
-	}
+	//rows := []table.Row{
+	//	{"Song A", "3:40"},
+	//	{"Song B", "4:20"},
+	//	{"Song C", "2:50"},
+	//	{"Song A", "3:40"},
+	//	{"Song B", "4:20"},
+	//	{"Song C", "2:50"},
+	//}
+
+	rows := Services.GetSongList(tempPath)
 
 	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
@@ -194,12 +224,15 @@ func New(sharedState *SharedState.SharedState) Model {
 	// FIX find a way to somehow seperate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
+	trimmedPath := strings.TrimRight(tempPath, "/")
+	playlistName := filepath.Base(trimmedPath)
+
 	return Model{
 		SharedState:    sharedState,
 		List:           t,
 		OriginalRows:   rows,
 		TotalListWidth: tLW,
-		PlaylistName:   "Example Playlistname",
+		PlaylistName:   playlistName,
 		SearchBar:      sB,
 	}
 }

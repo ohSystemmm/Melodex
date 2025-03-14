@@ -34,36 +34,41 @@ func NewMusicPlayer(context *oto.Context) *Player {
 	}
 }
 
-func (mp *Player) PlaySongs(mp3Files []string) {
-	mp.playlist = mp3Files
-	mp.currentIndex = 0
-	mp.stopped = false
-	go mp.listenForCommands()
+func (mp *Player) PlaySong(directory string, songName string) {
+	filePath := filepath.Join(directory, songName)
 
-	for mp.currentIndex < len(mp3Files) && !mp.stopped {
-		mp.playTrack(mp3Files[mp.currentIndex])
-	}
-
-	if !mp.stopped {
-		fmt.Println("Playback finished.")
-	} else {
-		fmt.Println("Playback stopped.")
-	}
-}
-
-func (mp *Player) playTrack(file string) {
-	fmt.Printf("Now playing: %s\n", filepath.Base(file))
-	fmt.Println("Press 'n' and hit Enter to skip to the next song. Press 'p' to pause/resume. Press 's' to stop playback. Press 'b' to go back to the previous song.")
-
-	f, err := os.Open(file)
+	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatalf("Failed to open file %s: %v", file, err)
+		panic(err)
 	}
 	defer f.Close()
 
 	decoder, err := mp3.NewDecoder(f)
 	if err != nil {
-		log.Fatalf("Failed to create MP3 decoder: %v", err)
+		panic(err)
+	}
+
+	player := mp.context.NewPlayer()
+	mp.currentPlayer = player
+	mp.currentFile = f
+	mp.done = make(chan bool)
+	mp.stop = make(chan bool)
+	defer player.Close()
+
+	go mp.playAudio(decoder)
+	mp.waitForCommands()
+}
+
+func (mp *Player) playTrack(file string) {
+	f, err := os.Open(file)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	decoder, err := mp3.NewDecoder(f)
+	if err != nil {
+		panic(err)
 	}
 
 	player := mp.context.NewPlayer()

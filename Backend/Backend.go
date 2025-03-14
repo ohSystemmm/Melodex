@@ -28,6 +28,6 @@ func Run() {
 	}
 	defer context.Close()
 
-	musicPlayer := Music.NewMusicPlayer(context)
-	musicPlayer.PlaySongs(mp3Files)
+	//musicPlayer := Music.NewMusicPlayer(context)
+	//musicPlayer.PlaySongs(mp3Files)
 }

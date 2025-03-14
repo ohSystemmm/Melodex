@@ -1,7 +1,6 @@
 package main
 
 import (
-	"Melodex/Backend"
 	"Melodex/TUI"
 	"fmt"
 	"os"
@@ -9,9 +8,7 @@ import (
 
 func main() {
 	greeter()
-	Backend.Run()
 	TUI.Application()
-
 }
 
 func greeter() {

@@ -126,7 +126,7 @@ func (m Model) View() string {
 	return final
 }
 
-// NOTE When the time exceeds an hour it will just ho on, this might require fixing
+// NOTE When the time exceeds an hour it will just go on, this might require fixing
 func formatTime(seconds int) string {
 	minutes := seconds / 60
 	remainingSeconds := seconds % 60

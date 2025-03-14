@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,10 @@ func isSupportedExtension(ext string) bool {
 }
 
 func ConvertToMP3(sourceDir, destDir string) ([]string, error) {
+	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
+		return nil, fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
 	files, err := ioutil.ReadDir(sourceDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read source directory: %w", err)
