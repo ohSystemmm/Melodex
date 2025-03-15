@@ -146,7 +146,7 @@ func (m Model) View() string {
 	// filtering := "󱕌 "
 
 	// HACK This should be temporary and be in a seperate function (the rest of the function):
-	padding := m.TotalListWidth - lipg.Width(m.PlaylistName) - lipg.Width(searchBar) + 4
+	padding := m.TotalListWidth - lipg.Width(" "+m.PlaylistName) - lipg.Width(searchBar) + 4
 	padding = max(padding, 0)
 
 	header := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(
@@ -154,7 +154,7 @@ func (m Model) View() string {
 
 	musicList := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(m.List.View())
 
-	if m.Width > 101 {
+	if m.Width > 102 {
 		return lipg.JoinVertical(lipg.Top, header, musicList)
 	} else {
 		return ""
