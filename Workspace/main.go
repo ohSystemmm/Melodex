@@ -2,13 +2,15 @@ package main
 
 import (
 	"Melodex/TUI"
+	"Melodex/Backend"
 	"fmt"
 	"os"
 )
 
 func main() {
-	greeter()
 	TUI.Application()
+	greeter()
+	Backend.Run()
 }
 
 func greeter() {
