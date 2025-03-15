@@ -1,6 +1,7 @@
 package MusicPlayer
 
 import (
+	"Melodex/Services"
 	"Melodex/TUI/SharedState"
 	"fmt"
 
@@ -145,7 +146,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	return Model{
 		SharedState: sharedState,
-		Title:       "Example Title",
+		Title:       Services.GetSelectedSong(),
 		Artist:      "Example Artist",
 		Album:       "Example Album",
 		Length:      181,

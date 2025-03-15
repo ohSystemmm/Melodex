@@ -4,7 +4,6 @@ import (
 	"Melodex/Backend/Music"
 	"Melodex/Services"
 	"Melodex/TUI/SharedState"
-	"fmt"
 	"github.com/hajimehoshi/oto"
 	"path/filepath"
 	"strings"
@@ -34,23 +33,6 @@ type Model struct {
 }
 
 var tempPath = "./Backend/Music/mp3_songs/"
-
-func NewModel(context *oto.Context) Model {
-	fmt.Println("Initializing Model and Music Player")
-
-	return Model{
-		SharedState:    &SharedState.SharedState{},
-		List:           table.New(),
-		SearchBar:      textinput.New(),
-		OriginalRows:   []table.Row{},
-		PlaylistName:   "",
-		TotalListWidth: 0,
-		Width:          0,
-		Height:         0,
-		context:        context,
-		musicPlayer:    Music.NewMusicPlayer(context),
-	}
-}
 
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
@@ -93,6 +75,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case "enter":
 				song := m.List.SelectedRow()
+				Services.SetSelectedSong(song[0])
 				Services.PlaySelectedSong(tempPath, song[0])
 			case "f":
 				m.SharedState.Searching = true

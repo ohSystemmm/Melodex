@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+var selectedSong string
+
 func GetSongList(directory string) []table.Row {
 	files, err := Music.GetFilesWithExtensions(directory)
 	if err != nil {
@@ -34,3 +36,27 @@ func PlaySelectedSong(directory string, song string) {
 	musicPlayer := Music.NewMusicPlayer(context)
 	musicPlayer.PlaySong(directory, song)
 }
+
+func SetSelectedSong(song string) {
+	selectedSong = song
+}
+
+func GetSelectedSong() string {
+	return selectedSong
+}
+
+//func PauseSong() func {
+//	return
+//}
+//
+//func ShuffleSong() func {
+//	return
+//}
+//
+//func RepeatSong() func {
+//	return
+//}
+//
+//func RepeatPlaylist() func {
+//	return
+//}
