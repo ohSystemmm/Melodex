@@ -138,58 +138,60 @@ func (m Model) View() string {
 	if m.Width >= 56 && m.Height >= 50 {
 		return final
 	} else {
-		// errorContent := lipg.JoinVertical(
-		// 	lipg.Center,
-		// 	"Terminal size too small:",
-		// 	lipg.NewStyle().Render("Width = "+strconv.Itoa(m.Width)+"Height = "+strconv.Itoa(m.Height)),
-		// 	"Needed for Melodex:",
-		// 	"Width = 55 Height = 24",
-		// )
-		// error := lipg.NewStyle().Align(lipg.Center).PaddingTop((m.Height - 4) / 2).Bold(true).Render(errorContent)
-		// return error
 
-		redStyle := lipg.NewStyle().Foreground(lipg.Color("#DD0000"))
-		greenStyle := lipg.NewStyle().Foreground(lipg.Color("#00DD00"))
+		minWidth := lipg.Width(final)
+		minHeight := lipg.Height(final)
 
-		leftPadding := (m.Width - 34) / 2
-		TopPadding := (m.Height - 4) / 2
-
-		widthColor := redStyle
-		if m.Width >= 56 {
-			widthColor = greenStyle
-		}
-
-		heightColor := redStyle
-		if m.Height >= 50 {
-			heightColor = greenStyle
+		if m.Width >= minWidth && m.Height >= minHeight {
+			return final
 		} else {
-			if m.Width > 102 {
-				leftPadding = (m.Width - 80) / 2
+			redStyle := lipg.NewStyle().Foreground(lipg.Color("#DD0000"))
+			greenStyle := lipg.NewStyle().Foreground(lipg.Color("#00DD00"))
+
+			widthColor := redStyle
+			if m.Width >= minWidth {
+				widthColor = greenStyle
 			}
+
+			heightColor := redStyle
+			if m.Height >= minHeight {
+				heightColor = greenStyle
+			}
+
+			musicListWidth := 0
+
+			if m.Width > 102 {
+				musicListWidth = max(0, m.Width-minWidth)
+			}
+
+			// BUG Height and the associated current height do not get bold, this is very jaring to see, so it should be fixed soon
+			errorContent := lipg.JoinVertical(
+				lipg.Center,
+				"Terminal size too small for Player:",
+				lipg.JoinHorizontal(
+					lipg.Left,
+					"Width = ",
+					widthColor.Render(strconv.Itoa(m.Width)),
+					" Height = ",
+					heightColor.Render(strconv.Itoa(m.Height)),
+				),
+				"Needed for Melodex:",
+				"Width = 56 Height = 50",
+			)
+
+			leftPadding := (m.Width - lipg.Width(errorContent) - musicListWidth) / 2
+			topPadding := (m.Height - lipg.Height(errorContent)) / 2
+
+			leftPadding = max(leftPadding, 0)
+			topPadding = max(topPadding, 0)
+
+			error := lipg.NewStyle().
+				PaddingTop(topPadding).
+				PaddingLeft(leftPadding).
+				Bold(true).
+				Render(errorContent)
+			return error
 		}
-
-		errorContent := lipg.JoinVertical(
-			lipg.Center,
-			"Terminal size too small for Player:",
-			lipg.JoinHorizontal(lipg.Left,
-				"Width = ",
-				widthColor.Render(strconv.Itoa(m.Width)),
-				" Height = ",
-				heightColor.Render(strconv.Itoa(m.Height)),
-			),
-			"Needed for Melodex:",
-			"Width = 56 Height = 50",
-		)
-
-		error := lipg.NewStyle().
-			Padding(2).
-			PaddingTop(TopPadding).
-			PaddingLeft(leftPadding).
-			Align(lipg.Center).
-			Bold(true).
-			Render(errorContent)
-		return error
-
 	}
 }
 

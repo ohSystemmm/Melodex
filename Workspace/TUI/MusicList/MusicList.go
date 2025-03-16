@@ -118,6 +118,7 @@ func (m Model) filterRows(searchTerm string) []table.Row {
 	var filteredRows []table.Row
 	for _, row := range m.OriginalRows {
 		for _, cell := range row {
+			// NOTE THe search is accross all columns
 			if strings.Contains(strings.ToLower(cell), searchTerm) {
 				filteredRows = append(filteredRows, row)
 				break
@@ -154,6 +155,7 @@ func (m Model) View() string {
 
 	musicList := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(m.List.View())
 
+	// NOTE Idealy this number should be dynamic, but this is not necessary
 	if m.Width > 102 {
 		return lipg.JoinVertical(lipg.Top, header, musicList)
 	} else {
