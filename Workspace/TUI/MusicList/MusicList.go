@@ -85,7 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		// This is to handle the window resize
 		m.Width, m.Height = msg.Width, msg.Height
-		m.List.SetHeight(m.Height - 5)
+		m.List.SetHeight(m.Height - 4)
 		newColumns := m.List.Columns()
 
 		elseWidth := 68
@@ -150,10 +150,33 @@ func (m Model) View() string {
 	padding := m.TotalListWidth - lipg.Width(" "+m.PlaylistName) - lipg.Width(searchBar) + 4
 	padding = max(padding, 0)
 
-	header := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(
-		lipg.NewStyle().Bold(true).Render(" "+m.PlaylistName) + strings.Repeat(" ", padding) + searchBar)
+	headerBorder := lipg.Border{
+		Top:         "━",
+		Bottom:      "━",
+		Left:        "┃",
+		Right:       "┃",
+		TopLeft:     "┏",
+		TopRight:    "┓",
+		BottomLeft:  "┣",
+		BottomRight: "┫",
+	}
 
-	musicList := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).Render(m.List.View())
+	header := lipg.NewStyle().
+		BorderStyle(headerBorder).
+		Render(
+			lipg.NewStyle().
+				Bold(true).Render(" " +
+				m.PlaylistName +
+				strings.Repeat(" ", padding) +
+				searchBar))
+
+	musicList := lipg.NewStyle().
+		BorderStyle(lipg.ThickBorder()).
+		BorderTop(false).
+		BorderBottom(true).
+		BorderLeft(true).
+		BorderRight(true).
+		Render(m.List.View())
 
 	// NOTE Idealy this number should be dynamic, but this is not necessary
 	if m.Width > 102 {
@@ -228,6 +251,8 @@ func defineTableStyles() table.Styles {
 	styles.Selected = styles.Selected.
 		Foreground(lipg.Color("230")).
 		Background(lipg.Color("63")).
+		// Foreground(lipg.Color("#111111")).
+		// Background(lipg.Color("#dddddd")).
 		Bold(true)
 	styles.Header = styles.Header.Bold(true).Background(lipg.Color("60"))
 	return styles
