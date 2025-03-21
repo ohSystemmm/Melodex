@@ -94,25 +94,25 @@ func (m Model) View() string {
 		control += "\U000F049E "
 	}
 
-	control += "󰒫"
+	control += "\U000F04AB "
 
 	if m.Paused {
-		control += " \U000F03E4 "
+		control += "\U000F03E4 "
 	} else {
-		control += " \U000F040A "
+		control += "\U000F040A "
 	}
 
-	control += "󰒬 "
+	control += "\U000F04AC "
 
 	if m.Looping < 0 {
-		control += " \U000F0457"
+		control += "\U000F0457"
 	} else if m.Looping == 0 {
-		control += " \U000F0456"
+		control += "\U000F0456"
 	} else {
-		control += " \U000F0458"
+		control += "\U000F0458"
 	}
 
-	control += "              " + totalTime
+	control += "               " + totalTime
 
 	content := lipg.JoinVertical(
 		lipg.Center,
