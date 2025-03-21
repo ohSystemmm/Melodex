@@ -45,6 +45,10 @@ func GetSelectedSong() string {
 	return selectedSong
 }
 
+func GetSongLength(song string) int {
+	return 0
+}
+
 //func PauseSong() func {
 //	return
 //}

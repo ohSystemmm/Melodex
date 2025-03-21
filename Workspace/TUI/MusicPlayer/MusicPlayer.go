@@ -21,7 +21,7 @@ type Model struct {
 	Progress        int
 	Paused          bool
 	Shuffling       bool
-	Looping         bool
+	Looping         int
 	SelectedPreview bool
 }
 
@@ -52,7 +52,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case ",":
 				m.Shuffling = !m.Shuffling
 			case ".":
-				m.Looping = !m.Looping
+				if m.Looping < 0 {
+					m.Looping = 0
+				} else if m.Looping == 0 {
+					m.Looping = 1
+				} else {
+					m.Looping = -1
+				}
+
 			case "tab":
 				m.SelectedPreview = !m.SelectedPreview
 			}
@@ -70,27 +77,29 @@ func (m Model) View() string {
 	if m.SelectedPreview {
 		selectedPreview += "Currently Playing"
 	} else {
-		selectedPreview += "Selected Preview"
+		selectedPreview += "Playing " + Services.GetSelectedSong()
 	}
 
 	// TODO make the spaces dynamic
 	control := currentTime + "                 "
 	if m.Shuffling {
-		control += " "
+		control += "\U000F049F "
 	} else {
-		control += " "
+		control += "\U000F049E "
 	}
 
 	if m.Paused {
-		control += "  "
+		control += " \U000F03E4 "
 	} else {
-		control += "  "
+		control += " \U000F040A "
 	}
 
-	if m.Looping {
-		control += " "
+	if m.Looping < 0 {
+		control += " \U000F0457"
+	} else if m.Looping == 0 {
+		control += " \U000F0456"
 	} else {
-		control += "󰑗 "
+		control += " \U000F0458"
 	}
 
 	control += "                " + totalTime
@@ -154,6 +163,6 @@ func New(sharedState *SharedState.SharedState) Model {
 		ProgressBar: pb,
 		Paused:      false,
 		Shuffling:   false,
-		Looping:     false,
+		Looping:     0,
 	}
 }
