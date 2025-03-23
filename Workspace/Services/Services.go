@@ -25,16 +25,18 @@ func GetSongList(directory string) []table.Row {
 	return rows
 }
 
-func PlaySelectedSong(directory string, song string) {
-
-	context, err := oto.NewContext(44100, 2, 2, 65536)
+func PlaySelectedSong(directory string, song string, logger *log.Logger) *Music.Player {
+	context, err := oto.NewContext(44100, 2, 2, 1024)
 	if err != nil {
 		log.Fatalf("Failed to create audio context: %v", err)
 	}
-	defer context.Close()
 
-	musicPlayer := Music.NewMusicPlayer(context)
-	musicPlayer.PlaySong(directory, song)
+	musicPlayer := Music.NewMusicPlayer(context, logger)
+	go func() {
+		// defer context.Close()
+		musicPlayer.PlaySong(directory, song)
+	}()
+	return musicPlayer
 }
 
 func SetSelectedSong(song string) {

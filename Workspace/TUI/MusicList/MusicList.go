@@ -4,9 +4,12 @@ import (
 	"Melodex/Backend/Music"
 	"Melodex/Services"
 	"Melodex/TUI/SharedState"
-	"github.com/hajimehoshi/oto"
+	"log"
+	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/hajimehoshi/oto"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -30,6 +33,7 @@ type Model struct {
 
 	context     *oto.Context
 	musicPlayer *Music.Player
+	logger      *log.Logger
 }
 
 var tempPath = "./Backend/Music/mp3_songs/"
@@ -76,7 +80,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				song := m.List.SelectedRow()
 				Services.SetSelectedSong(song[0])
-				Services.PlaySelectedSong(tempPath, song[0])
+				m.musicPlayer = Services.PlaySelectedSong(tempPath, song[0], m.logger)
+			case " ":
+				m.musicPlayer.PauseSong()
 			case "f":
 				m.SharedState.Searching = true
 				return m, m.SearchBar.Focus()
@@ -235,6 +241,13 @@ func New(sharedState *SharedState.SharedState) Model {
 	trimmedPath := strings.TrimRight(tempPath, "/")
 	playlistName := filepath.Base(trimmedPath)
 
+	file, err := os.Create("log.txt")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	logger := log.New(file, "List", log.LstdFlags)
+
 	return Model{
 		SharedState:    sharedState,
 		List:           t,
@@ -242,6 +255,7 @@ func New(sharedState *SharedState.SharedState) Model {
 		TotalListWidth: tLW,
 		PlaylistName:   playlistName,
 		SearchBar:      sB,
+		logger:         logger,
 	}
 }
 

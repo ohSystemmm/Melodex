@@ -79,22 +79,68 @@ func (m Model) View() string {
 	currentTime := formatTime(m.Progress)
 	totalTime := formatTime(m.Length)
 
-	selectedPreview := ""
+	var elements = []string{}
+
 	if m.SelectedPreview {
-		selectedPreview += "Currently Playing"
+		elements = append(elements, "Currently Viewing")
 	} else {
-		selectedPreview += "Playing " + Services.GetSelectedSong()
+		elements = append(elements, "Playing "+Services.GetSelectedSong())
+	}
+
+	if m.Height > 20 {
+		elements = append(elements,
+			" ",
+			"--------------------",
+			"           ████     ",
+			"-----------██████---",
+			"           ██    ██ ",
+			"-----------██-------",
+			"           ██       ",
+			"-----████████-------",
+			"   ██████████       ",
+			"---██████████-------",
+			"     ██████         ",
+			"--------------------",
+			" ")
 	}
 
 	// TODO make the spaces dynamic
-	control := currentTime + "                "
+	// control := currentTime + "                "
+	// if m.Shuffling {
+	// 	control += "\U000F049F "
+	// } else {
+	// 	control += "\U000F049E "
+	// }
+
+	// control += "󰒮 "
+
+	// if m.Paused {
+	// 	control += "\U000F03E4 "
+	// } else {
+	// 	control += "\U000F040A "
+	// }
+
+	// control += "󰒭 "
+
+	// if m.Looping < 0 {
+	// 	control += "\U000F0457"
+	// } else if m.Looping == 0 {
+	// 	control += "\U000F0456"
+	// } else {
+	// 	control += "\U000F0458"
+	// }
+
+	// control += "               " + totalTime
+
+	// TODO make the spaces dynamic
+	control := currentTime + " "
 	if m.Shuffling {
 		control += "\U000F049F "
 	} else {
 		control += "\U000F049E "
 	}
 
-	control += "\U000F04AB "
+	control += "󰒮 "
 
 	if m.Paused {
 		control += "\U000F03E4 "
@@ -102,7 +148,7 @@ func (m Model) View() string {
 		control += "\U000F040A "
 	}
 
-	control += "\U000F04AC "
+	control += "󰒭 "
 
 	if m.Looping < 0 {
 		control += "\U000F0457"
@@ -112,36 +158,20 @@ func (m Model) View() string {
 		control += "\U000F0458"
 	}
 
-	control += "               " + totalTime
+	control += " " + totalTime
 
-	content := lipg.JoinVertical(
-		lipg.Center,
-		selectedPreview,
+	// NOTE When enough space is available
+	elements = append(elements, m.Title)
+	// elements = append(elements, m.Artist+" - "+m.Album)
+	// NOTE else
+	// elements = append(elements, m.Title+" "+m.Artist+" - "+m.Album)
 
-		" ",
-		"--------------------",
-		"           ████     ",
-		"-----------██████---",
-		"           ██    ██ ",
-		"-----------██-------",
-		"           ██       ",
-		"-----████████-------",
-		"   ██████████       ",
-		"---██████████-------",
-		"     ██████         ",
-		"--------------------",
-		" ",
+	elements = append(elements, m.ProgressBar.ViewAs(percent))
+	elements = append(elements, control)
 
-		m.Title,
-		" ",
-		m.Artist+" - "+m.Album,
-		"\n\n\n\n\n\n",
-		m.ProgressBar.ViewAs(percent),
-		" ",
-		control,
-	)
+	content := lipg.JoinVertical(lipg.Center, elements...)
 
-	final := lipg.NewStyle().Padding(2).Align(lipg.Center).PaddingBottom(10).PaddingTop(5).BorderStyle(lipg.ThickBorder()).Render(content)
+	final := lipg.NewStyle().Padding(2).Align(lipg.Center).BorderStyle(lipg.ThickBorder()).Render(content)
 
 	minWidth := lipg.Width(final)
 	minHeight := lipg.Height(final)
@@ -180,7 +210,7 @@ func (m Model) View() string {
 				heightColor.Render(strconv.Itoa(m.Height)),
 			),
 			"Needed for Melodex:",
-			"Width = 56 Height = 50",
+			"Width = "+strconv.Itoa(minWidth)+" Height = "+strconv.Itoa(minHeight),
 		)
 
 		leftPadding := (m.Width - lipg.Width(errorContent) - musicListWidth) / 2
@@ -213,11 +243,13 @@ func New(sharedState *SharedState.SharedState) Model {
 	)
 	// NOTE Sets the progressbar width
 	// TODO should be dynamic in the future
-	pb.Width = 50
+	// pb.Width = 50
+	pb.Width = 21
 
 	return Model{
 		SharedState: sharedState,
-		Title:       Services.GetSelectedSong(),
+		// Title:       Services.GetSelectedSong(),
+		Title:       "Example Title",
 		Artist:      "Example Artist",
 		Album:       "Example Album",
 		Length:      181,
