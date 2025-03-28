@@ -1,7 +1,6 @@
 package Music
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -60,8 +59,6 @@ func (mp *Player) PlaySong(directory string, songName string) {
 		defer player.Close()
 		mp.playAudio(decoder)
 	}()
-
-	// mp.waitForCommands()
 }
 
 func (mp *Player) playAudio(decoder *mp3.Decoder) {
@@ -117,7 +114,6 @@ func (mp *Player) NextSong() {
 	if mp.currentIndex >= len(mp.playlist) {
 		mp.currentIndex = 0
 	}
-	fmt.Println("Skipping to next track.")
 }
 
 func (mp *Player) PreviousSong() {
@@ -127,12 +123,10 @@ func (mp *Player) PreviousSong() {
 	if mp.currentIndex < 0 {
 		mp.currentIndex = len(mp.playlist) - 1
 	}
-	fmt.Println("Going back to previous track.")
 }
 
 func (mp *Player) Stop() {
 	mp.stopped = true
 	mp.stop <- true
 	<-mp.done
-	fmt.Println("Playback stopped.")
 }

@@ -78,43 +78,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
-				song := m.List.SelectedRow()
+				song := m.list.SelectedRow()
 				Services.SetSelectedSong(song[0])
 				m.musicPlayer = Services.PlaySelectedSong(tempPath, song[0], m.logger)
 			case " ":
 				m.musicPlayer.PauseSong()
 			case "f":
-				m.SharedState.Searching = true
-				return m, m.SearchBar.Focus()
+				m.sharedState.Searching = true
+				return m, m.searchBar.Focus()
 			}
 		}
 	case tea.WindowSizeMsg:
 		// This is to handle the window resize
-		m.Width, m.Height = msg.Width, msg.Height
-		m.List.SetHeight(m.Height - 4)
-		newColumns := m.List.Columns()
+		m.width, m.height = msg.Width, msg.Height
+		m.list.SetHeight(m.height - 4)
+		newColumns := m.list.Columns()
 
 		elseWidth := 68
-		titleWidth := max(m.Width-elseWidth, 33)
+		titleWidth := max(m.width-elseWidth, 33)
 		// lengthWidth := int(0.1 * float64(availableWidth))
 		lengthWidth := 6
 
 		newColumns[0].Width = titleWidth
 		newColumns[1].Width = lengthWidth
 
-		m.TotalListWidth = titleWidth + lengthWidth
-		m.List.SetColumns(newColumns)
+		m.totalListWidth = titleWidth + lengthWidth
+		m.list.SetColumns(newColumns)
 
 	}
-	m.SearchBar, cmd = m.SearchBar.Update(msg)
+	m.searchBar, cmd = m.searchBar.Update(msg)
 
 	// NOTE case-unsensitive
-	searchTerm := strings.ToLower(m.SearchBar.Value())
+	searchTerm := strings.ToLower(m.searchBar.Value())
 	if searchTerm != "" {
 		filteredRows := m.filterRows(searchTerm)
-		m.List.SetRows(filteredRows)
+		m.list.SetRows(filteredRows)
 	} else {
-		m.List.SetRows(m.OriginalRows)
+		m.list.SetRows(m.originalRows)
 	}
 
 	return m, cmd
