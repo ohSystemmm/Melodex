@@ -18,18 +18,18 @@ import (
 )
 
 type Model struct {
-	SharedState *SharedState.SharedState
+	sharedState *SharedState.SharedState
 
-	List      table.Model
-	SearchBar textinput.Model
+	list      table.Model
+	searchBar textinput.Model
 
-	OriginalRows []table.Row
+	originalRows []table.Row
 
-	PlaylistName   string
-	TotalListWidth int
+	playlistName   string
+	totalListWidth int
 
-	Width  int
-	Height int
+	width  int
+	height int
 
 	context     *oto.Context
 	musicPlayer *Music.Player
@@ -53,24 +53,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "up":
-			m.List.MoveUp(1)
+			m.list.MoveUp(1)
 		case "down":
-			m.List.MoveDown(1)
+			m.list.MoveDown(1)
 		case "pgup":
-			m.List.MoveUp(10)
+			m.list.MoveUp(10)
 		case "pgdown":
-			m.List.MoveDown(10)
+			m.list.MoveDown(10)
 		case "home":
-			m.List.GotoTop()
+			m.list.GotoTop()
 		case "end":
-			m.List.GotoBottom()
+			m.list.GotoBottom()
 		}
 
-		if m.SharedState.Searching {
+		if m.sharedState.Searching {
 			switch msg.String() {
 			case "esc", "enter":
-				m.SharedState.Searching = false
-				m.SearchBar.Blur()
+				m.sharedState.Searching = false
+				m.searchBar.Blur()
 				// return m, nil
 			}
 		} else {
@@ -122,7 +122,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) filterRows(searchTerm string) []table.Row {
 	var filteredRows []table.Row
-	for _, row := range m.OriginalRows {
+	for _, row := range m.originalRows {
 		for _, cell := range row {
 			// NOTE THe search is accross all columns
 			if strings.Contains(strings.ToLower(cell), searchTerm) {
@@ -136,7 +136,7 @@ func (m Model) filterRows(searchTerm string) []table.Row {
 
 // View renders the music list
 func (m Model) View() string {
-	searchBar := m.SearchBar.View()
+	searchBar := m.searchBar.View()
 
 	// NOTE May not be needed
 	// NOTE Possible chars for the diffrent filters
@@ -153,7 +153,7 @@ func (m Model) View() string {
 	// filtering := "󱕌 "
 
 	// HACK This should be temporary and be in a seperate function (the rest of the function):
-	padding := m.TotalListWidth - lipg.Width(" "+m.PlaylistName) - lipg.Width(searchBar) + 4
+	padding := m.totalListWidth - lipg.Width(" "+m.playlistName) - lipg.Width(searchBar) + 4
 	padding = max(padding, 0)
 
 	headerBorder := lipg.Border{
@@ -172,7 +172,7 @@ func (m Model) View() string {
 		Render(
 			lipg.NewStyle().
 				Bold(true).Render(" " +
-				m.PlaylistName +
+				m.playlistName +
 				strings.Repeat(" ", padding) +
 				searchBar))
 
@@ -182,10 +182,10 @@ func (m Model) View() string {
 		BorderBottom(true).
 		BorderLeft(true).
 		BorderRight(true).
-		Render(m.List.View())
+		Render(m.list.View())
 
 	// NOTE Idealy this number should be dynamic, but this is not necessary
-	if m.Width > 102 {
+	if m.width > 102 {
 		return lipg.JoinVertical(lipg.Top, header, musicList)
 	} else {
 		return ""
@@ -249,12 +249,12 @@ func New(sharedState *SharedState.SharedState) Model {
 	logger := log.New(file, "List", log.LstdFlags)
 
 	return Model{
-		SharedState:    sharedState,
-		List:           t,
-		OriginalRows:   rows,
-		TotalListWidth: tLW,
-		PlaylistName:   playlistName,
-		SearchBar:      sB,
+		sharedState:    sharedState,
+		list:           t,
+		originalRows:   rows,
+		totalListWidth: tLW,
+		playlistName:   playlistName,
+		searchBar:      sB,
 		logger:         logger,
 	}
 }
