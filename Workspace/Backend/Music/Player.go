@@ -1,19 +1,18 @@
 package Music
 
 import (
-	"bufio"
-	"fmt"
-	"github.com/hajimehoshi/go-mp3"
-	"github.com/hajimehoshi/oto"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
+
+	"github.com/hajimehoshi/go-mp3"
+	"github.com/hajimehoshi/oto"
 )
 
 type Player struct {
+	logger        *log.Logger
 	context       *oto.Context
 	commandChan   chan string
 	mu            sync.Mutex
@@ -27,8 +26,9 @@ type Player struct {
 	currentIndex  int
 }
 
-func NewMusicPlayer(context *oto.Context) *Player {
+func NewMusicPlayer(context *oto.Context, logger *log.Logger) *Player {
 	return &Player{
+		logger:      logger,
 		context:     context,
 		commandChan: make(chan string),
 	}
@@ -41,7 +41,6 @@ func (mp *Player) PlaySong(directory string, songName string) {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
 
 	decoder, err := mp3.NewDecoder(f)
 	if err != nil {
@@ -49,37 +48,17 @@ func (mp *Player) PlaySong(directory string, songName string) {
 	}
 
 	player := mp.context.NewPlayer()
+	mp.logger.Printf("player: %#v\n", player)
 	mp.currentPlayer = player
 	mp.currentFile = f
 	mp.done = make(chan bool)
 	mp.stop = make(chan bool)
-	defer player.Close()
 
-	go mp.playAudio(decoder)
-	mp.waitForCommands()
-}
-
-func (mp *Player) playTrack(file string) {
-	f, err := os.Open(file)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	decoder, err := mp3.NewDecoder(f)
-	if err != nil {
-		panic(err)
-	}
-
-	player := mp.context.NewPlayer()
-	mp.currentPlayer = player
-	mp.currentFile = f
-	mp.done = make(chan bool)
-	mp.stop = make(chan bool)
-	defer player.Close()
-
-	go mp.playAudio(decoder)
-	mp.waitForCommands()
+	go func() {
+		defer f.Close()
+		defer player.Close()
+		mp.playAudio(decoder)
+	}()
 }
 
 func (mp *Player) playAudio(decoder *mp3.Decoder) {
@@ -102,55 +81,21 @@ func (mp *Player) playAudio(decoder *mp3.Decoder) {
 				return
 			}
 			if err != nil {
-				log.Printf("Error reading audio data: %v", err)
+				log.Printf("Error reading audio data: %v\n", err)
 				mp.done <- true
 				return
 			}
+
+			// mp.logger.Printf("buf: %d\n", n)
+
 			if n > 0 {
 				if _, err := mp.currentPlayer.Write(buf[:n]); err != nil {
-					log.Printf("Error playing audio: %v", err)
+					mp.logger.Printf("Error playing audio: %v\n", err)
 					mp.done <- true
 					return
+				} else {
+					// mp.logger.Printf("wr: %d\n", nw)
 				}
-			}
-		}
-	}
-}
-
-func (mp *Player) listenForCommands() {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			log.Printf("Error reading input: %v", err)
-			continue
-		}
-		input = strings.TrimSpace(input)
-		mp.commandChan <- input
-	}
-}
-
-func (mp *Player) waitForCommands() {
-	songFinished := false
-	for !songFinished {
-		select {
-		case <-mp.done:
-			songFinished = true
-		case cmd := <-mp.commandChan:
-			switch cmd {
-			case "n":
-				mp.NextSong()
-				songFinished = true
-			case "p":
-				mp.PauseSong()
-			case "s":
-				mp.Stop()
-				songFinished = true
-			case "b":
-				mp.PreviousSong()
-				songFinished = true
-			default:
-				fmt.Println("Unknown command. Press 'n' to skip, 'p' to pause/resume, 's' to stop, 'b' to go back.")
 			}
 		}
 	}
@@ -160,11 +105,6 @@ func (mp *Player) PauseSong() {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	mp.paused = !mp.paused
-	if mp.paused {
-		fmt.Println("Playback paused.")
-	} else {
-		fmt.Println("Playback resumed.")
-	}
 }
 
 func (mp *Player) NextSong() {
@@ -174,7 +114,6 @@ func (mp *Player) NextSong() {
 	if mp.currentIndex >= len(mp.playlist) {
 		mp.currentIndex = 0
 	}
-	fmt.Println("Skipping to next track.")
 }
 
 func (mp *Player) PreviousSong() {
@@ -184,12 +123,10 @@ func (mp *Player) PreviousSong() {
 	if mp.currentIndex < 0 {
 		mp.currentIndex = len(mp.playlist) - 1
 	}
-	fmt.Println("Going back to previous track.")
 }
 
 func (mp *Player) Stop() {
 	mp.stopped = true
 	mp.stop <- true
 	<-mp.done
-	fmt.Println("Playback stopped.")
 }

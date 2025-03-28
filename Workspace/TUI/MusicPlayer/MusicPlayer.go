@@ -5,6 +5,7 @@ import (
 	"Melodex/TUI/SharedState"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,21 +13,21 @@ import (
 )
 
 type Model struct {
-	SharedState *SharedState.SharedState
-	ProgressBar progress.Model
+	sharedState *SharedState.SharedState
+	progressBar progress.Model
 
-	Width  int
-	Height int
+	width  int
+	height int
 
-	Title           string
-	Artist          string
-	Album           string
-	Length          int
-	Progress        int
-	Paused          bool
-	Shuffling       bool
-	Looping         int
-	SelectedPreview bool
+	title           string
+	artist          string
+	album           string
+	length          int
+	progress        int
+	paused          bool
+	shuffling       bool
+	looping         int
+	selectedPreview bool
 }
 
 func (m Model) Init() tea.Cmd {
@@ -36,38 +37,44 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.Width, m.Height = msg.Width, msg.Height
-		// m.progressBar.Width = msg.Width - 10 // Adjust width based on window size
+		m.width, m.height = msg.Width, msg.Height
+		if m.width <= 55 {
+			m.title = strconv.Itoa(m.width - 6)
+			m.progressBar.Width = (m.width - 6)
+			// m.ProgressBar.Width = 21
+		} else {
+			m.progressBar.Width = 50
+		}
 
 	case tea.KeyMsg:
-		if m.SharedState.Searching {
+		if m.sharedState.Searching {
 		} else {
 			switch msg.String() {
 			case "right":
-				m.Progress = min(m.Progress+1, m.Length)
+				m.progress = min(m.progress+1, m.length)
 			case "left":
-				m.Progress = max(m.Progress-1, 0)
-			case "shift+right":
-				// TODO Next Song
-				m.Progress = min(m.Progress+1, m.Length)
-			case "shift+left":
-				// TODO Previous Song
-				m.Progress = max(m.Progress-1, 0)
+				m.progress = max(m.progress-1, 0)
+			// case "shift+right":
+			// 	// TODO Next Song
+			// 	m.Progress = min(m.Progress+1, m.Length)
+			// case "shift+left":
+			// 	// TODO Previous Song
+			// 	m.Progress = max(m.Progress-1, 0)
 			case " ":
-				m.Paused = !m.Paused
+				m.paused = !m.paused
 			case ",":
-				m.Shuffling = !m.Shuffling
+				m.shuffling = !m.shuffling
 			case ".":
-				if m.Looping < 0 {
-					m.Looping = 0
-				} else if m.Looping == 0 {
-					m.Looping = 1
+				if m.looping < 0 {
+					m.looping = 0
+				} else if m.looping == 0 {
+					m.looping = 1
 				} else {
-					m.Looping = -1
+					m.looping = -1
 				}
 
 			case "tab":
-				m.SelectedPreview = !m.SelectedPreview
+				m.selectedPreview = !m.selectedPreview
 			}
 		}
 	}
@@ -75,97 +82,149 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	percent := float64(m.Progress) / float64(m.Length)
-	currentTime := formatTime(m.Progress)
-	totalTime := formatTime(m.Length)
+	percent := float64(m.progress) / float64(m.length)
+	currentTime := formatTime(m.progress)
+	totalTime := formatTime(m.length)
 
-	selectedPreview := ""
-	if m.SelectedPreview {
-		selectedPreview += "Currently Playing"
+	var elements = []string{}
+
+	if m.selectedPreview {
+		elements = append(elements, "Currently Viewing")
 	} else {
-		selectedPreview += "Playing " + Services.GetSelectedSong()
+		elements = append(elements, "Playing "+Services.GetSelectedSong())
+	}
+
+	if m.height >= 23 {
+		elements = append(elements,
+			" ",
+			"--------------------",
+			"           ████     ",
+			"-----------██████---",
+			"           ██    ██ ",
+			"-----------██-------",
+			"           ██       ",
+			"-----████████-------",
+			"   ██████████       ",
+			"---██████████-------",
+			"     ██████         ",
+			"--------------------",
+			" ")
 	}
 
 	// TODO make the spaces dynamic
-	control := currentTime + "                "
-	if m.Shuffling {
-		control += "\U000F049F "
-	} else {
-		control += "\U000F049E "
+	// control := currentTime + "                "
+	// if m.Shuffling {
+	// 	control += "\U000F049F "
+	// } else {
+	// 	control += "\U000F049E "
+	// }
+
+	// control += "󰒮 "
+
+	// if m.Paused {
+	// 	control += "\U000F03E4 "
+	// } else {
+	// 	control += "\U000F040A "
+	// }
+
+	// control += "󰒭 "
+
+	// if m.Looping < 0 {
+	// 	control += "\U000F0457"
+	// } else if m.Looping == 0 {
+	// 	control += "\U000F0456"
+	// } else {
+	// 	control += "\U000F0458"
+	// }
+
+	// control += "               " + totalTime
+
+	controlCenter := ""
+
+	if m.width >= 27 {
+		if m.shuffling {
+			controlCenter += "\U000F049F "
+		} else {
+			controlCenter += "\U000F049E "
+		}
 	}
 
-	control += "\U000F04AB "
+	controlCenter += "󰒮 "
 
-	if m.Paused {
-		control += "\U000F03E4 "
+	if m.paused {
+		controlCenter += "\U000F03E4 "
 	} else {
-		control += "\U000F040A "
+		controlCenter += "\U000F040A "
 	}
 
-	control += "\U000F04AC "
+	controlCenter += "󰒭 "
 
-	if m.Looping < 0 {
-		control += "\U000F0457"
-	} else if m.Looping == 0 {
-		control += "\U000F0456"
-	} else {
-		control += "\U000F0458"
+	if m.width >= 28 {
+		if m.looping < 0 {
+			controlCenter += "\U000F0457"
+		} else if m.looping == 0 {
+			controlCenter += "\U000F0456"
+		} else {
+			controlCenter += "\U000F0458"
+		}
 	}
 
-	control += "               " + totalTime
+	// TODO make the spaces dynamic
+	control := currentTime
 
-	content := lipg.JoinVertical(
-		lipg.Center,
-		selectedPreview,
+	if m.width <= 55 {
+		control += strings.Repeat(" ", max(1, m.width/2-12))
+	} else {
+		control += "                "
+		// control += "               "
+	}
 
-		" ",
-		"--------------------",
-		"           ████     ",
-		"-----------██████---",
-		"           ██    ██ ",
-		"-----------██-------",
-		"           ██       ",
-		"-----████████-------",
-		"   ██████████       ",
-		"---██████████-------",
-		"     ██████         ",
-		"--------------------",
-		" ",
+	control += controlCenter
 
-		m.Title,
-		" ",
-		m.Artist+" - "+m.Album,
-		"\n\n\n\n\n\n",
-		m.ProgressBar.ViewAs(percent),
-		" ",
-		control,
-	)
+	if m.width <= 55 {
+		control += strings.Repeat(" ", max(1, m.width/2-13))
+	} else {
+		control += "               "
+	}
 
-	final := lipg.NewStyle().Padding(2).Align(lipg.Center).PaddingBottom(10).PaddingTop(5).BorderStyle(lipg.ThickBorder()).Render(content)
+	control += totalTime
+
+	// NOTE When enough space is available
+	elements = append(elements, m.title)
+	// elements = append(elements, m.Artist+" - "+m.Album)
+	// NOTE else
+	// elements = append(elements, m.Title+" "+m.Artist+" - "+m.Album)
+
+	elements = append(elements, m.progressBar.ViewAs(percent))
+	elements = append(elements, control)
+
+	content := lipg.JoinVertical(lipg.Center, elements...)
+
+	final := lipg.NewStyle().Padding(2).Align(lipg.Center).BorderStyle(lipg.ThickBorder()).Render(content)
 
 	minWidth := lipg.Width(final)
 	minHeight := lipg.Height(final)
 
-	if m.Width >= minWidth && m.Height >= minHeight {
+	if m.width >= minWidth && m.height >= minHeight {
 		return final
 	} else {
 		redStyle := lipg.NewStyle().Foreground(lipg.Color("#DD0000"))
 		greenStyle := lipg.NewStyle().Foreground(lipg.Color("#00DD00"))
 
 		widthColor := redStyle
-		if m.Width >= minWidth {
+		if m.width >= minWidth {
 			widthColor = greenStyle
 		}
 
 		heightColor := redStyle
-		if m.Height >= minHeight {
+		if m.height >= minHeight {
 			heightColor = greenStyle
 		}
 
 		musicListWidth := 0
 
-		if m.Width > 102 {
-			musicListWidth = max(0, m.Width-minWidth)
+		if m.width > 102 {
+			musicListWidth = max(0, m.width-minWidth)
 		}
 
 		// BUG Height and the associated current height do not get bold, this is very jaring to see, so it should be fixed soon
@@ -175,16 +234,16 @@ func (m Model) View() string {
 			lipg.JoinHorizontal(
 				lipg.Left,
 				"Width = ",
-				widthColor.Render(strconv.Itoa(m.Width)),
+				widthColor.Render(strconv.Itoa(m.width)),
 				" Height = ",
-				heightColor.Render(strconv.Itoa(m.Height)),
+				heightColor.Render(strconv.Itoa(m.height)),
 			),
 			"Needed for Melodex:",
-			"Width = 56 Height = 50",
+			"Width = "+strconv.Itoa(minWidth)+" Height = "+strconv.Itoa(minHeight),
 		)
 
-		leftPadding := (m.Width - lipg.Width(errorContent) - musicListWidth) / 2
-		topPadding := (m.Height - lipg.Height(errorContent)) / 2
+		leftPadding := (m.width - lipg.Width(errorContent) - musicListWidth) / 2
+		topPadding := (m.height - lipg.Height(errorContent)) / 2
 
 		leftPadding = max(leftPadding, 0)
 		topPadding = max(topPadding, 0)
@@ -213,18 +272,20 @@ func New(sharedState *SharedState.SharedState) Model {
 	)
 	// NOTE Sets the progressbar width
 	// TODO should be dynamic in the future
-	pb.Width = 50
+	// pb.Width = 50
+	// pb.Width = 21
 
 	return Model{
-		SharedState: sharedState,
-		Title:       Services.GetSelectedSong(),
-		Artist:      "Example Artist",
-		Album:       "Example Album",
-		Length:      181,
-		Progress:    53,
-		ProgressBar: pb,
-		Paused:      false,
-		Shuffling:   false,
-		Looping:     0,
+		sharedState: sharedState,
+		// Title:       Services.GetSelectedSong(),
+		title:       "Example Title",
+		artist:      "Example Artist",
+		album:       "Example Album",
+		length:      181,
+		progress:    53,
+		progressBar: pb,
+		paused:      false,
+		shuffling:   false,
+		looping:     0,
 	}
 }
