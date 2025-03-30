@@ -22,10 +22,11 @@ func NewService(newSharedState *SharedState.SharedState) {
 	sharedState = newSharedState
 	var err error
 	var readyChan chan struct{}
-	op := &oto.NewContextOptions{}
-	op.SampleRate = 44100
-	op.ChannelCount = 2
-	op.Format = oto.FormatSignedInt16LE
+	op := &oto.NewContextOptions{
+		SampleRate:   44100,
+		ChannelCount: 2,
+		Format:       oto.FormatSignedInt16LE,
+	}
 	otoContext, readyChan, err = oto.NewContext(op)
 	if err != nil {
 		sharedState.Logger.Fatalf("Creating oto context failed")
