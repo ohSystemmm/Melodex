@@ -30,7 +30,6 @@ type Model struct {
 	height int
 
 	musicPlayer *Music.Player
-	logger      *log.Logger
 }
 
 var tempPath = "./Backend/Music/mp3_songs/"
@@ -81,6 +80,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.musicPlayer.Stop()
 				}
 				m.musicPlayer = Services.PlaySelectedSong()
+				m.sharedState.Paused = false
 			case " ":
 				if m.musicPlayer != nil {
 					m.musicPlayer.PauseSong()
@@ -240,9 +240,9 @@ func New(sharedState *SharedState.SharedState) Model {
 		log.Fatalf("Creating the Log file failed")
 	}
 
-	logger := log.New(file, "List", log.LstdFlags)
+	sharedState.Logger = log.New(file, "List", log.LstdFlags)
 
-	Services.NewService(logger)
+	Services.NewService(sharedState)
 
 	return Model{
 		sharedState:    sharedState,
@@ -251,7 +251,6 @@ func New(sharedState *SharedState.SharedState) Model {
 		totalListWidth: tLW,
 		playlistName:   playlistName,
 		searchBar:      sB,
-		logger:         logger,
 	}
 }
 

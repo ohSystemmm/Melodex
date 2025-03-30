@@ -1,23 +1,25 @@
 package Services
 
 import (
-	"Melodex/Backend/Music"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/ebitengine/oto/v3"
 	"log"
+
+	"Melodex/Backend/Music"
+	"Melodex/TUI/SharedState"
 )
 
 // TODO: these shouldn't be global, put them in a struct
 var (
 	selectedSong string
 	otoContext   *oto.Context
-	logger       *log.Logger
 	directory    string
+	sharedState  *SharedState.SharedState
 )
 
 // NewService needs to be called once, and only once
-func NewService(newlogger *log.Logger) {
-	logger = newlogger
+func NewService(newSharedState *SharedState.SharedState) {
+	sharedState = newSharedState
 	var err error
 	var readyChan chan struct{}
 	op := &oto.NewContextOptions{}
@@ -26,7 +28,7 @@ func NewService(newlogger *log.Logger) {
 	op.Format = oto.FormatSignedInt16LE
 	otoContext, readyChan, err = oto.NewContext(op)
 	if err != nil {
-		logger.Fatalf("Creating oto context failed")
+		sharedState.Logger.Fatalf("Creating oto context failed")
 	}
 	<-readyChan
 }
@@ -53,7 +55,7 @@ func PlaySelectedSong() *Music.Player {
 		log.Fatalf("NewService must be called before using PlaySelectedSong")
 	}
 
-	musicPlayer := Music.NewMusicPlayer(otoContext, logger)
+	musicPlayer := Music.NewMusicPlayer(otoContext, sharedState)
 	go func() {
 		musicPlayer.PlaySong(directory, selectedSong)
 	}()

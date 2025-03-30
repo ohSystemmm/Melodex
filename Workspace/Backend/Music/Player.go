@@ -1,18 +1,19 @@
 package Music
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	// "sync"
 	"time"
+
+	"Melodex/TUI/SharedState"
 
 	"github.com/ebitengine/oto/v3"
 	"github.com/hajimehoshi/go-mp3"
 )
 
 type Player struct {
-	logger      *log.Logger
+	sharedState *SharedState.SharedState
 	context     *oto.Context
 	commandChan chan string
 	// pauseCond     *sync.Cond
@@ -20,14 +21,13 @@ type Player struct {
 	currentPlayer *oto.Player
 	currentFile   *os.File
 	playlist      []string
-	paused        bool
 	currentIndex  int
 	// remainingSong int
 }
 
-func NewMusicPlayer(context *oto.Context, logger *log.Logger) *Player {
+func NewMusicPlayer(context *oto.Context, newSharedState *SharedState.SharedState) *Player {
 	p := &Player{
-		logger:      logger,
+		sharedState: newSharedState,
 		context:     context,
 		commandChan: make(chan string),
 	}
@@ -37,16 +37,16 @@ func NewMusicPlayer(context *oto.Context, logger *log.Logger) *Player {
 
 func (mp *Player) PlaySong(directory string, songName string) {
 	filePath := filepath.Join(directory, songName)
-	mp.logger.Printf("Playing %s\n", filePath)
+	mp.sharedState.Logger.Printf("Playing %s\n", filePath)
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		mp.logger.Fatalf("Player: Failed to access Filepath")
+		mp.sharedState.Logger.Fatalf("Player: Failed to access Filepath")
 	}
 
 	decoded, err := mp3.NewDecoder(f)
 	if err != nil {
-		mp.logger.Fatalf("Player: Failed to create Decoder")
+		mp.sharedState.Logger.Fatalf("Player: Failed to create Decoder")
 	}
 
 	player := mp.context.NewPlayer(decoded)
@@ -113,15 +113,15 @@ func (mp *Player) PauseSong() {
 	// if !mp.paused {
 	// 	mp.pauseCond.Broadcast()
 	// }
-	if mp.paused {
+	if mp.sharedState.Paused {
 		mp.currentPlayer.Play()
-		mp.paused = false
 		// mp.pauseCond.Broadcast()
+		mp.sharedState.Paused = false
 		// mp.logger.Printf("To this point it works")
 	} else {
 		// mp.remainingSong = mp.currentPlayer.BufferedSize()
 		mp.currentPlayer.Pause()
-		mp.paused = true
+		mp.sharedState.Paused = true
 		// mp.pauseCond.Broadcast()
 	}
 }
@@ -143,6 +143,6 @@ func (mp *Player) PreviousSong() {
 func (mp *Player) Stop() {
 	err := mp.currentPlayer.Close()
 	if err != nil {
-		mp.logger.Printf("Closing the Player failed")
+		mp.sharedState.Logger.Printf("Closing the Player failed")
 	}
 }

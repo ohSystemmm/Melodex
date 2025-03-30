@@ -24,7 +24,6 @@ type Model struct {
 	album           string
 	length          int
 	progress        int
-	paused          bool
 	shuffling       bool
 	looping         int
 	selectedPreview bool
@@ -39,7 +38,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		if m.width <= 55 {
-			m.title = strconv.Itoa(m.width - 6)
+			// m.title = strconv.Itoa(m.width - 6)
 			m.progressBar.Width = (m.width - 6)
 			// m.ProgressBar.Width = 21
 		} else {
@@ -60,8 +59,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// case "shift+left":
 			// 	// TODO Previous Song
 			// 	m.Progress = max(m.Progress-1, 0)
-			case " ":
-				m.paused = !m.paused
 			case ",":
 				m.shuffling = !m.shuffling
 			case ".":
@@ -151,10 +148,10 @@ func (m Model) View() string {
 
 	controlCenter += "󰒮 "
 
-	if m.paused {
-		controlCenter += "\U000F03E4 "
-	} else {
+	if m.sharedState.Paused {
 		controlCenter += "\U000F040A "
+	} else {
+		controlCenter += "\U000F03E4 "
 	}
 
 	controlCenter += "󰒭 "
@@ -175,7 +172,8 @@ func (m Model) View() string {
 	if m.width <= 55 {
 		control += strings.Repeat(" ", max(1, m.width/2-12))
 	} else {
-		control += "                "
+		control += strings.Repeat(" ", 16)
+		// control += "                "
 		// control += "               "
 	}
 
@@ -184,7 +182,8 @@ func (m Model) View() string {
 	if m.width <= 55 {
 		control += strings.Repeat(" ", max(1, m.width/2-13))
 	} else {
-		control += "               "
+		control += strings.Repeat(" ", 15)
+		// control += "               "
 	}
 
 	control += totalTime
@@ -275,16 +274,17 @@ func New(sharedState *SharedState.SharedState) Model {
 	// pb.Width = 50
 	// pb.Width = 21
 
+	sharedState.Paused = true
+
 	return Model{
 		sharedState: sharedState,
-		// Title:       Services.GetSelectedSong(),
+		// title:       Services.GetSelectedSong(),
 		title:       "Example Title",
 		artist:      "Example Artist",
 		album:       "Example Album",
 		length:      181,
 		progress:    53,
 		progressBar: pb,
-		paused:      true,
 		shuffling:   false,
 		looping:     0,
 	}
