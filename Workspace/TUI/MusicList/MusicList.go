@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hajimehoshi/oto"
-
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -31,7 +29,6 @@ type Model struct {
 	width  int
 	height int
 
-	context     *oto.Context
 	musicPlayer *Music.Player
 	logger      *log.Logger
 }
@@ -80,9 +77,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				song := m.list.SelectedRow()
 				Services.SetSelectedSong(song[0])
-				m.musicPlayer = Services.PlaySelectedSong(tempPath, song[0], m.logger)
+				if m.musicPlayer != nil {
+					m.musicPlayer.Stop()
+				}
+				m.musicPlayer = Services.PlaySelectedSong()
 			case " ":
-				m.musicPlayer.PauseSong()
+				if m.musicPlayer != nil {
+					m.musicPlayer.PauseSong()
+				}
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -194,15 +196,6 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	//rows := []table.Row{
-	//	{"Song A", "3:40"},
-	//	{"Song B", "4:20"},
-	//	{"Song C", "2:50"},
-	//	{"Song A", "3:40"},
-	//	{"Song B", "4:20"},
-	//	{"Song C", "2:50"},
-	//}
-
 	rows := Services.GetSongList(tempPath)
 
 	// longestTitle, longestTime := 98, 15
@@ -241,12 +234,15 @@ func New(sharedState *SharedState.SharedState) Model {
 	trimmedPath := strings.TrimRight(tempPath, "/")
 	playlistName := filepath.Base(trimmedPath)
 
+	// Log files
 	file, err := os.Create("log.txt")
 	if err != nil {
-		os.Exit(1)
+		log.Fatalf("Creating the Log file failed")
 	}
 
 	logger := log.New(file, "List", log.LstdFlags)
+
+	Services.NewService(logger)
 
 	return Model{
 		sharedState:    sharedState,

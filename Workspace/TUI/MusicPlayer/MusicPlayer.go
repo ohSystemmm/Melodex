@@ -284,7 +284,7 @@ func New(sharedState *SharedState.SharedState) Model {
 		length:      181,
 		progress:    53,
 		progressBar: pb,
-		paused:      false,
+		paused:      true,
 		shuffling:   false,
 		looping:     0,
 	}

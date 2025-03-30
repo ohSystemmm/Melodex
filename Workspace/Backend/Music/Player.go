@@ -1,115 +1,132 @@
 package Music
 
 import (
-	"io"
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
+	// "sync"
+	"time"
 
+	"github.com/ebitengine/oto/v3"
 	"github.com/hajimehoshi/go-mp3"
-	"github.com/hajimehoshi/oto"
 )
 
 type Player struct {
-	logger        *log.Logger
-	context       *oto.Context
-	commandChan   chan string
-	mu            sync.Mutex
-	paused        bool
+	logger      *log.Logger
+	context     *oto.Context
+	commandChan chan string
+	// pauseCond     *sync.Cond
+	// mu            sync.Mutex
 	currentPlayer *oto.Player
 	currentFile   *os.File
-	done          chan bool
-	stop          chan bool
-	stopped       bool
 	playlist      []string
+	paused        bool
 	currentIndex  int
+	// remainingSong int
 }
 
 func NewMusicPlayer(context *oto.Context, logger *log.Logger) *Player {
-	return &Player{
+	p := &Player{
 		logger:      logger,
 		context:     context,
 		commandChan: make(chan string),
 	}
+	// p.pauseCond = sync.NewCond(&p.mu)
+	return p
 }
 
 func (mp *Player) PlaySong(directory string, songName string) {
 	filePath := filepath.Join(directory, songName)
+	mp.logger.Printf("Playing %s\n", filePath)
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		panic(err)
+		mp.logger.Fatalf("Player: Failed to access Filepath")
 	}
 
-	decoder, err := mp3.NewDecoder(f)
+	decoded, err := mp3.NewDecoder(f)
 	if err != nil {
-		panic(err)
+		mp.logger.Fatalf("Player: Failed to create Decoder")
 	}
 
-	player := mp.context.NewPlayer()
-	mp.logger.Printf("player: %#v\n", player)
+	player := mp.context.NewPlayer(decoded)
 	mp.currentPlayer = player
 	mp.currentFile = f
-	mp.done = make(chan bool)
-	mp.stop = make(chan bool)
 
 	go func() {
 		defer f.Close()
 		defer player.Close()
-		mp.playAudio(decoder)
+		mp.currentPlayer.Play()
+		for player.IsPlaying() {
+			time.Sleep(time.Millisecond)
+		}
 	}()
 }
 
-func (mp *Player) playAudio(decoder *mp3.Decoder) {
-	buf := make([]byte, 4096)
-	for {
-		select {
-		case <-mp.stop:
-			mp.done <- true
-			return
-		default:
-			mp.mu.Lock()
-			if mp.paused {
-				mp.mu.Unlock()
-				continue
-			}
-			mp.mu.Unlock()
-			n, err := decoder.Read(buf)
-			if err == io.EOF {
-				mp.done <- true
-				return
-			}
-			if err != nil {
-				log.Printf("Error reading audio data: %v\n", err)
-				mp.done <- true
-				return
-			}
+// func (mp *Player) playAudio(decoder *mp3.Decoder) {
+// 	buf := make([]byte, 1024)
+// 	for {
+// 		select {
+// 		// case <-mp.stop:
 
-			// mp.logger.Printf("buf: %d\n", n)
+// 			mp.done <- true
+// 			return
+// 		default:
+// 			mp.mu.Lock()
+// 			// Handle pause state
+// 			if mp.paused {
+// 				mp.pauseCond.Wait()
+// 			}
+// 			mp.mu.Unlock()
 
-			if n > 0 {
-				if _, err := mp.currentPlayer.Write(buf[:n]); err != nil {
-					mp.logger.Printf("Error playing audio: %v\n", err)
-					mp.done <- true
-					return
-				} else {
-					// mp.logger.Printf("wr: %d\n", nw)
-				}
-			}
-		}
+// 			// Audio processing
+// 			n, err := decoder.Read(buf)
+// 			if err == io.EOF {
+// 				mp.done <- true
+// 				return
+// 			}
+// 			if err != nil {
+// 				mp.logger.Printf("Read error: %v", err)
+// 				mp.done <- true
+// 				return
+// 			}
+
+// 			if _, err := mp.currentPlayer.Write(buf[:n]); err != nil {
+// 				mp.logger.Printf("Write error: %v", err)
+// 				mp.done <- true
+// 				return
+// 			} else {
+// 				// The n is form the prefious if, replace the underscore for testing
+// 				// mp.logger.Printf("Wrote %d bytes\n", n)
+// 				// time.Sleep(time.Duration(n) * time.Nanosecond)
+// 			}
+// 		}
+// 	}
+// }
+
+// BUG PauseSong does not Resume the Song, only end it
+func (mp *Player) PauseSong() {
+	// mp.mu.Lock()
+	// defer mp.mu.Unlock()
+
+	// mp.paused = !mp.paused
+	// if !mp.paused {
+	// 	mp.pauseCond.Broadcast()
+	// }
+	if mp.paused {
+		mp.currentPlayer.Play()
+		mp.paused = false
+		// mp.pauseCond.Broadcast()
+		// mp.logger.Printf("To this point it works")
+	} else {
+		// mp.remainingSong = mp.currentPlayer.BufferedSize()
+		mp.currentPlayer.Pause()
+		mp.paused = true
+		// mp.pauseCond.Broadcast()
 	}
 }
 
-func (mp *Player) PauseSong() {
-	mp.mu.Lock()
-	defer mp.mu.Unlock()
-	mp.paused = !mp.paused
-}
-
 func (mp *Player) NextSong() {
-	mp.stop <- true
-	<-mp.done
 	mp.currentIndex++
 	if mp.currentIndex >= len(mp.playlist) {
 		mp.currentIndex = 0
@@ -117,8 +134,6 @@ func (mp *Player) NextSong() {
 }
 
 func (mp *Player) PreviousSong() {
-	mp.stop <- true
-	<-mp.done
 	mp.currentIndex--
 	if mp.currentIndex < 0 {
 		mp.currentIndex = len(mp.playlist) - 1
@@ -126,7 +141,8 @@ func (mp *Player) PreviousSong() {
 }
 
 func (mp *Player) Stop() {
-	mp.stopped = true
-	mp.stop <- true
-	<-mp.done
+	err := mp.currentPlayer.Close()
+	if err != nil {
+		mp.logger.Printf("Closing the Player failed")
+	}
 }
