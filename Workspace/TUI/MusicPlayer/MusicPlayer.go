@@ -55,10 +55,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.progress = max(m.progress-1, 0)
 			// case "shift+right":
 			// 	// TODO Next Song
-			// 	m.Progress = min(m.Progress+1, m.Length)
 			// case "shift+left":
 			// 	// TODO Previous Song
-			// 	m.Progress = max(m.Progress-1, 0)
 			case ",":
 				m.shuffling = !m.shuffling
 			case ".":
@@ -107,34 +105,6 @@ func (m Model) View() string {
 			"--------------------",
 			" ")
 	}
-
-	// TODO make the spaces dynamic
-	// control := currentTime + "                "
-	// if m.Shuffling {
-	// 	control += "\U000F049F "
-	// } else {
-	// 	control += "\U000F049E "
-	// }
-
-	// control += "󰒮 "
-
-	// if m.Paused {
-	// 	control += "\U000F03E4 "
-	// } else {
-	// 	control += "\U000F040A "
-	// }
-
-	// control += "󰒭 "
-
-	// if m.Looping < 0 {
-	// 	control += "\U000F0457"
-	// } else if m.Looping == 0 {
-	// 	control += "\U000F0456"
-	// } else {
-	// 	control += "\U000F0458"
-	// }
-
-	// control += "               " + totalTime
 
 	controlCenter := ""
 
@@ -190,9 +160,9 @@ func (m Model) View() string {
 
 	// NOTE When enough space is available
 	elements = append(elements, m.title)
-	// elements = append(elements, m.Artist+" - "+m.Album)
+	elements = append(elements, m.artist+" - "+m.album)
 	// NOTE else
-	// elements = append(elements, m.Title+" "+m.Artist+" - "+m.Album)
+	// elements = append(elements, m.title+" "+m.artist+" - "+m.album)
 
 	elements = append(elements, m.progressBar.ViewAs(percent))
 	elements = append(elements, control)

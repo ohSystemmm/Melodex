@@ -3,7 +3,7 @@ package Music
 import (
 	"os"
 	"path/filepath"
-	// "sync"
+	"sync"
 	"time"
 
 	"Melodex/TUI/SharedState"
@@ -13,25 +13,24 @@ import (
 )
 
 type Player struct {
-	sharedState *SharedState.SharedState
-	context     *oto.Context
-	commandChan chan string
-	// pauseCond     *sync.Cond
-	// mu            sync.Mutex
+	sharedState   *SharedState.SharedState
+	context       *oto.Context
 	currentPlayer *oto.Player
 	currentFile   *os.File
 	playlist      []string
 	currentIndex  int
-	// remainingSong int
+	mu            sync.Mutex
+	pauseCond     *sync.Cond
+	// commandChan chan string
 }
 
 func NewMusicPlayer(context *oto.Context, newSharedState *SharedState.SharedState) *Player {
 	p := &Player{
 		sharedState: newSharedState,
 		context:     context,
-		commandChan: make(chan string),
+		// commandChan: make(chan string),
 	}
-	// p.pauseCond = sync.NewCond(&p.mu)
+	p.pauseCond = sync.NewCond(&p.mu)
 	return p
 }
 
@@ -41,88 +40,37 @@ func (mp *Player) PlaySong(directory string, songName string) {
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		mp.sharedState.Logger.Fatalf("Player: Failed to access Filepath")
+		mp.sharedState.Logger.Fatalf("Player: Failed to access Filepath: %v", err)
 	}
 
-	decoded, err := mp3.NewDecoder(f)
+	decodedMp3, err := mp3.NewDecoder(f)
 	if err != nil {
-		mp.sharedState.Logger.Fatalf("Player: Failed to create Decoder")
+		mp.sharedState.Logger.Fatalf("Player: Failed to create Decoder: %v", err)
 	}
 
-	player := mp.context.NewPlayer(decoded)
+	player := mp.context.NewPlayer(decodedMp3)
 	mp.currentPlayer = player
 	mp.currentFile = f
 
 	go func() {
 		defer f.Close()
 		defer player.Close()
+
 		mp.currentPlayer.Play()
+
 		for player.IsPlaying() {
 			time.Sleep(time.Millisecond)
 		}
 	}()
 }
 
-// func (mp *Player) playAudio(decoder *mp3.Decoder) {
-// 	buf := make([]byte, 1024)
-// 	for {
-// 		select {
-// 		// case <-mp.stop:
-
-// 			mp.done <- true
-// 			return
-// 		default:
-// 			mp.mu.Lock()
-// 			// Handle pause state
-// 			if mp.paused {
-// 				mp.pauseCond.Wait()
-// 			}
-// 			mp.mu.Unlock()
-
-// 			// Audio processing
-// 			n, err := decoder.Read(buf)
-// 			if err == io.EOF {
-// 				mp.done <- true
-// 				return
-// 			}
-// 			if err != nil {
-// 				mp.logger.Printf("Read error: %v", err)
-// 				mp.done <- true
-// 				return
-// 			}
-
-// 			if _, err := mp.currentPlayer.Write(buf[:n]); err != nil {
-// 				mp.logger.Printf("Write error: %v", err)
-// 				mp.done <- true
-// 				return
-// 			} else {
-// 				// The n is form the prefious if, replace the underscore for testing
-// 				// mp.logger.Printf("Wrote %d bytes\n", n)
-// 				// time.Sleep(time.Duration(n) * time.Nanosecond)
-// 			}
-// 		}
-// 	}
-// }
-
-// BUG PauseSong does not Resume the Song, only end it
 func (mp *Player) PauseSong() {
-	// mp.mu.Lock()
-	// defer mp.mu.Unlock()
-
-	// mp.paused = !mp.paused
-	// if !mp.paused {
-	// 	mp.pauseCond.Broadcast()
-	// }
 	if mp.sharedState.Paused {
 		mp.currentPlayer.Play()
-		// mp.pauseCond.Broadcast()
 		mp.sharedState.Paused = false
-		// mp.logger.Printf("To this point it works")
 	} else {
-		// mp.remainingSong = mp.currentPlayer.BufferedSize()
 		mp.currentPlayer.Pause()
 		mp.sharedState.Paused = true
-		// mp.pauseCond.Broadcast()
 	}
 }
 
@@ -141,8 +89,10 @@ func (mp *Player) PreviousSong() {
 }
 
 func (mp *Player) Stop() {
-	err := mp.currentPlayer.Close()
-	if err != nil {
-		mp.sharedState.Logger.Printf("Closing the Player failed")
+	if mp.currentPlayer != nil {
+		mp.currentPlayer.Close()
+	}
+	if mp.currentFile != nil {
+		mp.currentFile.Close()
 	}
 }
