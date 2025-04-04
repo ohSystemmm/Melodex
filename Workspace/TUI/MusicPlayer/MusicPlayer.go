@@ -239,11 +239,6 @@ func New(sharedState *SharedState.SharedState) Model {
 		// progress.WithDefaultGradient(),
 		progress.WithoutPercentage(),
 	)
-	// NOTE Sets the progressbar width
-	// TODO should be dynamic in the future
-	// pb.Width = 50
-	// pb.Width = 21
-
 	sharedState.Paused = true
 
 	return Model{
