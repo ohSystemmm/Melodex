@@ -1,33 +1,21 @@
 package Backend
 
 import (
-	"fmt"
 	"log"
 
-	"Melodex/Backend/Music"
-	"github.com/hajimehoshi/oto"
+	vlc "github.com/adrg/libvlc-go/v3"
 )
 
 func Run() {
-	sourceDir := "./Backend/Music/source_songs"
-	destDir := "./Backend/Music/mp3_songs"
+	if err := vlc.Init(); err != nil {
+		log.Fatal(err)
+	}
+	defer vlc.Release()
 
-	mp3Files, err := Music.ConvertToMP3(sourceDir, destDir)
+	player, err := vlc.NewPlayer()
 	if err != nil {
-		log.Fatalf("Error getting music files: %v", err)
+		log.Fatal(err)
 	}
+	defer player.Release()
 
-	if len(mp3Files) == 0 {
-		fmt.Println("No files were converted.")
-		return
-	}
-
-	context, err := oto.NewContext(44100, 2, 2, 65536)
-	if err != nil {
-		log.Fatalf("Failed to create audio context: %v", err)
-	}
-	defer context.Close()
-
-	//musicPlayer := Music.NewMusicPlayer(context)
-	//musicPlayer.PlaySongs(mp3Files)
 }
