@@ -1,8 +1,7 @@
 package MusicPlayer
 
 import (
-	"Melodex/Services"
-	"Melodex/TUI/SharedState"
+	SharedState "Melodex/tui/sharedState"
 	"fmt"
 	"strconv"
 	"strings"
@@ -86,7 +85,7 @@ func (m Model) View() string {
 	if m.selectedPreview {
 		elements = append(elements, "Currently Viewing")
 	} else {
-		elements = append(elements, "Playing "+Services.GetSelectedSong())
+		elements = append(elements, "Playing")
 	}
 
 	if m.height >= 23 {

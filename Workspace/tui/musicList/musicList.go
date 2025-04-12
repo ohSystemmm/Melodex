@@ -1,13 +1,12 @@
-package MusicList
+package musicList
 
 import (
-	"Melodex/Backend/Music"
-	"Melodex/Services"
-	"Melodex/TUI/SharedState"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	SharedState "Melodex/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -28,11 +27,9 @@ type Model struct {
 
 	width  int
 	height int
-
-	musicPlayer *Music.Player
 }
 
-var tempPath = "./Backend/Music/mp3_songs/"
+var tempPath = ""
 
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
@@ -74,17 +71,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
-				song := m.list.SelectedRow()
-				Services.SetSelectedSong(song[0])
-				if m.musicPlayer != nil {
-					m.musicPlayer.Stop()
-				}
-				m.musicPlayer = Services.PlaySelectedSong()
 				m.sharedState.Paused = false
 			case " ":
-				if m.musicPlayer != nil {
-					m.musicPlayer.PauseSong()
-				}
+
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -196,7 +185,18 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := Services.GetSongList(tempPath)
+	rows := []table.Row{
+		{"Bohemian Rhapsody", "5:55"},
+		{"Imagine", "3:03"},
+		{"Hotel California", "6:30"},
+		{"Stairway to Heaven", "8:02"},
+		{"Smells Like Teen Spirit", "5:01"},
+		{"Sweet Child O' Mine", "5:56"},
+		{"Billie Jean", "4:54"},
+		{"Wonderwall", "4:18"},
+		{"Hey Jude", "7:11"},
+		{"Comfortably Numb", "6:22"},
+	}
 
 	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
@@ -241,8 +241,6 @@ func New(sharedState *SharedState.SharedState) Model {
 	}
 
 	sharedState.Logger = log.New(file, "List", log.LstdFlags)
-
-	Services.NewService(sharedState)
 
 	return Model{
 		sharedState:    sharedState,

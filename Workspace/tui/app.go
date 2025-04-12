@@ -5,9 +5,9 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 
-	"Melodex/TUI/MusicList"
-	"Melodex/TUI/MusicPlayer"
-	"Melodex/TUI/SharedState"
+	"Melodex/tui/musicList"
+	MusicPlayer "Melodex/tui/musicPlayer"
+	SharedState "Melodex/tui/sharedState"
 
 	"fmt"
 	"os"
@@ -16,7 +16,7 @@ import (
 type MainModel struct {
 	SharedState *SharedState.SharedState
 
-	MList   MusicList.Model
+	MList   musicList.Model
 	MPlayer MusicPlayer.Model
 
 	width  int
@@ -37,7 +37,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		var mList tea.Model
 		mList, cmd = m.MList.Update(msg)
-		m.MList = mList.(MusicList.Model)
+		m.MList = mList.(musicList.Model)
 		cmds = append(cmds, cmd)
 
 		var mPlayer tea.Model
@@ -47,7 +47,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	default:
 		var mList tea.Model
 		mList, cmd = m.MList.Update(msg)
-		m.MList = mList.(MusicList.Model)
+		m.MList = mList.(musicList.Model)
 		cmds = append(cmds, cmd)
 
 		var mPlayer tea.Model
@@ -73,7 +73,7 @@ func Application() {
 	mainModel := MainModel{
 		SharedState: sharedState,
 
-		MList:   MusicList.New(sharedState),
+		MList:   musicList.New(sharedState),
 		MPlayer: MusicPlayer.New(sharedState),
 	}
 
