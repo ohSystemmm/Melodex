@@ -8,6 +8,7 @@ import (
 	"Melodex/TUI/MusicList"
 	"Melodex/TUI/MusicPlayer"
 	"Melodex/TUI/SharedState"
+	"Melodex/TUI/applicationController"
 
 	"fmt"
 	"os"
@@ -16,15 +17,16 @@ import (
 type MainModel struct {
 	SharedState *SharedState.SharedState
 
-	MList   MusicList.Model
-	MPlayer MusicPlayer.Model
+	MList         MusicList.Model
+	MPlayer       MusicPlayer.Model
+	AppController applicationController.Model
 
 	width  int
 	height int
 }
 
 func (m MainModel) Init() tea.Cmd {
-	return tea.Batch(m.MList.Init(), m.MPlayer.Init())
+	return tea.Batch(m.MList.Init(), m.MPlayer.Init(), m.AppController.Init())
 }
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -44,6 +46,11 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		mPlayer, cmd = m.MPlayer.Update(msg)
 		m.MPlayer = mPlayer.(MusicPlayer.Model)
 		cmds = append(cmds, cmd)
+
+		var appController tea.Model
+		appController, cmd = m.AppController.Update(msg)
+		m.AppController = appController.(applicationController.Model)
+		cmds = append(cmds, cmd)
 	default:
 		var mList tea.Model
 		mList, cmd = m.MList.Update(msg)
@@ -54,6 +61,11 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		mPlayer, cmd = m.MPlayer.Update(msg)
 		m.MPlayer = mPlayer.(MusicPlayer.Model)
 		cmds = append(cmds, cmd)
+
+		var appController tea.Model
+		appController, cmd = m.AppController.Update(msg)
+		m.AppController = appController.(applicationController.Model)
+		cmds = append(cmds, cmd)
 	}
 
 	return m, tea.Batch(cmds...)
@@ -63,7 +75,11 @@ func (m MainModel) View() string {
 	return lipg.JoinHorizontal(
 		lipg.Top,
 		m.MList.View(),
-		m.MPlayer.View(),
+		lipg.JoinVertical(
+			lipg.Center,
+			m.MPlayer.View(),
+			m.AppController.View(),
+		),
 	)
 }
 
@@ -73,8 +89,9 @@ func Application() {
 	mainModel := MainModel{
 		SharedState: sharedState,
 
-		MList:   MusicList.New(sharedState),
-		MPlayer: MusicPlayer.New(sharedState),
+		MList:         MusicList.New(sharedState),
+		MPlayer:       MusicPlayer.New(sharedState),
+		AppController: applicationController.New(),
 	}
 
 	bzone.NewGlobal()
