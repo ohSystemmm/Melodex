@@ -1,22 +1,29 @@
 package playlist
 
-func SetPlaylist() {
+var playlistname string
+
+func AddPlaylist(playlistname string) string {
+	return playlistname
 }
 
-func GetPlaylist() {
+func GetPlaylist() string {
+	return playlistname
 }
 
-func GetAllSongs() {
+func GetAllSongs(direcory string) []string {
+	return []string{}
 }
 
-func ShufflePlaylist() {
+func ShufflePlaylist(playlist []string) []string {
+	shuffeledplaylist := playlist
+	return shuffeledplaylist
+
 }
 
-func AddPlaylist() {
+func RemovePlaylist(config string) bool {
+	return false
 }
 
-func RemovePlaylist() {
-}
-
-func GetPlaylistName() {
+func GetPlaylistName(directory string) string {
+	return directory
 }
