@@ -23,6 +23,7 @@ func Init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 // loads and plays songs
@@ -48,21 +49,34 @@ func PauseSong() {
 func Metadata() {
 }
 
-// returns songlength and position
-func SongLength() (length int, position float32, err error) {
-	length, err = player.MediaLength()
-	if err != nil {
-		log.Println("Error getting length:", err)
-		return
+// returns song length
+func SongLength(directory string, song string) (length int, err error) {
+	if media == nil {
+		media, err = player.LoadMediaFromPath(song)
+		if err != nil {
+			log.Println("Error loading media:", err)
+			return 0, err
+		}
+		log.Println("Media loaded successfully.")
 	}
 
+	duration, err := media.Duration()
+	if err != nil {
+		log.Println("Error getting media duration:", err)
+		return 0, err
+	}
+
+	return int(duration / 1000), nil
+}
+
+func SongPosition() (position float32, err error) {
 	position, err = player.MediaPosition()
 	if err != nil {
 		log.Println("Error getting position:", err)
 		return
 	}
 
-	return length, position, nil
+	return position, nil
 }
 
 // sets the volume (0–100)

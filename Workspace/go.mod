@@ -10,6 +10,11 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+)
+
+require (
 	github.com/adrg/libvlc-go/v3 v3.1.6
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect

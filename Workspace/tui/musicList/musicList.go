@@ -198,6 +198,8 @@ func New(sharedState *SharedState.SharedState) Model {
 		{"Comfortably Numb", "6:22"},
 	}
 
+	// rows := connection.ConnectSongs()
+
 	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
 
