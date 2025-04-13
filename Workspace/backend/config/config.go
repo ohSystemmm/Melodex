@@ -33,7 +33,6 @@ type Design struct {
 	Background string `toml:"background"`
 }
 
-// if err, notify-send
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
