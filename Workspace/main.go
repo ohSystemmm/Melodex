@@ -1,18 +1,19 @@
 package main
 
 import (
-	"Melodex/TUI"
 	"fmt"
 	"os"
+
+	tui "Melodex/tui"
 )
 
 func main() {
-	TUI.Application()
+	tui.Application()
 	greeter()
 }
 
 func greeter() {
-	file, err := os.ReadFile("Assets/Greeter.txt")
+	file, err := os.ReadFile("assets/usBTW.txt")
 	if err != nil {
 		fmt.Println(err)
 	}

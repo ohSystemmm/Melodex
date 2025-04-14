@@ -1,4 +1,4 @@
-package SharedState
+package sharedState
 
 import "log"
 
