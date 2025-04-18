@@ -7,42 +7,58 @@ import (
 	vlc "github.com/adrg/libvlc-go/v3"
 )
 
-var (
+type VlcPlayer struct {
 	player *vlc.Player
 	media  *vlc.Media
+	logger *log.Logger
+}
+
+var (
+	v VlcPlayer
 )
+
+func SetLogger(newLogger *log.Logger) {
+	v.logger = newLogger
+}
 
 // Creates a new VLC player instance
 func Init() {
 	if err := vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Fatal(err)
+		v.logger.Println(err)
 	}
 
 	var err error
-	player, err = vlc.NewPlayer()
+	v.player, err = vlc.NewPlayer()
 	if err != nil {
-		log.Fatal(err)
+		v.logger.Println(err)
 	}
-
 }
 
 // loads and plays songs
 func PlaySong(song string) {
 	var err error
-	media, err = player.LoadMediaFromPath(song)
+	v.media, err = v.player.LoadMediaFromPath(song)
 	if err != nil {
-		log.Fatal(err)
+		v.logger.Println(err)
 	}
 
-	err = player.Play()
+	err = v.player.Play()
 	if err != nil {
-		log.Fatal(err)
+		v.logger.Println(err)
 	}
+}
+
+// Returns wether the Player is Playing
+func IsPlaying() bool {
+	return v.player.IsPlaying()
 }
 
 // toggles pause and play
 func PauseSong() {
-	player.SetPause(!player.IsPlaying())
+	err := v.player.SetPause(IsPlaying())
+	if err != nil {
+		v.logger.Println(err)
+	}
 }
 
 // Metadata stuff, not implemented yet, to lazy rn lmfao
@@ -50,19 +66,20 @@ func Metadata() {
 }
 
 // returns song length
+// NOTE the purpose of directory is questionable
 func SongLength(directory string, song string) (length int, err error) {
-	if media == nil {
-		media, err = player.LoadMediaFromPath(song)
+	if v.media == nil {
+		v.media, err = v.player.LoadMediaFromPath(song)
 		if err != nil {
-			log.Println("Error loading media:", err)
+			v.logger.Println("Error loading media:", err)
 			return 0, err
 		}
-		log.Println("Media loaded successfully.")
+		v.logger.Println("Media loaded successfully.")
 	}
 
-	duration, err := media.Duration()
+	duration, err := v.media.Duration()
 	if err != nil {
-		log.Println("Error getting media duration:", err)
+		v.logger.Println("Error getting media duration:", err)
 		return 0, err
 	}
 
@@ -70,9 +87,9 @@ func SongLength(directory string, song string) (length int, err error) {
 }
 
 func SongPosition() (position float32, err error) {
-	position, err = player.MediaPosition()
+	position, err = v.player.MediaPosition()
 	if err != nil {
-		log.Println("Error getting position:", err)
+		v.logger.Println("Error getting position:", err)
 		return
 	}
 
@@ -81,55 +98,55 @@ func SongPosition() (position float32, err error) {
 
 // sets the volume (0–100)
 func SetVolume(volume int) {
-	if err := player.SetVolume(volume); err != nil {
-		log.Println("Failed to set volume:", err)
+	if err := v.player.SetVolume(volume); err != nil {
+		v.logger.Println("Failed to set volume:", err)
 	}
 }
 
 // toggles mute
 func SetMute() {
-	isMuted, err := player.IsMuted()
+	isMuted, err := v.player.IsMuted()
 	if err != nil {
-		log.Println("Failed to get mute status:", err)
+		v.logger.Println("Failed to get mute status:", err)
 		return
 	}
 
-	err = player.SetMute(!isMuted)
+	err = v.player.SetMute(!isMuted)
 	if err != nil {
-		log.Println("Failed to toggle mute:", err)
+		v.logger.Println("Failed to toggle mute:", err)
 	}
 }
 
 // sets playback position (0.0–1.0) - float32 btw
 func SetMediaPosition(pos float32) {
-	if err := player.SetMediaPosition(pos); err != nil {
-		log.Println("Failed to set position:", err)
+	if err := v.player.SetMediaPosition(pos); err != nil {
+		v.logger.Println("Failed to set position:", err)
 	}
 }
 
 // Sleeps and stops playback after time is up
 func Sleep(duration time.Duration) {
-	log.Printf("Sleeping for %s...\n", duration)
+	v.logger.Printf("Sleeping for %s...\n", duration)
 	time.Sleep(duration)
 
 	log.Println("Sleep complete. Stopping playback.")
 	Stop()
 }
 
-// stops playback
+// Stops playback
 func Stop() {
-	if player != nil {
-		player.Stop()
+	if v.player != nil {
+		v.player.Stop()
 	}
-	if media != nil {
-		media.Release()
+	if v.media != nil {
+		v.media.Release()
 	}
 }
 
-// cleanup to release resources
-func Cleanup() {
-	if player != nil {
-		player.Release()
+// Cleanup to release resources
+func (v VlcPlayer) Cleanup() {
+	if v.player != nil {
+		v.player.Release()
 	}
 	vlc.Release()
 }
