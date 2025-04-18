@@ -1,11 +1,11 @@
 package musicList
 
 import (
-	"log"
-	"os"
 	"path/filepath"
 	"strings"
 
+	"Melodex/backend/music"
+	"Melodex/connection"
 	SharedState "Melodex/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -28,8 +28,6 @@ type Model struct {
 	width  int
 	height int
 }
-
-var tempPath = ""
 
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
@@ -71,9 +69,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
+				music.SetVolume(50)
+				// music.PlaySong()
 				m.sharedState.Paused = false
 			case " ":
-
+				music.PauseSong()
+				m.sharedState.Paused = !music.IsPlaying()
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -185,20 +186,20 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := []table.Row{
-		{"Bohemian Rhapsody", "5:55"},
-		{"Imagine", "3:03"},
-		{"Hotel California", "6:30"},
-		{"Stairway to Heaven", "8:02"},
-		{"Smells Like Teen Spirit", "5:01"},
-		{"Sweet Child O' Mine", "5:56"},
-		{"Billie Jean", "4:54"},
-		{"Wonderwall", "4:18"},
-		{"Hey Jude", "7:11"},
-		{"Comfortably Numb", "6:22"},
-	}
+	// rows := []table.Row{
+	// 	{"Bohemian Rhapsody", "5:55"},
+	// 	{"Imagine", "3:03"},
+	// 	{"Hotel California", "6:30"},
+	// 	{"Stairway to Heaven", "8:02"},
+	// 	{"Smells Like Teen Spirit", "5:01"},
+	// 	{"Sweet Child O' Mine", "5:56"},
+	// 	{"Billie Jean", "4:54"},
+	// 	{"Wonderwall", "4:18"},
+	// 	{"Hey Jude", "7:11"},
+	// 	{"Comfortably Numb", "6:22"},
+	// }
 
-	// rows := connection.ConnectSongs()
+	rows := connection.ConnectSongs()
 
 	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
@@ -233,16 +234,8 @@ func New(sharedState *SharedState.SharedState) Model {
 	// FIX find a way to somehow seperate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
-	trimmedPath := strings.TrimRight(tempPath, "/")
+	trimmedPath := strings.TrimRight("", "/")
 	playlistName := filepath.Base(trimmedPath)
-
-	// Log files
-	file, err := os.Create("log.txt")
-	if err != nil {
-		log.Fatalf("Creating the Log file failed")
-	}
-
-	sharedState.Logger = log.New(file, "List", log.LstdFlags)
 
 	return Model{
 		sharedState:    sharedState,

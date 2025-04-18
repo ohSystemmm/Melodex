@@ -1,27 +1,33 @@
-package TUI
+package tui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 
+	"Melodex/backend/music"
 	"Melodex/tui/musicList"
-	MusicPlayer "Melodex/tui/musicPlayer"
-	SharedState "Melodex/tui/sharedState"
+	"Melodex/tui/musicPlayer"
+	sharedState "Melodex/tui/sharedState"
 
 	"fmt"
+	"log"
 	"os"
 )
 
 type MainModel struct {
-	SharedState *SharedState.SharedState
+	sharedState *sharedState.SharedState
 
 	MList   musicList.Model
-	MPlayer MusicPlayer.Model
+	MPlayer musicPlayer.Model
 
 	width  int
 	height int
 }
+
+var (
+	m MainModel
+)
 
 func (m MainModel) Init() tea.Cmd {
 	return tea.Batch(m.MList.Init(), m.MPlayer.Init())
@@ -42,7 +48,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		var mPlayer tea.Model
 		mPlayer, cmd = m.MPlayer.Update(msg)
-		m.MPlayer = mPlayer.(MusicPlayer.Model)
+		m.MPlayer = mPlayer.(musicPlayer.Model)
 		cmds = append(cmds, cmd)
 	default:
 		var mList tea.Model
@@ -52,7 +58,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		var mPlayer tea.Model
 		mPlayer, cmd = m.MPlayer.Update(msg)
-		m.MPlayer = mPlayer.(MusicPlayer.Model)
+		m.MPlayer = mPlayer.(musicPlayer.Model)
 		cmds = append(cmds, cmd)
 	}
 
@@ -67,15 +73,28 @@ func (m MainModel) View() string {
 	)
 }
 
+func initLogger(shs *sharedState.SharedState) {
+	// Log files
+	file, err := os.Create("log.txt")
+	if err != nil {
+		log.Println("Creating the Log file failed")
+	}
+	shs.Logger = log.New(file, "List", log.LstdFlags)
+}
+
 func Application() {
-	sharedState := SharedState.GetGlobalState()
+	shs := sharedState.GetGlobalState()
+	initLogger(shs)
 
 	mainModel := MainModel{
-		SharedState: sharedState,
+		sharedState: shs,
 
-		MList:   musicList.New(sharedState),
-		MPlayer: MusicPlayer.New(sharedState),
+		MList:   musicList.New(shs),
+		MPlayer: musicPlayer.New(shs),
 	}
+
+	music.SetLogger(shs.Logger)
+	music.Init()
 
 	bzone.NewGlobal()
 	p := tea.NewProgram(

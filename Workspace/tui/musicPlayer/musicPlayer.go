@@ -1,7 +1,9 @@
-package MusicPlayer
+package musicPlayer
 
 import (
-	SharedState "Melodex/tui/sharedState"
+	"Melodex/backend/music"
+	"Melodex/tui/sharedState"
+
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,17 +14,19 @@ import (
 )
 
 type Model struct {
-	sharedState *SharedState.SharedState
+	sharedState *sharedState.SharedState
 	progressBar progress.Model
 
 	width  int
 	height int
 
-	title           string
-	artist          string
-	album           string
-	length          int
-	progress        int
+	songFile string
+	title    string
+	artist   string
+	album    string
+	length   int
+	// In percent
+	progress        float32
 	shuffling       bool
 	looping         int
 	selectedPreview bool
@@ -49,13 +53,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "right":
-				m.progress = min(m.progress+1, m.length)
+				// m.progress = min(m.progress+1, m.length)
 			case "left":
-				m.progress = max(m.progress-1, 0)
+				// m.progress = max(m.progress-1, 0)
 			// case "shift+right":
 			// 	// TODO Next Song
 			// case "shift+left":
 			// 	// TODO Previous Song
+			case "enter":
+				m.title = music.GetSongName()
+				m.artist = music.GetSongArtist()
+
+				var err error
+				m.length, err = music.SongLength(m.songFile, m.songFile)
+				if err != nil {
+					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				}
+				m.progress, err = music.SongPosition()
+				if err != nil {
+					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				}
 			case ",":
 				m.shuffling = !m.shuffling
 			case ".":
@@ -76,9 +93,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	percent := float64(m.progress) / float64(m.length)
-	currentTime := formatTime(m.progress)
+	percent := float64(m.progress)
 	totalTime := formatTime(m.length)
+	currentTime := formatTime(int(float32(m.progress) * float32(m.length)))
 
 	var elements = []string{}
 
@@ -232,7 +249,7 @@ func formatTime(seconds int) string {
 	return fmt.Sprintf("%02d:%02d", minutes, remainingSeconds)
 }
 
-func New(sharedState *SharedState.SharedState) Model {
+func New(sharedState *sharedState.SharedState) Model {
 	pb := progress.New(
 		progress.WithGradient("#00ffcc", "#00b8e6"),
 		// progress.WithDefaultGradient(),
@@ -242,7 +259,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		// title:       Services.GetSelectedSong(),
+		// songFile:    ,
 		title:       "Example Title",
 		artist:      "Example Artist",
 		album:       "Example Album",
