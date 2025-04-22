@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	SharedState "Melodex/tui/sharedState"
+	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -129,19 +129,8 @@ func (m Model) filterRows(searchTerm string) []table.Row {
 func (m Model) View() string {
 	searchBar := m.searchBar.View()
 
-	// NOTE May not be needed
 	// NOTE Possible chars for the diffrent filters
-	// filtering := " 󰉹 "
-	// filtering := " "
-	// filtering := " "
-
-	// filtering := " "
-	// filtering := " "
-
-	// filtering := "󱕉 "
-	// filtering := "󱕋 "
-	// filtering := "󱕊 "
-	// filtering := "󱕌 "
+	//  󰉹, , , , , 󱕉, 󱕋, 󱕊, 󱕌
 
 	// HACK This should be temporary and be in a seperate function (the rest of the function):
 	padding := m.totalListWidth - lipg.Width(" "+m.playlistName) - lipg.Width(searchBar) + 4
@@ -200,7 +189,6 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	// rows := connection.ConnectSongs()
 
-	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
 
 	for _, row := range rows {

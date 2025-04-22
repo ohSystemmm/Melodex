@@ -5,9 +5,9 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 
-	"Melodex/tui/musicList"
-	MusicPlayer "Melodex/tui/musicPlayer"
-	SharedState "Melodex/tui/sharedState"
+	"Melodex/src/tui/musicList"
+	MusicPlayer "Melodex/src/tui/musicPlayer"
+	SharedState "Melodex/src/tui/sharedState"
 
 	"fmt"
 	"os"

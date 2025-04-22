@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	tui "Melodex/tui"
+	"Melodex/src/backend/music"
+	tui "Melodex/src/tui"
 )
 
 func main() {
+	music.Init()
 	tui.Application()
 	greeter()
 }

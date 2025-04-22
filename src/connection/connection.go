@@ -1,8 +1,8 @@
 package connection
 
 import (
-	"Melodex/backend/music"
-	"Melodex/backend/playlist"
+	"Melodex/src/backend/music"
+	"Melodex/src/backend/playlist"
 	"fmt"
 	"log"
 	"os"
@@ -29,7 +29,6 @@ func ConnectSongs() []table.Row {
 		minutes := length / 60
 		seconds := length % 60
 
-		// Format the length as "mm:ss"
 		formattedLength := fmt.Sprintf("%02d:%02d", minutes, seconds)
 
 		row := table.Row{

@@ -1,7 +1,7 @@
 package MusicPlayer
 
 import (
-	SharedState "Melodex/tui/sharedState"
+	SharedState "Melodex/src/tui/sharedState"
 	"fmt"
 	"strconv"
 	"strings"
