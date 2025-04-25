@@ -2,14 +2,12 @@ package playlist
 
 import (
 	"os"
-	"path/filepath"
+	// "path/filepath"
 	"strings"
-
 	// "github.com/hcl/audioduration"
-
-	"github.com/go-audio/audio"
-	"github.com/go-audio/wav"
-	"github.com/mewkiz/flac"
+	// "github.com/go-audio/audio"
+	// "github.com/go-audio/wav"
+	// "github.com/mewkiz/flac"
 )
 
 var playlistname string
@@ -86,76 +84,76 @@ func GetAllSongs() []string {
 // 	return durations, nil
 // }
 
-// DurationOfAllSongs returns song durations in seconds for supported formats
-func DurationOfAllSongs(dir string) (map[string]float64, error) {
-	durations := make(map[string]float64)
-	supportedExts := []string{".mp3", ".m4a", ".flac", ".wav"}
+// // DurationOfAllSongs returns song durations in seconds for supported formats
+// func DurationOfAllSongs(dir string) (map[string]float64, error) {
+// 	durations := make(map[string]float64)
+// 	supportedExts := []string{".mp3", ".m4a", ".flac", ".wav"}
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return err
-		}
+// 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+// 		if err != nil || info.IsDir() {
+// 			return err
+// 		}
 
-		ext := strings.ToLower(filepath.Ext(path))
-		for _, supportedExt := range supportedExts {
-			if ext == supportedExt {
-				duration, err := getDuration(path, ext)
-				if err != nil {
-					return err
-				}
-				durations[filepath.Base(path)] = duration
-				break
-			}
-		}
-		return nil
-	})
+// 		ext := strings.ToLower(filepath.Ext(path))
+// 		for _, supportedExt := range supportedExts {
+// 			if ext == supportedExt {
+// 				duration, err := getDuration(path, ext)
+// 				if err != nil {
+// 					return err
+// 				}
+// 				durations[filepath.Base(path)] = duration
+// 				break
+// 			}
+// 		}
+// 		return nil
+// 	})
 
-	return durations, err
-}
+// 	return durations, err
+// }
 
-// getDuration handles format-specific duration extraction
-func getDuration(path string, ext string) (float64, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-	defer file.Close()
+// // getDuration handles format-specific duration extraction
+// func getDuration(path string, ext string) (float64, error) {
+// 	file, err := os.Open(path)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	defer file.Close()
 
-	switch ext {
-	case ".mp3":
-		decoder, err := audio.NewDecoder(file)
-		if err != nil {
-			return 0, err
-		}
-		return float64(decoder.Length()) / float64(decoder.SampleRate()*2*2), nil
+// 	switch ext {
+// 	case ".mp3":
+// 		decoder, err := audio.NewDecoder(file)
+// 		if err != nil {
+// 			return 0, err
+// 		}
+// 		return float64(decoder.Length()) / float64(decoder.SampleRate()*2*2), nil
 
-	case ".m4a":
-		// M4A/AAC support via go-audio
-		decoder := audio.NewDecoder(file)
-		if err := decoder.Decode(); err != nil {
-			return 0, err
-		}
-		return float64(decoder.NumFrames()) / float64(decoder.SampleRate()), nil
+// 	case ".m4a":
+// 		// M4A/AAC support via go-audio
+// 		decoder := audio.NewDecoder(file)
+// 		if err := decoder.Decode(); err != nil {
+// 			return 0, err
+// 		}
+// 		return float64(decoder.NumFrames()) / float64(decoder.SampleRate()), nil
 
-	case ".flac":
-		stream, err := flac.ParseFile(path)
-		if err != nil {
-			return 0, err
-		}
-		return float64(stream.Info.NSamples) / float64(stream.Info.SampleRate), nil
+// 	case ".flac":
+// 		stream, err := flac.ParseFile(path)
+// 		if err != nil {
+// 			return 0, err
+// 		}
+// 		return float64(stream.Info.NSamples) / float64(stream.Info.SampleRate), nil
 
-	case ".wav":
-		decoder := wav.NewDecoder(file)
-		if !decoder.IsValidFile() {
-			return 0, err
-		}
-		dur, _ := decoder.Duration()
-		return dur.Seconds(), nil
+// 	case ".wav":
+// 		decoder := wav.NewDecoder(file)
+// 		if !decoder.IsValidFile() {
+// 			return 0, err
+// 		}
+// 		dur, _ := decoder.Duration()
+// 		return dur.Seconds(), nil
 
-	default:
-		return 0, nil
-	}
-}
+// 	default:
+// 		return 0, nil
+// 	}
+// }
 
 func ShufflePlaylist(playlist []string) []string {
 	shuffeledplaylist := playlist

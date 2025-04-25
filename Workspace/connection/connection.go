@@ -1,8 +1,8 @@
 package connection
 
 import (
-	"Melodex/backend/playlist"
-	"fmt"
+	// "Melodex/backend/playlist"
+	// "fmt"
 
 	"github.com/charmbracelet/bubbles/table"
 )
@@ -42,23 +42,23 @@ import (
 
 func ConnectSongs() []table.Row {
 	var rows []table.Row
-	durations, err := playlist.DurationOfAllSongs("/path/to/songs")
-	if err != nil {
-		// handle error
-	}
-	for song, duration := range durations {
-		minutes := duration / 60
-		seconds := duration % 60
+	// durations, err := playlist.DurationOfAllSongs("/path/to/songs")
+	// if err != nil {
+	// 	// handle error
+	// }
+	// for song, duration := range durations {
+	// 	minutes := duration / 60
+	// 	seconds := duration % 60
 
-		// Format the duration as "mm:ss"
-		formattedDuration := fmt.Sprintf("%02d:%02d", minutes, seconds)
-		row := table.Row{
-			song,
-			formattedDuration,
-		}
+	// 	// Format the duration as "mm:ss"
+	// 	formattedDuration := fmt.Sprintf("%02d:%02d", minutes, seconds)
+	// 	row := table.Row{
+	// 		song,
+	// 		formattedDuration,
+	// 	}
 
-		rows = append(rows, row)
-	}
+	// 	rows = append(rows, row)
+	// }
 
 	return rows
 }
