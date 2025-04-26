@@ -23,7 +23,7 @@ func main() {
 
 	command := os.Args[1]
 	switch command {
-	case "init", "-i":
+	case "init", "i":
 	case "--version", "-v":
 		fmt.Println("Melodex version", version)
 		fmt.Println("Release date:", release)
