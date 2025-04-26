@@ -1,0 +1,10 @@
+Usage:
+  melodex <command> [options]
+
+Available Commands:
+  --config, -c    Open configuration options
+  --debug, -d     Enable debug mode
+  --help, -h      Show this help message
+  init, -i        Initialize Melodex
+  --playlist, -p  Use a specific playlist
+  --version, -v   Show version information

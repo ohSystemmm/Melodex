@@ -10,8 +10,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4
 )
 
-require github.com/vansante/go-ffprobe v1.1.0 // indirect
-
 require (
 	github.com/adrg/libvlc-go/v3 v3.1.6
 	github.com/atotto/clipboard v0.1.4 // indirect
