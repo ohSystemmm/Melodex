@@ -15,7 +15,7 @@ func main() {
 }
 
 func greeter() {
-	file, err := os.ReadFile("assets/usBTW.txt")
+	file, err := os.ReadFile("src/assets/usBTW.txt")
 	if err != nil {
 		fmt.Println(err)
 	}

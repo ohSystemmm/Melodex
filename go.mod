@@ -7,12 +7,10 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/lrstanley/bubblezone v0.0.0-20250404061050-e13639e27357
+	github.com/pelletier/go-toml/v2 v2.2.4
 )
 
-require (
-	github.com/BurntSushi/toml v1.5.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
-)
+require github.com/vansante/go-ffprobe v1.1.0 // indirect
 
 require (
 	github.com/adrg/libvlc-go/v3 v3.1.6
