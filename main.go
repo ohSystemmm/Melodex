@@ -8,6 +8,11 @@ import (
 	tui "Melodex/src/tui"
 )
 
+var (
+	version = "0.0.8"
+	release = "2025-XX-XX"
+)
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: melodex <command>")
@@ -19,19 +24,22 @@ func main() {
 	command := os.Args[1]
 	switch command {
 	case "init", "-i":
-		fmt.Println("Initializing Melodex...")
 	case "--version", "-v":
-		fmt.Println("Melodex version 0.1.0")
+		fmt.Println("Melodex version", version)
+		fmt.Println("Release date:", release)
+		fmt.Println("Use --help for a list of available commands.")
 		return
 	case "--help", "-h":
 		help()
-		return
 	case "--playlist", "-p":
-		fmt.Println("Playlist option selected")
+		// TODO: Opens melodex with the specified playlist
 	case "--config", "-c":
-		fmt.Println("Config option selected")
+		// TODO: Opens melodex with the specified config
 	case "--debug", "-d":
-		fmt.Println("Debug option selected")
+		// TODO: Opens melodex in debug mode
+	case "--default-config", "-dc":
+		// TODO: Regenerate the default config and opens it
+
 	default:
 		fmt.Println("Unknown command:", command)
 		fmt.Println("Use --help for a list of available commands.")
