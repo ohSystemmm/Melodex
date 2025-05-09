@@ -3,17 +3,28 @@ package connection
 import (
 	"Melodex/src/backend/music"
 	"log"
-	"os"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
+var (
+	playlistPath string
+)
+
 // Services but name is cooler
 
-var tempPlaylist = "/home/" + os.Getenv("USER") + "/Best_Songs_Ever-ohSystemmm/"
+func GetPlaylistPath(param string) {
+	playlistPath = param
+}
 
 func ConnectSongs() []table.Row {
-	rows, err := music.Songlist(tempPlaylist)
+
+	if playlistPath == "" {
+		// playlistPath = music.GetDefaultPlaylistPath()
+		return nil
+	}
+
+	rows, err := music.Songlist(playlistPath)
 	if err != nil {
 		log.Println("Error connecting songs:", err)
 		return nil
