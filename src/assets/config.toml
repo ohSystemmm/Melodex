@@ -1,0 +1,16 @@
+[general]
+user = "ohSystemmm"
+default_playlist = "/home/ohSystemmm/Music1"
+default_volume = "50%"
+
+[playlist]
+playlists = [
+  "/home/ohSystemmm/Music1",
+  "/home/ohSystemmm/Music2",
+  "/home/ohSystemmm/Music3"
+]
+
+[design]
+border = "#000000"
+foreground = "#000000"
+background = "#000000"

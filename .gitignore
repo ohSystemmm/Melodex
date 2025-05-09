@@ -1,8 +1,5 @@
-# JetBrains
-.idea/
-
-# Testing Music
-TestMusic/
-
-# The log.txt
+# log.txt
 log.txt
+
+# melodex binary
+melodex
