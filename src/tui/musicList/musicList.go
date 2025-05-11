@@ -98,13 +98,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetColumns(newColumns)
 
 	case tea.MouseMsg:
-		switch tea.MouseEvent(msg).Button {
-		case tea.MouseButtonWheelUp:
-			m.list.MoveUp(1)
-		case tea.MouseButtonWheelDown:
-			m.list.MoveDown(1)
+		if msg.Y >= 4 && msg.Y <= m.height-1 && msg.X >= 1 && msg.X <= m.totalListWidth+4 {
+			switch tea.MouseEvent(msg).Button {
+			case tea.MouseButtonWheelUp:
+				m.list.MoveUp(1)
+			case tea.MouseButtonWheelDown:
+				m.list.MoveDown(1)
+			}
+			switch tea.MouseAction(msg.Action) {
+			case tea.MouseAction(tea.MouseButtonLeft):
+				rowIdx := msg.Y - 4
+				m.list.SetCursor(rowIdx)
+			}
 		}
-
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
