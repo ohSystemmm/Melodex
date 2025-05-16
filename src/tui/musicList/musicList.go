@@ -1,6 +1,7 @@
 package musicList
 
 import (
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
 	"log"
 	"os"
 	"path/filepath"
@@ -8,6 +9,14 @@ import (
 
 	"Melodex/src/connection"
 	SharedState "Melodex/src/tui/sharedState"
+========
+	"path/filepath"
+	"strings"
+
+	"Melodex/backend/music"
+	"Melodex/connection"
+	SharedState "Melodex/tui/sharedState"
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -30,8 +39,11 @@ type Model struct {
 	height int
 }
 
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
 var tempPath = ""
 
+========
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
 	return nil
@@ -72,9 +84,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
 				m.sharedState.Paused = false
 			case " ":
 
+========
+				music.SetVolume(50)
+				// music.PlaySong()
+				m.sharedState.Paused = false
+			case " ":
+				music.PauseSong()
+				m.sharedState.Paused = !music.IsPlaying()
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -236,9 +257,10 @@ func New(sharedState *SharedState.SharedState) Model {
 	// FIX find a way to somehow seperate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
-	trimmedPath := strings.TrimRight(tempPath, "/")
+	trimmedPath := strings.TrimRight("", "/")
 	playlistName := filepath.Base(trimmedPath)
 
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
 	// Log files
 	file, err := os.Create("log.txt")
 	if err != nil {
@@ -247,6 +269,8 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	sharedState.Logger = log.New(file, "List", log.LstdFlags)
 
+========
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 	return Model{
 		sharedState:    sharedState,
 		list:           t,
