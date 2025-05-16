@@ -12,11 +12,11 @@ import (
 
 var (
 	version = "0.3.1"
-	release = "2025-XX-XX"
+	release = "2025-XX-XX-ALPHA"
 )
 
 func main() {
-	printGreeter()
+	printFileContent("src/assets/usBTW.txt")
 
 	if len(os.Args) < 2 {
 		startApp()
@@ -64,14 +64,14 @@ func main() {
 		// TODO: Regenerate the default config and opens it
 		startApp()
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown command: ", command)
+		fmt.Println("Unknown command: ", command)
 		fmt.Println("Use --help for a list of available commands.")
 		os.Exit(1)
 	}
 }
 
 func handlePaths(argument string) string {
-	argument = strings.TrimSpace(argument) // Trim leading/trailing spaces
+	argument = strings.TrimSpace(argument)
 	if strings.HasPrefix(argument, "\"") && strings.HasSuffix(argument, "\"") && len(argument) > 1 {
 		argument = argument[1 : len(argument)-1]
 	} else if strings.HasPrefix(argument, "~/") {
@@ -90,15 +90,11 @@ func startApp() {
 	tui.Application()
 }
 
-func printGreeter() {
-	printFileContent("src/assets/usBTW.txt")
-}
-
 func printFileContent(filePath string) {
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading file:", err)
-		return // Don't os.Exit here, just print error
+	if content, err := os.ReadFile(filePath); err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	} else {
+		fmt.Println("\n\033[36m" + string(content) + "\033[0m\n")
 	}
-	fmt.Println("\n\033[36m" + string(content) + "\033[0m\n")
 }

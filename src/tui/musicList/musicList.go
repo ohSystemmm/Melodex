@@ -175,18 +175,6 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	// rows := []table.Row{
-	// 	{"Bohemian Rhapsody", "5:55"},
-	// 	{"Imagine", "3:03"},
-	// 	{"Hotel California", "6:30"},
-	// 	{"Stairway to Heaven", "8:02"},
-	// 	{"Smells Like Teen Spirit", "5:01"},
-	// 	{"Sweet Child O' Mine", "5:56"},
-	// 	{"Billie Jean", "4:54"},
-	// 	{"Wonderwall", "4:18"},
-	// 	{"Hey Jude", "7:11"},
-	// 	{"Comfortably Numb", "6:22"},
-	// }
 
 	rows := connection.ConnectSongs()
 

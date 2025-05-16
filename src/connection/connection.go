@@ -19,10 +19,9 @@ func GetPlaylistPath(param string) {
 
 func ConnectSongs() []table.Row {
 
-	if playlistPath == "" {
-		// playlistPath = music.GetDefaultPlaylistPath()
-		return nil
-	}
+	// if playlistPath == "" {
+	// 	playlistPath = music.GetDefaultPlaylistPath()
+	// }
 
 	rows, err := music.Songlist(playlistPath)
 	if err != nil {
