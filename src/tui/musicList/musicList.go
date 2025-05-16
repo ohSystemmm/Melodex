@@ -1,12 +1,22 @@
 package musicList
 
 import (
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"Melodex/src/connection"
+	SharedState "Melodex/src/tui/sharedState"
+========
 	"path/filepath"
 	"strings"
 
 	"Melodex/backend/music"
 	"Melodex/connection"
 	SharedState "Melodex/tui/sharedState"
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -29,6 +39,11 @@ type Model struct {
 	height int
 }
 
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
+var tempPath = ""
+
+========
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
 	return nil
@@ -69,12 +84,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q":
 				return m, tea.Quit
 			case "enter":
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
+				m.sharedState.Paused = false
+			case " ":
+
+========
 				music.SetVolume(50)
 				// music.PlaySong()
 				m.sharedState.Paused = false
 			case " ":
 				music.PauseSong()
 				m.sharedState.Paused = !music.IsPlaying()
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -86,10 +107,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetHeight(m.height - 4)
 		newColumns := m.list.Columns()
 
-		elseWidth := 68
+		elseWidth := 70
 		titleWidth := max(m.width-elseWidth, 33)
 		// lengthWidth := int(0.1 * float64(availableWidth))
-		lengthWidth := 6
+		lengthWidth := 8
 
 		newColumns[0].Width = titleWidth
 		newColumns[1].Width = lengthWidth
@@ -97,6 +118,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.totalListWidth = titleWidth + lengthWidth
 		m.list.SetColumns(newColumns)
 
+	case tea.MouseMsg:
+		if msg.Y >= 4 && msg.Y <= m.height-1 && msg.X >= 1 && msg.X <= m.totalListWidth+4 {
+			switch tea.MouseEvent(msg).Button {
+			case tea.MouseButtonWheelUp:
+				m.list.MoveUp(1)
+			case tea.MouseButtonWheelDown:
+				m.list.MoveDown(1)
+			}
+			switch tea.MouseAction(msg.Action) {
+			case tea.MouseAction(tea.MouseButtonLeft):
+				rowIdx := msg.Y - 4
+				m.list.SetCursor(rowIdx)
+			}
+		}
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
@@ -130,19 +165,8 @@ func (m Model) filterRows(searchTerm string) []table.Row {
 func (m Model) View() string {
 	searchBar := m.searchBar.View()
 
-	// NOTE May not be needed
 	// NOTE Possible chars for the diffrent filters
-	// filtering := " 󰉹 "
-	// filtering := " "
-	// filtering := " "
-
-	// filtering := " "
-	// filtering := " "
-
-	// filtering := "󱕉 "
-	// filtering := "󱕋 "
-	// filtering := "󱕊 "
-	// filtering := "󱕌 "
+	//  󰉹, , , , , 󱕉, 󱕋, 󱕊, 󱕌
 
 	// HACK This should be temporary and be in a seperate function (the rest of the function):
 	padding := m.totalListWidth - lipg.Width(" "+m.playlistName) - lipg.Width(searchBar) + 4
@@ -201,7 +225,6 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	rows := connection.ConnectSongs()
 
-	// longestTitle, longestTime := 98, 15
 	longestTitle, longestTime := 35, 6
 
 	for _, row := range rows {
@@ -237,6 +260,17 @@ func New(sharedState *SharedState.SharedState) Model {
 	trimmedPath := strings.TrimRight("", "/")
 	playlistName := filepath.Base(trimmedPath)
 
+<<<<<<<< HEAD:src/tui/musicList/musicList.go
+	// Log files
+	file, err := os.Create("log.txt")
+	if err != nil {
+		log.Fatalf("Creating the Log file failed")
+	}
+
+	sharedState.Logger = log.New(file, "List", log.LstdFlags)
+
+========
+>>>>>>>> main:Workspace/tui/musicList/musicList.go
 	return Model{
 		sharedState:    sharedState,
 		list:           t,
