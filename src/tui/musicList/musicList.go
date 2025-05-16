@@ -9,6 +9,8 @@ import (
 	"Melodex/src/connection"
 	SharedState "Melodex/src/tui/sharedState"
 
+	"Melodex/src/backend/music"
+
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,8 +31,6 @@ type Model struct {
 	width  int
 	height int
 }
-
-var tempPath = ""
 
 // Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
@@ -73,8 +73,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case "enter":
 				m.sharedState.Paused = false
+			// case " ":
+			// 	music.SetVolume(50)
+			// 	// music.PlaySong()
+			// 	m.sharedState.Paused = false
 			case " ":
-
+				music.PauseSong()
+				// m.sharedState.Paused = !music.IsPlaying()
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -86,10 +91,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetHeight(m.height - 4)
 		newColumns := m.list.Columns()
 
-		elseWidth := 68
+		elseWidth := 70
 		titleWidth := max(m.width-elseWidth, 33)
 		// lengthWidth := int(0.1 * float64(availableWidth))
-		lengthWidth := 6
+		lengthWidth := 8
 
 		newColumns[0].Width = titleWidth
 		newColumns[1].Width = lengthWidth
@@ -97,6 +102,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.totalListWidth = titleWidth + lengthWidth
 		m.list.SetColumns(newColumns)
 
+	case tea.MouseMsg:
+		if msg.Y >= 4 && msg.Y <= m.height-1 && msg.X >= 1 && msg.X <= m.totalListWidth+4 {
+			switch tea.MouseEvent(msg).Button {
+			case tea.MouseButtonWheelUp:
+				m.list.MoveUp(1)
+			case tea.MouseButtonWheelDown:
+				m.list.MoveDown(1)
+			}
+			switch tea.MouseAction(msg.Action) {
+			case tea.MouseAction(tea.MouseButtonLeft):
+				rowIdx := msg.Y - 4
+				m.list.SetCursor(rowIdx)
+			}
+		}
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
@@ -175,6 +194,18 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
+	// rows := []table.Row{
+	// 	{"Bohemian Rhapsody", "5:55"},
+	// 	{"Imagine", "3:03"},
+	// 	{"Hotel California", "6:30"},
+	// 	{"Stairway to Heaven", "8:02"},
+	// 	{"Smells Like Teen Spirit", "5:01"},
+	// 	{"Sweet Child O' Mine", "5:56"},
+	// 	{"Billie Jean", "4:54"},
+	// 	{"Wonderwall", "4:18"},
+	// 	{"Hey Jude", "7:11"},
+	// 	{"Comfortably Numb", "6:22"},
+	// }
 
 	rows := connection.ConnectSongs()
 
@@ -210,7 +241,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	// FIX find a way to somehow seperate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
-	trimmedPath := strings.TrimRight(tempPath, "/")
+	trimmedPath := strings.TrimRight("", "/")
 	playlistName := filepath.Base(trimmedPath)
 
 	// Log files

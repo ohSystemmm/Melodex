@@ -1,6 +1,8 @@
 package sharedState
 
-import "log"
+import (
+	"log"
+)
 
 type SharedState struct {
 	Searching bool
