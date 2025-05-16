@@ -5,31 +5,25 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 
-	"Melodex/src/tui/musicList"
-	MusicPlayer "Melodex/src/tui/musicPlayer"
-
 	ApplicationController "Melodex/src/tui/applicationController"
 	MusicList "Melodex/src/tui/musicList"
+	MusicPlayer "Melodex/src/tui/musicPlayer"
 	SharedState "Melodex/src/tui/sharedState"
 
 	"fmt"
-	"log"
 	"os"
 )
 
 type MainModel struct {
-	sharedState *sharedState.SharedState
-	MList   musicList.Model
-	MPlayer musicPlayer.Model
+	SharedState *SharedState.SharedState
 
+	MList       MusicList.Model
+	MPlayer     MusicPlayer.Model
+	AController ApplicationController.Model
 
 	width  int
 	height int
 }
-
-var (
-	m MainModel
-)
 
 func (m MainModel) Init() tea.Cmd {
 	return tea.Batch(m.MList.Init(), m.MPlayer.Init())
@@ -45,12 +39,12 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		var mList tea.Model
 		mList, cmd = m.MList.Update(msg)
-		m.MList = mList.(musicList.Model)
+		m.MList = mList.(MusicList.Model)
 		cmds = append(cmds, cmd)
 
 		var mPlayer tea.Model
 		mPlayer, cmd = m.MPlayer.Update(msg)
-		m.MPlayer = mPlayer.(musicPlayer.Model)
+		m.MPlayer = mPlayer.(MusicPlayer.Model)
 		cmds = append(cmds, cmd)
 
 		var aController tea.Model
@@ -60,12 +54,12 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	default:
 		var mList tea.Model
 		mList, cmd = m.MList.Update(msg)
-		m.MList = mList.(musicList.Model)
+		m.MList = mList.(MusicList.Model)
 		cmds = append(cmds, cmd)
 
 		var mPlayer tea.Model
 		mPlayer, cmd = m.MPlayer.Update(msg)
-		m.MPlayer = mPlayer.(musicPlayer.Model)
+		m.MPlayer = mPlayer.(MusicPlayer.Model)
 		cmds = append(cmds, cmd)
 
 		var aController tea.Model
@@ -81,7 +75,11 @@ func (m MainModel) View() string {
 	return lipg.JoinHorizontal(
 		lipg.Top,
 		m.MList.View(),
-		m.MPlayer.View(),
+		lipg.JoinVertical(
+			lipg.Left,
+			m.MPlayer.View(),
+			m.AController.View(),
+		),
 	)
 }
 
@@ -91,41 +89,10 @@ func Application() {
 	mainModel := MainModel{
 		SharedState: sharedState,
 
-		MList:   musicList.New(sharedState),
-		MPlayer: MusicPlayer.New(sharedState),
-	}
-
-		lipg.JoinVertical(
-			lipg.Left,
-			m.MPlayer.View(),
-			m.AController.View(),
-		),
-	)
-}
-
-func initLogger(shs *sharedState.SharedState) {
-	// Log files
-	file, err := os.Create("log.txt")
-	if err != nil {
-		log.Println("Creating the Log file failed")
-	}
-	shs.Logger = log.New(file, "List", log.LstdFlags)
-}
-
-func Application() {
-	shs := sharedState.GetGlobalState()
-	initLogger(shs)
-
-	mainModel := MainModel{
-		sharedState: shs,
-
 		MList:       MusicList.New(sharedState),
 		MPlayer:     MusicPlayer.New(sharedState),
 		AController: ApplicationController.New(),
 	}
-
-	music.SetLogger(shs.Logger)
-	music.Init()
 
 	bzone.NewGlobal()
 	p := tea.NewProgram(

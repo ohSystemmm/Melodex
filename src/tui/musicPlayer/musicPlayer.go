@@ -65,10 +65,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.artist = music.GetSongArtist()
 
 				var err error
-				m.length, err = music.SongLength(m.songFile, m.songFile)
-				if err != nil {
-					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				}
+				m.length = 12
+				// m.length, err = music.SongLength(m.songFile, m.songFile)
+				// if err != nil {
+				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				// }
 				m.progress, err = music.SongPosition()
 				if err != nil {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
