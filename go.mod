@@ -6,28 +6,21 @@ require (
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.1.0
-<<<<<<< HEAD:go.mod
-	github.com/lrstanley/bubblezone v0.0.0-20250404061050-e13639e27357
-=======
 	github.com/go-audio/audio v1.0.0
 	github.com/go-audio/wav v1.1.0
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/lrstanley/bubblezone v0.0.0-20250404061050-e13639e27357
 	github.com/mewkiz/flac v1.0.12
->>>>>>> main:Workspace/go.mod
 	github.com/pelletier/go-toml/v2 v2.2.4
 )
 
 require (
-<<<<<<< HEAD:go.mod
-=======
 	github.com/go-audio/riff v1.0.0 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/mewkiz/pkg v0.0.0-20230226050401-4010bf0fec14 // indirect
 )
 
 require (
->>>>>>> main:Workspace/go.mod
 	github.com/adrg/libvlc-go/v3 v3.1.6
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect

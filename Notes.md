@@ -1,0 +1,3 @@
+- Shuffle, random even after playlist cycle
+- volume decrease while calls, etc.
+- volume handling

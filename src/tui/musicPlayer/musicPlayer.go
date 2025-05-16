@@ -1,13 +1,9 @@
 package musicPlayer
 
 import (
-<<<<<<<< HEAD:src/tui/musicPlayer/musicPlayer.go
-	SharedState "Melodex/src/tui/sharedState"
-========
-	"Melodex/backend/music"
-	"Melodex/tui/sharedState"
+	"Melodex/src/backend/music"
+	"Melodex/src/tui/sharedState"
 
->>>>>>>> main:Workspace/tui/musicPlayer/musicPlayer.go
 	"fmt"
 	"strconv"
 	"strings"

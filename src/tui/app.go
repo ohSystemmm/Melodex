@@ -5,17 +5,12 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
 
-<<<<<<<< HEAD:src/tui/app.go
+	"Melodex/src/tui/musicList"
+	MusicPlayer "Melodex/src/tui/musicPlayer"
+
 	ApplicationController "Melodex/src/tui/applicationController"
 	MusicList "Melodex/src/tui/musicList"
-	MusicPlayer "Melodex/src/tui/musicPlayer"
 	SharedState "Melodex/src/tui/sharedState"
-========
-	"Melodex/backend/music"
-	"Melodex/tui/musicList"
-	"Melodex/tui/musicPlayer"
-	sharedState "Melodex/tui/sharedState"
->>>>>>>> main:Workspace/tui/app.go
 
 	"fmt"
 	"log"
@@ -24,15 +19,9 @@ import (
 
 type MainModel struct {
 	sharedState *sharedState.SharedState
-
-<<<<<<<< HEAD:src/tui/app.go
-	MList       MusicList.Model
-	MPlayer     MusicPlayer.Model
-	AController ApplicationController.Model
-========
 	MList   musicList.Model
 	MPlayer musicPlayer.Model
->>>>>>>> main:Workspace/tui/app.go
+
 
 	width  int
 	height int
@@ -92,6 +81,20 @@ func (m MainModel) View() string {
 	return lipg.JoinHorizontal(
 		lipg.Top,
 		m.MList.View(),
+		m.MPlayer.View(),
+	)
+}
+
+func Application() {
+	sharedState := SharedState.GetGlobalState()
+
+	mainModel := MainModel{
+		SharedState: sharedState,
+
+		MList:   musicList.New(sharedState),
+		MPlayer: MusicPlayer.New(sharedState),
+	}
+
 		lipg.JoinVertical(
 			lipg.Left,
 			m.MPlayer.View(),
@@ -116,14 +119,9 @@ func Application() {
 	mainModel := MainModel{
 		sharedState: shs,
 
-<<<<<<<< HEAD:src/tui/app.go
 		MList:       MusicList.New(sharedState),
 		MPlayer:     MusicPlayer.New(sharedState),
 		AController: ApplicationController.New(),
-========
-		MList:   musicList.New(shs),
-		MPlayer: musicPlayer.New(shs),
->>>>>>>> main:Workspace/tui/app.go
 	}
 
 	music.SetLogger(shs.Logger)
