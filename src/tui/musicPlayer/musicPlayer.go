@@ -26,7 +26,7 @@ type Model struct {
 	album    string
 	length   int
 	// In percent
-	progress        float32
+	progress        int
 	shuffling       bool
 	looping         int
 	selectedPreview bool
@@ -53,24 +53,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "right":
-				// m.progress = min(m.progress+1, m.length)
+				m.progress = min(m.progress+1, m.length)
 			case "left":
-				// m.progress = max(m.progress-1, 0)
-			// case "shift+right":
+				m.progress = max(m.progress-1, 0)
+			case "shift+right":
 			// 	// TODO Next Song
-			// case "shift+left":
+			case "shift+left":
 			// 	// TODO Previous Song
 			case "enter":
 				m.title = music.GetSongName()
 				m.artist = music.GetSongArtist()
 
 				var err error
-				m.length = 12
 				// m.length, err = music.SongLength(m.songFile, m.songFile)
 				// if err != nil {
 				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				// }
-				m.progress, err = music.SongPosition()
+				// m.progress, err = music.SongPosition()
 				if err != nil {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				}
@@ -94,9 +93,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	percent := float64(m.progress)
+	percent := float64(m.progress) / float64(m.length)
 	totalTime := formatTime(m.length)
-	currentTime := formatTime(int(float32(m.progress) * float32(m.length)))
+	currentTime := formatTime(m.progress)
 
 	var elements = []string{}
 
@@ -265,7 +264,7 @@ func New(sharedState *sharedState.SharedState) Model {
 		artist:      "Example Artist",
 		album:       "Example Album",
 		length:      181,
-		progress:    53,
+		progress:    50,
 		progressBar: pb,
 		shuffling:   false,
 		looping:     0,
