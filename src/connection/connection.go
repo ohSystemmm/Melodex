@@ -10,7 +10,12 @@ import (
 
 // Services but name is cooler
 
-var tempPlaylist = "/home/" + os.Getenv("USER") + "/Music/"
+// var tempPlaylist = "/home/" + os.Getenv("USER") + "/Music/"
+var tempPlaylist = "/home/" + os.Getenv("USER") + "/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/"
+
+func GetPlaylistPath() string {
+	return tempPlaylist
+}
 
 func ConnectSongs() []table.Row {
 	rows, err := music.Songlist(tempPlaylist)

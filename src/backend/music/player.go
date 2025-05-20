@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
-
-	"os"
 
 	vlc "github.com/adrg/libvlc-go/v3"
 	"github.com/charmbracelet/bubbles/table"
@@ -50,11 +49,15 @@ func PlaySong(song string) {
 
 // toggles pause and play
 func PauseSong() {
-	player.SetPause(!player.IsPlaying())
+	if player.IsPlaying() {
+		player.SetPause(true)
+	} else {
+		player.SetPause(false)
+	}
 }
 
-// Metadata stuff, not implemented yet, to lazy rn lmfao
-func Metadata() {
+func IsPlaying() bool {
+	return player.IsPlaying()
 }
 
 func SongPosition() (position float32, err error) {
@@ -63,7 +66,6 @@ func SongPosition() (position float32, err error) {
 		log.Println("Error getting position:", err)
 		return
 	}
-
 	return position, nil
 }
 

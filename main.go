@@ -16,8 +16,8 @@ var (
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: melodex <command>")
-		tui.Application()
 		music.Init()
+		tui.Application()
 		return
 	}
 
