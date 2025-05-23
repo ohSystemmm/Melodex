@@ -42,7 +42,6 @@ func (m Model) Init() tea.Cmd {
 // Update handles input events
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	m.time = 30 * time.Minute
 	if time.Since(m.timebegin) > m.time {
 		os.Exit(0)
 	}
@@ -58,8 +57,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "t":
 			m.Sleep = !m.Sleep
+			m.time = 30 * time.Minute
 			if m.Sleep {
 				m.timebegin = time.Now()
+			}
+			if !m.Sleep {
+				m.time = time.Since(m.timebegin)
 			}
 		}
 		if m.SharedState.Searching {
