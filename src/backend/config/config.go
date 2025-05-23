@@ -94,3 +94,17 @@ func getUser() string {
 	}
 	return "unknown"
 }
+
+func GenerateDefaultConfig() bool {
+	defaultConfig := DefaultConfig()
+	configPath := ConfigDir + ConfigFile
+
+	err := SaveConfig(configPath, defaultConfig)
+	if err != nil {
+		log.Printf("Failed to generate default config: %v\n", err)
+		return false
+	}
+
+	log.Println("Default config generated successfully.")
+	return true
+}

@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"Melodex/src/connection"
-	SharedState "Melodex/src/tui/sharedState"
-
 	"Melodex/src/backend/music"
+	"Melodex/src/connection"
+
+	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -45,6 +45,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
+			music.Cleanup()
 			return m, tea.Quit
 		case "up":
 			m.list.MoveUp(1)
@@ -70,13 +71,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "q":
+				music.Cleanup()
 				return m, tea.Quit
 			case "enter":
 				m.sharedState.Paused = false
-			// case " ":
-			// 	music.SetVolume(50)
-			// 	// music.PlaySong()
-			// 	m.sharedState.Paused = false
+
+				selectedSong := connection.GetPlaylistPath() + m.list.SelectedRow()[0]
+				music.PlaySong(selectedSong)
+				// connection.SetCurrentSong(m.list.SelectedRow()[0])
+				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 			case " ":
 				music.PauseSong()
 				// m.sharedState.Paused = !music.IsPlaying()
@@ -106,9 +109,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Y >= 4 && msg.Y <= m.height-1 && msg.X >= 1 && msg.X <= m.totalListWidth+4 {
 			switch tea.MouseEvent(msg).Button {
 			case tea.MouseButtonWheelUp:
-				m.list.MoveUp(1)
+				// m.list.MoveDown(1) reverse scrolling
+				m.list.MoveUp(1) // natural scrolling
 			case tea.MouseButtonWheelDown:
-				m.list.MoveDown(1)
+				// m.list.MoveUp(1) reverse scrolling
+				m.list.MoveDown(1) // natural scrolling
 			}
 			switch tea.MouseAction(msg.Action) {
 			case tea.MouseAction(tea.MouseButtonLeft):
@@ -116,6 +121,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetCursor(rowIdx)
 			}
 		}
+	default:
+		log.Print("Unknown input type")
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
@@ -194,21 +201,7 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	// rows := []table.Row{
-	// 	{"Bohemian Rhapsody", "5:55"},
-	// 	{"Imagine", "3:03"},
-	// 	{"Hotel California", "6:30"},
-	// 	{"Stairway to Heaven", "8:02"},
-	// 	{"Smells Like Teen Spirit", "5:01"},
-	// 	{"Sweet Child O' Mine", "5:56"},
-	// 	{"Billie Jean", "4:54"},
-	// 	{"Wonderwall", "4:18"},
-	// 	{"Hey Jude", "7:11"},
-	// 	{"Comfortably Numb", "6:22"},
-	// }
-
 	rows := connection.ConnectSongs()
-
 	longestTitle, longestTime := 35, 6
 
 	for _, row := range rows {
@@ -218,7 +211,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	columns := []table.Column{
 		{Title: "Title", Width: longestTitle},
-		{Title: "Length", Width: longestTime},
+		{Title: " Length", Width: longestTime},
 	}
 
 	t := table.New(
@@ -250,7 +243,7 @@ func New(sharedState *SharedState.SharedState) Model {
 		log.Fatalf("Creating the Log file failed")
 	}
 
-	sharedState.Logger = log.New(file, "List", log.LstdFlags)
+	sharedState.Logger = log.New(file, "List ", log.LstdFlags)
 
 	return Model{
 		sharedState:    sharedState,

@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
-
-	"os"
 
 	vlc "github.com/adrg/libvlc-go/v3"
 	"github.com/charmbracelet/bubbles/table"
@@ -20,50 +19,78 @@ var (
 	media  *vlc.Media
 )
 
-// Creates a new VLC player instance
+// Initialize VLC with no video output and quiet mode
 func Init() {
 	if err := vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error initializing VLC: %v", err)
 	}
 
 	var err error
 	player, err = vlc.NewPlayer()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error creating VLC player: %v", err)
 	}
 
+	if muted, err := player.IsMuted(); err != nil {
+		log.Printf("Error checking mute state: %v", err)
+	} else if muted {
+		if err := player.SetMute(false); err != nil {
+			log.Printf("Error unmuting player: %v", err)
+		}
+	}
+
+	volume, err := player.Volume()
+	if err != nil {
+		log.Printf("Error getting volume: %v", err)
+		return
+	}
+
+	if volume == 0 {
+		if err := player.SetVolume(100); err != nil {
+			log.Printf("Error setting volume: %v", err)
+		}
+	}
 }
 
 // loads and plays songs
 func PlaySong(song string) {
+	if player.IsPlaying() {
+		player.Stop()
+	}
+
 	var err error
 	media, err = player.LoadMediaFromPath(song)
 	if err != nil {
 		log.Fatal(err)
+		fmt.Println("Error loading song:", err)
 	}
 
 	err = player.Play()
 	if err != nil {
 		log.Fatal(err)
+		fmt.Println("Error playing song:", err)
 	}
 }
 
 // toggles pause and play
 func PauseSong() {
-	player.SetPause(!player.IsPlaying())
+	if IsPlaying() {
+		player.SetPause(true)
+	} else {
+		player.SetPause(false)
+	}
 }
 
-// Metadata stuff, not implemented yet, to lazy rn lmfao
-func Metadata() {
+func IsPlaying() bool {
+	return player.IsPlaying()
 }
 
-func SongPosition() (position float32, err error) {
+func GetSongPosition() (position float32, err error) {
 	position, err = player.MediaPosition()
 	if err != nil {
 		log.Println("Error getting position:", err)
 		return
 	}
-
 	return position, nil
 }
 
@@ -173,19 +200,25 @@ func getDuration(songPath string) (string, error) {
 	output, err := cmd.Output()
 	if err != nil {
 		log.Printf("Error running ffprobe for %s: %v", songPath, err)
-		return "00:00:00", err
+		return "Error", err
 	}
 
 	durationStr := strings.TrimSpace(string(output))
 	seconds, err := strconv.ParseFloat(durationStr, 64)
 	if err != nil {
 		log.Printf("Error parsing duration for %s: %v", songPath, err)
-		return "00:00:00", err
+		return "Error", err
 	}
 
 	hours := int(seconds) / 3600
 	minutes := (int(seconds) % 3600) / 60
 	seconds = seconds - float64(hours*3600) - float64(minutes*60)
+
+	if hours == 0 && minutes == 0 {
+		return fmt.Sprintf("      %d", int(seconds)), nil
+	} else if hours == 0 {
+		return fmt.Sprintf("   %d:%02d", minutes, int(seconds)), nil
+	}
 
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, int(seconds)), nil
 }

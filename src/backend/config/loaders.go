@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"strconv"
 )
 
 func GetConfig() (*Config, string, error) {
@@ -32,12 +33,18 @@ func GetDefaultPlaylist() string {
 	return cfg.General.DefaultPlaylist
 }
 
-func GetDefaultVolume() string {
+func GetVolume() int {
 	cfg, _, err := GetConfig()
 	if err != nil {
-		return ""
+		return 100
 	}
-	return cfg.General.DefaultVolume
+
+	volume, err := strconv.Atoi(cfg.General.DefaultVolume[:len(cfg.General.DefaultVolume)-1])
+	if err != nil {
+		return 100
+	}
+
+	return volume
 }
 
 func GetPlaylists() []string {
