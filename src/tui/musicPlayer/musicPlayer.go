@@ -2,6 +2,7 @@ package musicPlayer
 
 import (
 	"Melodex/src/backend/music"
+	"Melodex/src/connection"
 	"Melodex/src/tui/sharedState"
 
 	"fmt"
@@ -61,16 +62,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// case "shift+left":
 			// 	// TODO Previous Song
 			case "enter":
-				m.title = music.GetSongName()
-				m.artist = music.GetSongArtist()
+				m.title = connection.GetCurrentSong()
+				m.artist = ""
 
 				var err error
-				m.length = 12
+				m.length = 100 // TODO
 				// m.length, err = music.SongLength(m.songFile, m.songFile)
 				// if err != nil {
 				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				// }
-				m.progress, err = music.SongPosition()
+				m.progress, err = music.GetSongPosition()
 				if err != nil {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				}
@@ -176,8 +177,9 @@ func (m Model) View() string {
 	control += totalTime
 
 	// NOTE When enough space is available
+	m.album = ""
 	elements = append(elements, m.title)
-	elements = append(elements, m.artist+" - "+m.album)
+	elements = append(elements, m.artist+" \n "+m.album)
 	// NOTE else
 	// elements = append(elements, m.title+" "+m.artist+" - "+m.album)
 

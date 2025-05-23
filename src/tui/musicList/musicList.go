@@ -4,10 +4,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
-	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/connection"
 
@@ -77,17 +75,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case "enter":
 				m.sharedState.Paused = false
-				i, err := strconv.Atoi(config.GetDefaultVolume())
-				if err != nil {
-					log.Printf("Error converting volume to int: %v", err)
-					i = 100 // Not finished yet
-				}
 
-				music.SetVolume(i)
-				if music.IsPlaying() {
-					music.Stop()
-				}
-				music.PlaySong(connection.GetPlaylistPath() + m.list.SelectedRow()[0])
+				selectedSong := connection.GetPlaylistPath() + m.list.SelectedRow()[0]
+				music.PlaySong(selectedSong)
+				// connection.SetCurrentSong(m.list.SelectedRow()[0])
+				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 			case " ":
 				music.PauseSong()
 				// m.sharedState.Paused = !music.IsPlaying()
@@ -219,7 +211,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	columns := []table.Column{
 		{Title: "Title", Width: longestTitle},
-		{Title: "Length", Width: longestTime},
+		{Title: " Length", Width: longestTime},
 	}
 
 	t := table.New(
