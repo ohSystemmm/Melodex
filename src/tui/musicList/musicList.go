@@ -121,8 +121,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetCursor(rowIdx)
 			}
 		}
-	default:
-		log.Print("Unknown input type")
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
