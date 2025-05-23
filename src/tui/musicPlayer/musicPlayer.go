@@ -86,9 +86,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.looping = -1
 				}
 
+			case " ":
+				if music.IsPlaying() && m.sharedState.Paused {
+					m.sharedState.Paused = !m.sharedState.Paused
+
+				} else {
+					m.sharedState.Paused = !m.sharedState.Paused
+				}
 			case "tab":
 				m.selectedPreview = !m.selectedPreview
 			}
+
 		}
 	}
 	return m, nil
