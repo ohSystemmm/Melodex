@@ -82,7 +82,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 			case " ":
 				music.PauseSong()
-				// m.sharedState.Paused = !music.IsPlaying()
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -121,6 +120,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetCursor(rowIdx)
 			}
 		}
+	default:
+		log.Print("Unknown input type")
 	}
 	m.searchBar, cmd = m.searchBar.Update(msg)
 

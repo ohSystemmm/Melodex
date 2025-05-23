@@ -1,45 +1,45 @@
 package playlist
 
 import (
-	"os"
-	"strings"
+	"math/rand"
+	"time"
+
+	"github.com/charmbracelet/bubbles/table"
 )
 
-var playlistname string
+var (
+	songNames []table.Row
+)
 
-func AddPlaylist(playlistname string) string {
-	return playlistname
+// Extract song names from playlist
+func parsePlaylist(playlist []table.Row) {
+	songNames = make([]table.Row, len(playlist))
+
+	for i, row := range playlist {
+		if len(row) > 0 {
+			songNames[i] = table.Row{row[0]}
+		}
+	}
 }
 
-func GetAllSongs() []string {
-	var filesWithExt []string
-	ext := ".m4a"
-	tempPath := "/home/" + os.Getenv("USER") + "/TempSongs"
+func playlistNormal() []table.Row {
+	return songNames
+}
 
-	files, err := os.ReadDir(tempPath)
-	if err != nil {
+// Shuffle the songNames slice randomly
+func playlistShuffled() []table.Row {
+	if len(songNames) == 0 {
 		return nil
 	}
 
-	for _, file := range files {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ext) {
-			filesWithExt = append(filesWithExt, file.Name())
-		}
-	}
+	shuffled := make([]table.Row, len(songNames))
+	copy(shuffled, songNames)
 
-	return filesWithExt
-}
+	rand.Seed(time.Now().UnixNano())
 
-func ShufflePlaylist(playlist []string) []string {
-	shuffeledplaylist := playlist
-	return shuffeledplaylist
+	rand.Shuffle(len(shuffled), func(i, j int) {
+		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	})
 
-}
-
-func RemovePlaylist(config string) bool {
-	return false
-}
-
-func GetPlaylistName(directory string) string {
-	return directory
+	return shuffled
 }
