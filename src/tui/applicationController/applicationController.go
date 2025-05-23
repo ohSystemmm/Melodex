@@ -1,7 +1,9 @@
 package applicationController
 
 import (
-	// "strconv"
+	"os"
+	"strconv"
+	"time"
 
 	// "Melodex/src/tui/sharedState"
 	"github.com/charmbracelet/bubbles/progress"
@@ -15,6 +17,10 @@ type Model struct {
 	volume int
 
 	pB progress.Model
+
+	Sleep     bool
+	timebegin time.Time
+	// ready     bool
 }
 
 func (m Model) Init() tea.Cmd {
@@ -22,6 +28,12 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	const sleepTime = time.Minute * 30
+
+	if m.Sleep && time.Since(m.timebegin) > sleepTime {
+		os.Exit(0)
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
@@ -33,7 +45,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "k":
 			// TODO: Volume Down
 			m.volume = max(m.volume-1, 0)
-
+		case "t":
+			m.Sleep = !m.Sleep
+			if m.Sleep {
+				m.timebegin = time.Now()
+			}
 		}
 	}
 	return m, nil
@@ -43,13 +59,19 @@ func (m Model) View() string {
 	var targetWidth = 54
 	var elements = []string{}
 
-	if targetWidth >= m.width-1 {
-		targetWidth = m.width - 1
+	if targetWidth >= m.width+1 {
+		targetWidth = m.width - 2
 	}
 
 	elements = append(elements, lipg.NewStyle().Bold(true).Render("Application Controller"))
 	elements = append(elements, "")
-	elements = append(elements, "Volume "+m.pB.ViewAs(float64(m.volume)/100))
+	elements = append(elements, "Volume "+m.pB.ViewAs(float64(m.volume)/100)+strconv.Itoa(m.volume)+"%")
+	if m.Sleep {
+		elements = append(elements, "Sleeptimer "+"󰱒")
+	} else {
+		elements = append(elements, "Sleeptimer "+"󰄱")
+	}
+
 	// +strconv.FormatFloat(m.pB.Percent(), 'f', -1, 64)
 	// elements = append(elements, "Sleep Timer")
 
@@ -69,6 +91,7 @@ func (m Model) View() string {
 		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
 			PaddingLeft(paddingAmount).
 			PaddingRight(paddingAmount + unevenPadding).
+			AlignVertical(lipg.Left).
 			Render(final)
 		return content
 	} else {
@@ -79,14 +102,13 @@ func (m Model) View() string {
 func New() Model {
 	pb := progress.New(
 		progress.WithWidth(20),
-		progress.WithGradient("#00ffcc", "#00b8e6"),
+		progress.WithGradient("#ff00cc", "#b800e6"),
 		// progress.WithDefaultGradient(),
 		progress.WithoutPercentage(),
 	)
 
-	// pb.SetPercent(0.2)
-
 	return Model{
-		pB: pb,
+		pB:    pb,
+		Sleep: false,
 	}
 }
