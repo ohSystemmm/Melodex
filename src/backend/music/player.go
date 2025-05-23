@@ -215,9 +215,9 @@ func getDuration(songPath string) (string, error) {
 	seconds = seconds - float64(hours*3600) - float64(minutes*60)
 
 	if hours == 0 && minutes == 0 {
-		return fmt.Sprintf("      %02d", int(seconds)), nil
+		return fmt.Sprintf("     %02d", int(seconds)), nil
 	} else if hours == 0 {
-		return fmt.Sprintf("   %d:%02d", minutes, int(seconds)), nil
+		return fmt.Sprintf("   %02d:%02d", minutes, int(seconds)), nil
 	}
 
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, int(seconds)), nil
