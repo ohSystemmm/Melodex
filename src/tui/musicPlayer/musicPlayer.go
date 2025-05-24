@@ -57,10 +57,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// m.progress = min(m.progress+1, m.length)
 			case "left":
 				// m.progress = max(m.progress-1, 0)
-			// case "shift+right":
-			// 	// TODO Next Song
-			// case "shift+left":
-			// 	// TODO Previous Song
+			case "b":
+
+			case "n":
+
 			case "enter":
 				m.title = connection.GetCurrentSong()
 				m.artist = ""

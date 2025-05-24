@@ -1,6 +1,7 @@
 package musicList
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -82,7 +83,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 			case " ":
 				music.PauseSong()
-				// m.sharedState.Paused = !music.IsPlaying()
 			case "f":
 				m.sharedState.Searching = true
 				return m, m.searchBar.Focus()
@@ -127,7 +127,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// NOTE case-unsensitive
 	searchTerm := strings.ToLower(m.searchBar.Value())
 	if searchTerm != "" {
-		filteredRows := m.filterRows(searchTerm)
+		filteredRows := make([]table.Row, 0)
+		for _, row := range m.originalRows {
+			rowText := fmt.Sprintf("%v", row)
+			if strings.Contains(strings.ToLower(rowText), searchTerm) {
+				filteredRows = append(filteredRows, row)
+			}
+		}
 		m.list.SetRows(filteredRows)
 	} else {
 		m.list.SetRows(m.originalRows)
