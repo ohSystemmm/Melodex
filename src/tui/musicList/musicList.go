@@ -129,7 +129,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if searchTerm != "" {
 		filteredRows := make([]table.Row, 0)
 		for _, row := range m.originalRows {
-			rowText := fmt.Sprintf("%v", row) // Convert row to a string representation
+			rowText := fmt.Sprintf("%v", row)
 			if strings.Contains(strings.ToLower(rowText), searchTerm) {
 				filteredRows = append(filteredRows, row)
 			}
