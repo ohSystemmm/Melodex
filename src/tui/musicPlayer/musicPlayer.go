@@ -21,13 +21,11 @@ type Model struct {
 	width  int
 	height int
 
-	// songFile string
-	title  string
-	artist string
-	album  string
-	length int
-	// In percent
-	progress        float32
+	title           string
+	artist          string
+	album           string
+	length          int
+	progress        float32 // percentage
 	selectedPreview bool
 }
 
@@ -40,9 +38,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		if m.width <= 55 {
-			// m.title = strconv.Itoa(m.width - 6)
 			m.progressBar.Width = (m.width - 6)
-			// m.ProgressBar.Width = 21
 		} else {
 			m.progressBar.Width = 50
 		}
@@ -53,11 +49,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "right":
 				// m.progress = min(m.progress+1, m.length)
+				// TODO
 			case "left":
 				// m.progress = max(m.progress-1, 0)
+				// TODO
 			case "b":
-
+				//playlist.PlayNextSong()
+				// TODO
 			case "n":
+				//playlist.PlayPreviousSong()
+				// TODO
 
 			case "enter":
 				m.title = connection.GetCurrentSong()
@@ -65,10 +66,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				var err error
 				m.length = 100 // TODO
-				// m.length, err = music.SongLength(m.songFile, m.songFile)
-				// if err != nil {
-				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				// }
+
 				m.progress, err = music.GetSongPosition()
 				if err != nil {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
@@ -163,7 +161,6 @@ func (m Model) View() string {
 		}
 	}
 
-	// TODO make the spaces dynamic
 	control := currentTime
 
 	if m.width <= 55 {
@@ -178,17 +175,13 @@ func (m Model) View() string {
 		control += strings.Repeat(" ", max(1, m.width/2-13))
 	} else {
 		control += strings.Repeat(" ", 15)
-		// control += "               "
 	}
 
 	control += totalTime
 
-	// NOTE When enough space is available
-	m.album = ""
+	m.album = "" // TODO
 	elements = append(elements, m.title)
 	elements = append(elements, m.artist+" \n "+m.album)
-	// NOTE else
-	// elements = append(elements, m.title+" "+m.artist+" - "+m.album)
 
 	elements = append(elements, m.progressBar.ViewAs(percent))
 	elements = append(elements, control)
@@ -222,7 +215,6 @@ func (m Model) View() string {
 			musicListWidth = max(0, m.width-minWidth)
 		}
 
-		// BUG Height and the associated current height do not get bold, this is very jaring to see, so it should be fixed soon
 		errorContent := lipg.JoinVertical(
 			lipg.Center,
 			"Terminal size too small for Player:",
@@ -252,7 +244,6 @@ func (m Model) View() string {
 	}
 }
 
-// NOTE When the time exceeds an hour it will just go on, this might require fixing
 func formatTime(seconds int) string {
 	minutes := seconds / 60
 	remainingSeconds := seconds % 60
@@ -262,14 +253,12 @@ func formatTime(seconds int) string {
 func New(sharedState *sharedState.SharedState) Model {
 	pb := progress.New(
 		progress.WithGradient("#00ffcc", "#00b8e6"),
-		// progress.WithDefaultGradient(),
 		progress.WithoutPercentage(),
 	)
 	sharedState.Paused = true
 
 	return Model{
 		sharedState: sharedState,
-		// songFile:    ,
 		title:       "Example Title",
 		artist:      "Example Artist",
 		album:       "Example Album",

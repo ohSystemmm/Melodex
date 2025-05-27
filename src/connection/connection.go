@@ -1,48 +1,30 @@
 package connection
 
 import (
+	"log"
+
 	"Melodex/src/backend/music"
 	"Melodex/src/backend/playlist"
-	"log"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
-// Services but name is cooler
-
-// var tempPlaylist = "/home/" + os.Getenv("USER") + "/Music/"
-// var tempPlaylist = "/home/" + os.Getenv("USER") + "/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/"
 var (
 	playlistPath string
 	currentSong  string
 	shuffle      bool
 	mode         int
-
-	allSongs []table.Row
+	allSongs     []table.Row
 )
 
-func GetShuffle() bool {
-	return shuffle
-}
-func SetShuffle(state bool) {
-	shuffle = state
-}
-func GetMode() int {
-	return mode
-}
-func SetMode(newMode int) {
-	mode = newMode
-}
 func SetPlaylistPath(passedPlaylistPath string) {
 	playlistPath = passedPlaylistPath
-}
-func GetPlaylistPath() string {
-	return playlistPath + "/"
 }
 
 func SetCurrentSong(song string) {
 	currentSong = song
 }
+
 func GetCurrentSong() string {
 	return currentSong
 }
@@ -58,18 +40,27 @@ func ConnectSongs() []table.Row {
 }
 
 func Play() {
-	playlist.GetAllSongs(allSongs)
-	if mode < 0 {
-		music.PlaySong(playlistPath + "/" + currentSong)
-	} else if mode == 0 {
-		if shuffle {
-			music.PlaySong(playlistPath + "/" + playlist.GetRandomSong())
-		} else {
-			music.PlaySong(playlistPath + "/" + playlist.GetNextSong())
-		}
-	} else {
-		for {
-			music.PlaySong(currentSong)
-		}
+	if len(allSongs) == 0 {
+		log.Println("No songs available to play.")
+		return
 	}
+
+	playlist.GetAllSongs(allSongs)
+
+	var song string
+	switch {
+	case mode < 0:
+		song = playlistPath + "/" + currentSong
+	case mode == 0:
+		if shuffle {
+			song = playlistPath + "/" + playlist.GetRandomSong()
+		} else {
+			song = playlistPath + "/" + playlist.GetNextSong()
+		}
+	default:
+		log.Println("Invalid mode specified.")
+		return
+	}
+
+	music.PlaySong(song)
 }

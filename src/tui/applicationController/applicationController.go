@@ -1,7 +1,7 @@
 package applicationController
 
 import (
-	// "Melodex/TUI/SharedState"
+	"Melodex/src/backend/music"
 
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
@@ -10,12 +10,12 @@ import (
 type Model struct {
 	width  int
 	height int
+	volume int
 }
 
 func (m Model) Init() tea.Cmd {
 	return nil
 }
-
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -23,49 +23,50 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
-			// TODO: Volume Up
+			m.volume += 5
 		case "k":
-			// TODO: Volume Down
+			m.volume -= 5
 		}
+		music.SetVolume(m.volume)
 	}
 	return m, nil
 }
-
 func (m Model) View() string {
-	var targetWidth = 54
-	var elements = []string{}
+	targetWidth := min(54, m.width-1)
 
-	if targetWidth >= m.width-1 {
-		targetWidth = m.width - 1
+	elements := []string{
+		lipg.NewStyle().Bold(true).Render("Application Controller"),
+		"Volume",
+		"Sleep Timer",
 	}
-
-	elements = append(elements, lipg.NewStyle().Bold(true).Render("Application Controller"))
-	elements = append(elements, "Volume")
-	elements = append(elements, "Sleep Timer")
 
 	final := lipg.JoinVertical(lipg.Center, elements...)
 
-	minWidth := lipg.Width(final)
-	minHeight := lipg.Height(final)
+	paddingAmount := max(0, (targetWidth-lipg.Width(final))/2)
+	unevenPadding := (lipg.Width(final) % 2)
 
-	paddingAmount := (targetWidth - minWidth) / 2
-	unevenPadding := 0
-
-	if minWidth%2 == 1 {
-		unevenPadding += 1
-	}
-
-	if m.width >= minWidth && m.height >= minHeight {
-		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
-			PaddingLeft(paddingAmount).
-			PaddingRight(paddingAmount + unevenPadding).
-			Render(final)
-		return content
-	} else {
+	if m.width < lipg.Width(final) || m.height < lipg.Height(final) {
 		return ""
 	}
-}
 
+	return lipg.NewStyle().
+		BorderStyle(lipg.ThickBorder()).
+		PaddingLeft(paddingAmount).
+		PaddingRight(paddingAmount + unevenPadding).
+		Render(final)
+}
 func New() Model {
 	return Model{}
+}
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
