@@ -5,6 +5,10 @@ import (
 )
 
 type SharedState struct {
+	Shuffling bool
+	Looping   bool
+	// Loop Playlist
+	LoopPL    bool
 	Searching bool
 	Paused    bool
 	Logger    *log.Logger
