@@ -21,15 +21,13 @@ type Model struct {
 	width  int
 	height int
 
-	songFile string
-	title    string
-	artist   string
-	album    string
-	length   int
+	// songFile string
+	title  string
+	artist string
+	album  string
+	length int
 	// In percent
 	progress        float32
-	shuffling       bool
-	looping         int
 	selectedPreview bool
 }
 
@@ -76,16 +74,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				}
 			case ",":
-				m.shuffling = !m.shuffling
+				m.sharedState.Shuffling = !m.sharedState.Shuffling
 			case ".":
-				if m.looping < 0 {
-					m.looping = 0
-				} else if m.looping == 0 {
-					m.looping = 1
+				if m.sharedState.LoopPL {
+					m.sharedState.LoopPL = false
+					m.sharedState.Looping = true
+				} else if m.sharedState.Looping {
+					m.sharedState.Looping = false
 				} else {
-					m.looping = -1
+					m.sharedState.LoopPL = true
 				}
-
 			case " ":
 				if music.IsPlaying() && m.sharedState.Paused {
 					m.sharedState.Paused = !m.sharedState.Paused
@@ -135,7 +133,7 @@ func (m Model) View() string {
 	controlCenter := ""
 
 	if m.width >= 27 {
-		if m.shuffling {
+		if m.sharedState.Shuffling {
 			controlCenter += "\U000F049F "
 		} else {
 			controlCenter += "\U000F049E "
@@ -153,12 +151,12 @@ func (m Model) View() string {
 	controlCenter += "󰒭 "
 
 	if m.width >= 28 {
-		if m.looping < 0 {
-			controlCenter += "\U000F0457"
-		} else if m.looping == 0 {
+		if m.sharedState.Looping {
+			controlCenter += "\U000F0458"
+		} else if m.sharedState.LoopPL {
 			controlCenter += "\U000F0456"
 		} else {
-			controlCenter += "\U000F0458"
+			controlCenter += "\U000F0457"
 		}
 	}
 
@@ -169,8 +167,6 @@ func (m Model) View() string {
 		control += strings.Repeat(" ", max(1, m.width/2-12))
 	} else {
 		control += strings.Repeat(" ", 16)
-		// control += "                "
-		// control += "               "
 	}
 
 	control += controlCenter
@@ -267,6 +263,7 @@ func New(sharedState *sharedState.SharedState) Model {
 		progress.WithoutPercentage(),
 	)
 	sharedState.Paused = true
+	sharedState.LoopPL = true
 
 	return Model{
 		sharedState: sharedState,
@@ -277,7 +274,5 @@ func New(sharedState *sharedState.SharedState) Model {
 		length:      181,
 		progress:    53,
 		progressBar: pb,
-		shuffling:   false,
-		looping:     0,
 	}
 }
