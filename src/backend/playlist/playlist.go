@@ -1,6 +1,7 @@
 package playlist
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -8,38 +9,31 @@ import (
 )
 
 var (
-	songNames []table.Row
+	currentIndex int
+	songList     []table.Row
 )
 
-// Extract song names from playlist
-func parsePlaylist(playlist []table.Row) {
-	songNames = make([]table.Row, len(playlist))
-
-	for i, row := range playlist {
-		if len(row) > 0 {
-			songNames[i] = table.Row{row[0]}
-		}
-	}
+func GetAllSongs(songs []table.Row) {
+	songList = songs
+	currentIndex = 0
 }
 
-func playlistNormal() []table.Row {
-	return songNames
-}
-
-// Shuffle the songNames slice randomly
-func playlistShuffled() []table.Row {
-	if len(songNames) == 0 {
-		return nil
-	}
-
-	shuffled := make([]table.Row, len(songNames))
-	copy(shuffled, songNames)
-
+func init() {
 	rand.Seed(time.Now().UnixNano())
+}
 
-	rand.Shuffle(len(shuffled), func(i, j int) {
-		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
-	})
+func GetRandomSong() string {
+	if len(songList) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%v", songList[rand.Intn(len(songList))][0])
+}
 
-	return shuffled
+func GetNextSong() string {
+	if len(songList) == 0 {
+		return ""
+	}
+	song := fmt.Sprintf("%v", songList[currentIndex%len(songList)][0])
+	currentIndex++
+	return song
 }
