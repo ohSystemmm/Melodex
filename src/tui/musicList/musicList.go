@@ -77,8 +77,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				m.sharedState.Paused = false
 
-				selectedSong := connection.GetPlaylistPath() + m.list.SelectedRow()[0]
-				music.PlaySong(selectedSong)
+				// selectedSong := connection.GetPlaylistPath() + m.list.SelectedRow()[0]
+				// music.PlaySong(selectedSong)
+				connection.Play()
 				// connection.SetCurrentSong(m.list.SelectedRow()[0])
 				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 			case " ":

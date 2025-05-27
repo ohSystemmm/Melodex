@@ -74,15 +74,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				}
 			case ",":
-				m.sharedState.Shuffling = !m.sharedState.Shuffling
-			case ".":
-				if m.sharedState.LoopPL {
-					m.sharedState.LoopPL = false
-					m.sharedState.Looping = true
-				} else if m.sharedState.Looping {
-					m.sharedState.Looping = false
+				if m.sharedState.Shuffling {
+					m.sharedState.Shuffling = false
 				} else {
-					m.sharedState.LoopPL = true
+					m.sharedState.Shuffling = true
+				}
+			case ".":
+				if m.sharedState.SongOption < 0 {
+					m.sharedState.SongOption = 0
+				} else if m.sharedState.SongOption == 0 {
+					m.sharedState.SongOption = 1
+				} else {
+					m.sharedState.SongOption = -1
 				}
 			case " ":
 				if music.IsPlaying() && m.sharedState.Paused {
@@ -151,9 +154,9 @@ func (m Model) View() string {
 	controlCenter += "󰒭 "
 
 	if m.width >= 28 {
-		if m.sharedState.Looping {
+		if m.sharedState.SongOption < 0 {
 			controlCenter += "\U000F0458"
-		} else if m.sharedState.LoopPL {
+		} else if m.sharedState.SongOption > 0 {
 			controlCenter += "\U000F0456"
 		} else {
 			controlCenter += "\U000F0457"
@@ -263,7 +266,6 @@ func New(sharedState *sharedState.SharedState) Model {
 		progress.WithoutPercentage(),
 	)
 	sharedState.Paused = true
-	sharedState.LoopPL = true
 
 	return Model{
 		sharedState: sharedState,
