@@ -17,6 +17,8 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 )
 
+// FIX the list so that the click, clicks at the correct position
+
 type Model struct {
 	sharedState *SharedState.SharedState
 
@@ -60,29 +62,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.GotoBottom()
 		}
 
-		if m.sharedState.Searching {
-			switch msg.String() {
-			case "esc", "enter":
-				m.sharedState.Searching = false
-				m.searchBar.Blur()
-				// return m, nil
-			}
+		if m.sharedState.SettingTime {
 		} else {
-			switch msg.String() {
-			case "q":
-				return m, tea.Quit
-			case "enter":
-				m.sharedState.Paused = false
-			// case " ":
-			// 	music.SetVolume(50)
-			// 	// music.PlaySong()
-			// 	m.sharedState.Paused = false
-			case " ":
-				music.PauseSong()
-				// m.sharedState.Paused = !music.IsPlaying()
-			case "f":
-				m.sharedState.Searching = true
-				return m, m.searchBar.Focus()
+			if m.sharedState.Searching {
+				switch msg.String() {
+				case "esc", "enter":
+					m.sharedState.Searching = false
+					m.searchBar.Blur()
+					// return m, nil
+				}
+			} else {
+				switch msg.String() {
+				case "q":
+					return m, tea.Quit
+				case "enter":
+					m.sharedState.Paused = false
+				// case " ":
+				// 	music.SetVolume(50)
+				// 	// music.PlaySong()
+				// 	m.sharedState.Paused = false
+				case " ":
+					music.PauseSong()
+					// m.sharedState.Paused = !music.IsPlaying()
+				case "f":
+					m.sharedState.Searching = true
+					return m, m.searchBar.Focus()
+				}
 			}
 		}
 	case tea.WindowSizeMsg:

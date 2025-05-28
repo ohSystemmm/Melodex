@@ -91,7 +91,7 @@ func Application() {
 
 		MList:       MusicList.New(sharedState),
 		MPlayer:     MusicPlayer.New(sharedState),
-		AController: ApplicationController.New(),
+		AController: ApplicationController.New(*sharedState),
 	}
 
 	bzone.NewGlobal()

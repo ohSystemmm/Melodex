@@ -49,7 +49,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
-		if m.sharedState.Searching {
+		if m.sharedState.Searching || m.sharedState.SettingTime {
 		} else {
 			switch msg.String() {
 			case "right":
@@ -64,15 +64,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.title = music.GetSongName()
 				m.artist = music.GetSongArtist()
 
-				var err error
+				// var err error
 				// m.length, err = music.SongLength(m.songFile, m.songFile)
 				// if err != nil {
 				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
 				// }
 				// m.progress, err = music.SongPosition()
-				if err != nil {
-					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				}
+				// if err == nil {
+				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				// }
 			case ",":
 				m.shuffling = !m.shuffling
 			case ".":

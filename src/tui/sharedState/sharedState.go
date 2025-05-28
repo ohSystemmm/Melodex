@@ -5,9 +5,10 @@ import (
 )
 
 type SharedState struct {
-	Searching bool
-	Paused    bool
-	Logger    *log.Logger
+	Searching   bool
+	SettingTime bool
+	Paused      bool
+	Logger      *log.Logger
 }
 
 var GlobalState = &SharedState{}
