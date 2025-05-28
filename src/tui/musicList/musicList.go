@@ -85,27 +85,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, m.searchBar.Focus()
 				}
 
-		if m.sharedState.Searching {
-			switch msg.String() {
-			case "esc", "enter":
-				m.sharedState.Searching = false
-				m.searchBar.Blur()
-			}
-		} else {
-			switch msg.String() {
-			case "q":
-				music.Cleanup()
-				return m, tea.Quit
-			case "enter":
-				m.sharedState.Paused = false
-				connection.Play()
-				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
-			case " ":
-				music.PauseSong()
-			case "f":
-				m.sharedState.Searching = true
-				return m, m.searchBar.Focus()
+				if m.sharedState.Searching {
+					switch msg.String() {
+					case "esc", "enter":
+						m.sharedState.Searching = false
+						m.searchBar.Blur()
+					}
+				} else {
+					switch msg.String() {
+					case "q":
+						music.Cleanup()
+						return m, tea.Quit
+					case "enter":
+						m.sharedState.Paused = false
+						connection.Play()
+						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
+					case " ":
+						music.PauseSong()
+					case "f":
+						m.sharedState.Searching = true
+						return m, m.searchBar.Focus()
 
+					}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:

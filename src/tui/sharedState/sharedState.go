@@ -7,11 +7,10 @@ import (
 type SharedState struct {
 	Searching   bool
 	SettingTime bool
-	Shuffling  bool
-	SongOption int
-	Searching  bool
-	Paused     bool
-	Logger     *log.Logger
+	Shuffling   bool
+	SongOption  int
+	Paused      bool
+	Logger      *log.Logger
 }
 
 var GlobalState = &SharedState{}

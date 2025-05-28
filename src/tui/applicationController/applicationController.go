@@ -9,6 +9,7 @@ import (
 
 	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
+
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -86,7 +87,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	targetWidth := min(54, m.width-1)
 
-
 	if targetWidth >= m.width+1 {
 		targetWidth = m.width - 2
 	}
@@ -128,7 +128,10 @@ func (m Model) View() string {
 			Render(final)
 		return content
 	} else {
-
+		log.Println("Window too small for Application Controller")
+		return ""
+	}
+}
 
 func New(sharedState sharedState.SharedState) Model {
 	pb := progress.New(
