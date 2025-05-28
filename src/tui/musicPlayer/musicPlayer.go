@@ -21,11 +21,16 @@ type Model struct {
 	width  int
 	height int
 
-	title           string
-	artist          string
-	album           string
-	length          int
-	progress        float32 // percentage
+	songFile string
+	title    string
+	artist   string
+	album    string
+	length   int
+	// In percent
+	progress        int
+	shuffling       bool
+	looping         int
+
 	selectedPreview bool
 }
 
@@ -44,15 +49,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
-		if m.sharedState.Searching {
+		if m.sharedState.Searching || m.sharedState.SettingTime {
 		} else {
 			switch msg.String() {
 			case "right":
-				// m.progress = min(m.progress+1, m.length)
-				// TODO
+
+				m.progress = min(m.progress+1, m.length)
 			case "left":
-				// m.progress = max(m.progress-1, 0)
-				// TODO
+				m.progress = max(m.progress-1, 0)
+
 			case "b":
 				//playlist.PlayNextSong()
 				// TODO
@@ -64,13 +69,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.title = connection.GetCurrentSong()
 				m.artist = ""
 
-				var err error
-				m.length = 100 // TODO
+				// var err error
+				// m.length, err = music.SongLength(m.songFile, m.songFile)
+				// if err != nil {
+				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				// }
+				// m.progress, err = music.SongPosition()
+				// if err == nil {
+				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
+				// }
 
-				m.progress, err = music.GetSongPosition()
-				if err != nil {
-					m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				}
 			case ",":
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
@@ -102,9 +110,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	percent := float64(m.progress)
+	percent := float64(m.progress) / float64(m.length)
 	totalTime := formatTime(m.length)
-	currentTime := formatTime(int(float32(m.progress) * float32(m.length)))
+	currentTime := formatTime(m.progress)
 
 	var elements = []string{}
 
@@ -263,7 +271,7 @@ func New(sharedState *sharedState.SharedState) Model {
 		artist:      "Example Artist",
 		album:       "Example Album",
 		length:      181,
-		progress:    53,
+		progress:    50,
 		progressBar: pb,
 	}
 }
