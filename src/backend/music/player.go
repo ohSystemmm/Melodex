@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"os"
 
 	vlc "github.com/adrg/libvlc-go/v3"
 	"github.com/charmbracelet/bubbles/table"
@@ -20,91 +21,62 @@ var (
 	media  *vlc.Media
 )
 
-// Creates a new VLC player instance
 func Init() {
 	if err := vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error initializing VLC: %v", err)
 	}
 
 	var err error
 	player, err = vlc.NewPlayer()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error creating VLC player: %v", err)
 	}
 
+	if muted, err := player.IsMuted(); err == nil && muted {
+		_ = player.SetMute(false)
+	}
+
+	if volume, err := player.Volume(); err == nil && volume == 0 {
+		_ = player.SetVolume(100)
+	}
 }
 
-// loads and plays songs
 func PlaySong(song string) {
-	var err error
-	media, err = player.LoadMediaFromPath(song)
+	if player.IsPlaying() {
+		player.Stop()
+	}
+
+	_, err := player.LoadMediaFromPath(song)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error loading song: %v", err)
 	}
 
 	err = player.Play()
-	if err != nil {
-		log.Fatal(err)
+	if err := player.Play(); err != nil {
+		log.Fatalf("Error playing song: %v", err)
 	}
 }
-
-// toggles pause and play
 func PauseSong() {
-	player.SetPause(!player.IsPlaying())
+	player.SetPause(IsPlaying())
 }
-
-// Metadata stuff, not implemented yet, to lazy rn lmfao
-func Metadata() {
+func IsPlaying() bool {
+	return player.IsPlaying()
 }
-
-func SongPosition() (position float32, err error) {
-	position, err = player.MediaPosition()
-	if err != nil {
-		log.Println("Error getting position:", err)
-		return
-	}
-
-	return position, nil
+func GetSongPosition() (float32, error) {
+	return player.MediaPosition()
 }
-
-// sets the volume (0–100)
 func SetVolume(volume int) {
-	if err := player.SetVolume(volume); err != nil {
-		log.Println("Failed to set volume:", err)
-	}
+	_ = player.SetVolume(volume)
 }
-
-// toggles mute
-func SetMute() {
-	isMuted, err := player.IsMuted()
-	if err != nil {
-		log.Println("Failed to get mute status:", err)
-		return
-	}
-
-	err = player.SetMute(!isMuted)
-	if err != nil {
-		log.Println("Failed to toggle mute:", err)
-	}
-}
-
-// sets playback position (0.0–1.0) - float32 btw
 func SetMediaPosition(pos float32) {
-	if err := player.SetMediaPosition(pos); err != nil {
-		log.Println("Failed to set position:", err)
-	}
+	_ = player.SetMediaPosition(pos)
 }
-
-// Sleeps and stops playback after time is up
 func Sleep(duration time.Duration) {
 	log.Printf("Sleeping for %s...\n", duration)
 	time.Sleep(duration)
-
 	log.Println("Sleep complete. Stopping playback.")
 	Stop()
 }
-
-// stops playback
 func Stop() {
 	if player != nil {
 		player.Stop()
@@ -113,8 +85,6 @@ func Stop() {
 		media.Release()
 	}
 }
-
-// cleanup to release resources
 func Cleanup() {
 	if player != nil {
 		player.Release()
@@ -122,44 +92,56 @@ func Cleanup() {
 	vlc.Release()
 }
 
-func Songlist(playlist string) ([]table.Row, error) {
-	cachePath := fmt.Sprintf("%s/.playlist_cache.json", strings.TrimRight(playlist, "/"))
+func Songlist(playlistPath string) ([]table.Row, error) {
+	playlistName := filepath.Base(playlistPath)
 
-	if cachedRows, err := loadCache(cachePath); err == nil {
-		log.Println("Loaded playlist from cache.")
+	if cachedRows, err := loadCache(playlistName); err == nil {
+		log.Println("Loaded playlist from cache:", playlistName)
 		return cachedRows, nil
 	}
 
-	durations, err := getAllDurations(playlist)
+	durations, err := getAllDurations(playlistPath)
 	if err != nil {
-		log.Println("Error getting durations:", err)
 		return nil, err
 	}
 
-	err = saveCache(cachePath, durations)
-	if err != nil {
+	if err := saveCache(playlistName, durations); err != nil {
 		log.Println("Warning: could not save playlist cache:", err)
 	}
 
 	return durations, nil
 }
+func getCachePath(playlistName string) (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
 
-func loadCache(path string) ([]table.Row, error) {
+	appCacheDir := filepath.Join(cacheDir, "melodex")
+	_ = os.MkdirAll(appCacheDir, 0755)
+
+	return filepath.Join(appCacheDir, playlistName+".cache"), nil
+}
+func loadCache(playlistName string) ([]table.Row, error) {
+	path, err := getCachePath(playlistName)
+	if err != nil {
+		return nil, err
+	}
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
 	var rows []table.Row
-	err = json.Unmarshal(data, &rows)
+	return rows, json.Unmarshal(data, &rows)
+}
+func saveCache(filename string, rows []table.Row) error {
+	path, err := getCachePath(filename)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return rows, nil
-}
-
-func saveCache(path string, rows []table.Row) error {
 	data, err := json.Marshal(rows)
 	if err != nil {
 		return err
@@ -167,56 +149,45 @@ func saveCache(path string, rows []table.Row) error {
 
 	return os.WriteFile(path, data, 0644)
 }
-
 func getDuration(songPath string) (string, error) {
-	cmd := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", songPath)
-	output, err := cmd.Output()
+	output, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", songPath).Output()
 	if err != nil {
-		log.Printf("Error running ffprobe for %s: %v", songPath, err)
-		return "00:00:00", err
+		return "", err
 	}
 
-	durationStr := strings.TrimSpace(string(output))
-	seconds, err := strconv.ParseFloat(durationStr, 64)
+	seconds, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
 	if err != nil {
-		log.Printf("Error parsing duration for %s: %v", songPath, err)
-		return "00:00:00", err
+		return "", err
 	}
 
 	hours := int(seconds) / 3600
 	minutes := (int(seconds) % 3600) / 60
-	seconds = seconds - float64(hours*3600) - float64(minutes*60)
+	seconds = math.Mod(seconds, 60)
 
-	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, int(seconds)), nil
+	switch {
+	case hours > 0:
+		return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, int(seconds)), nil
+	case minutes > 0:
+		return fmt.Sprintf("%02d:%02d", minutes, int(seconds)), nil
+	default:
+		return fmt.Sprintf("%02d", int(seconds)), nil
+	}
 }
-
 func getAllDurations(directory string) ([]table.Row, error) {
 	files, err := os.ReadDir(directory)
 	if err != nil {
-		log.Printf("Error reading directory %s: %v", directory, err)
 		return nil, err
 	}
 
-	durationList := make([]table.Row, 0)
-
+	var durationList []table.Row
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
-
-		songPath := fmt.Sprintf("%s/%s", directory, file.Name())
-
-		duration, err := getDuration(songPath)
-		if err != nil {
-			log.Printf("Error getting duration for %s: %v", songPath, err)
-			continue
+		duration, err := getDuration(filepath.Join(directory, file.Name()))
+		if err == nil {
+			durationList = append(durationList, table.Row{file.Name(), duration})
 		}
-
-		row := table.Row{
-			file.Name(),
-			duration,
-		}
-		durationList = append(durationList, row)
 	}
 
 	return durationList, nil

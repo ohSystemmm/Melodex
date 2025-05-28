@@ -3,13 +3,14 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
 )
 
 const ConfigFile = "config.toml"
 
-var ConfigDir = "/home/" + getUser() + "/.config/melodex/"
+var ConfigDir = filepath.Join(os.Getenv("HOME"), ".config/melodex")
 
 type Config struct {
 	General  General  `toml:"general"`
@@ -36,14 +37,12 @@ type Design struct {
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Printf("Error reading config file: %v\n", err)
-		return nil, err
+		return nil, logError("reading config file", err)
 	}
 
 	var cfg Config
 	if err := toml.Unmarshal(data, &cfg); err != nil {
-		log.Printf("Error parsing config: %v\n", err)
-		return nil, err
+		return nil, logError("parsing config", err)
 	}
 
 	return &cfg, nil
@@ -52,31 +51,27 @@ func LoadConfig(path string) (*Config, error) {
 func SaveConfig(path string, cfg *Config) error {
 	data, err := toml.Marshal(cfg)
 	if err != nil {
-		log.Printf("Error encoding config: %v\n", err)
-		return err
+		return logError("encoding config", err)
 	}
 
-	if err := os.WriteFile(path, data, 0644); err != nil {
-		log.Printf("Error writing config file: %v\n", err)
-		return err
-	}
-
-	return nil
+	return os.WriteFile(path, data, 0644)
 }
 
 func DefaultConfig() *Config {
 	user := getUser()
+	basePath := filepath.Join("/home", user)
+
 	return &Config{
 		General: General{
 			User:            user,
-			DefaultPlaylist: "/home/" + user + "/example_playlist",
+			DefaultPlaylist: filepath.Join(basePath, "example_playlist"),
 			DefaultVolume:   "100%",
 		},
 		Playlist: Playlist{
 			Playlists: []string{
-				"/home/" + user + "/example_playlist1",
-				"/home/" + user + "/example_playlist2",
-				"/home/" + user + "/example_playlist3",
+				filepath.Join(basePath, "example_playlist1"),
+				filepath.Join(basePath, "example_playlist2"),
+				filepath.Join(basePath, "example_playlist3"),
 			},
 		},
 		Design: Design{
@@ -88,9 +83,25 @@ func DefaultConfig() *Config {
 }
 
 func getUser() string {
-	user := os.Getenv("USER")
-	if user != "" {
+	if user := os.Getenv("USER"); user != "" {
 		return user
 	}
 	return "unknown"
+}
+
+func GenerateDefaultConfig() bool {
+	configPath := filepath.Join(ConfigDir, ConfigFile)
+
+	if err := SaveConfig(configPath, DefaultConfig()); err != nil {
+		logError("generating default config", err)
+		return false
+	}
+
+	log.Println("Default config generated successfully.")
+	return true
+}
+
+func logError(action string, err error) error {
+	log.Printf("Error %s: %v\n", action, err)
+	return err
 }

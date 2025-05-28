@@ -1,45 +1,39 @@
 package playlist
 
 import (
-	"os"
-	"strings"
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/charmbracelet/bubbles/table"
 )
 
-var playlistname string
+var (
+	currentIndex int
+	songList     []table.Row
+)
 
-func AddPlaylist(playlistname string) string {
-	return playlistname
+func GetAllSongs(songs []table.Row) {
+	songList = songs
+	currentIndex = 0
 }
 
-func GetAllSongs() []string {
-	var filesWithExt []string
-	ext := ".m4a"
-	tempPath := "/home/" + os.Getenv("USER") + "/TempSongs"
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
-	files, err := os.ReadDir(tempPath)
-	if err != nil {
-		return nil
+func GetRandomSong() string {
+	if len(songList) == 0 {
+		return ""
 	}
+	return fmt.Sprintf("%v", songList[rand.Intn(len(songList))][0])
+}
 
-	for _, file := range files {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ext) {
-			filesWithExt = append(filesWithExt, file.Name())
-		}
+func GetNextSong() string {
+	if len(songList) == 0 {
+		return ""
 	}
-
-	return filesWithExt
-}
-
-func ShufflePlaylist(playlist []string) []string {
-	shuffeledplaylist := playlist
-	return shuffeledplaylist
-
-}
-
-func RemovePlaylist(config string) bool {
-	return false
-}
-
-func GetPlaylistName(directory string) string {
-	return directory
+	song := fmt.Sprintf("%v", songList[currentIndex%len(songList)][0])
+	currentIndex++
+	return song
 }

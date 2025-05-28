@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -33,7 +34,6 @@ type Model struct {
 func (m Model) Init() tea.Cmd {
 	return nil
 }
-
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -76,16 +76,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.timeSet.Focus()
 			}
 		}
+		music.SetVolume(m.volume)
 	}
 
 	m.timeSet, cmd = m.timeSet.Update(msg)
 
 	return m, cmd
 }
-
 func (m Model) View() string {
-	var targetWidth = 54
-	var elements = []string{}
+	targetWidth := min(54, m.width-1)
+
 
 	if targetWidth >= m.width+1 {
 		targetWidth = m.width - 2
@@ -109,17 +109,16 @@ func (m Model) View() string {
 	// }
 	// elements = append(elements, parsedTime.String())
 
+	elements := []string{
+		lipg.NewStyle().Bold(true).Render("Application Controller"),
+		"Volume",
+		"Sleep Timer",
+	}
+
 	final := lipg.JoinVertical(lipg.Center, elements...)
 
-	minWidth := lipg.Width(final)
-	minHeight := lipg.Height(final)
-
-	paddingAmount := (targetWidth - minWidth) / 2
-	unevenPadding := 0
-
-	if minWidth%2 == 1 {
-		unevenPadding += 1
-	}
+	paddingAmount := max(0, (targetWidth-lipg.Width(final))/2)
+	unevenPadding := (lipg.Width(final) % 2)
 
 	if m.width >= minWidth && m.height >= minHeight {
 		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
@@ -129,9 +128,7 @@ func (m Model) View() string {
 			Render(final)
 		return content
 	} else {
-		return ""
-	}
-}
+
 
 func New(sharedState sharedState.SharedState) Model {
 	pb := progress.New(
@@ -195,4 +192,17 @@ func parseUserDuration(s string) (time.Duration, error) {
 		return 0, nil
 	}
 	return time.Duration(seconds) * time.Second, nil
+
+}
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

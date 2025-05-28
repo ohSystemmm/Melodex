@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
+	"Melodex/src/connection"
 	tui "Melodex/src/tui"
 )
 
@@ -15,55 +18,106 @@ var (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: melodex <command>")
-		tui.Application()
-		music.Init()
+		startApplication()
 		return
 	}
-
-	greeter()
 
 	command := os.Args[1]
+	handleCommand(command)
+}
+func startApplication() {
+	configPath := os.Getenv("HOME") + "/.config/melodex/config.toml"
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		fmt.Println("Configuration file not found. Generating default configuration...")
+		config.GenerateDefaultConfig()
+	} else {
+		cfg, err := config.LoadConfig(configPath)
+		if err != nil {
+			fmt.Println("Configuration file is corrupted. Generating default configuration...")
+			config.GenerateDefaultConfig()
+		} else {
+			fmt.Printf("Loading configuration from %s...\n", configPath)
+			_ = cfg
+		}
+	}
+
+	music.Init()
+	tui.Application()
+}
+
+func handleCommand(command string) {
 	switch command {
 	case "init", "i":
+		fmt.Println("Initializing Melodex...")
+		startApplication()
 	case "--version", "-v":
-		fmt.Println("Melodex version", version)
-		fmt.Println("Release date:", release)
-		fmt.Println("Use --help for a list of available commands.")
-		return
+		displayVersion()
 	case "--help", "-h":
-		help()
-		return
+		displayHelp()
 	case "--playlist", "-p":
-		// TODO: Opens melodex with the specified playlist
+		handlePlaylist()
+		startApplication()
 	case "--config", "-c":
-		// TODO: Opens melodex with the specified config
+		handleConfig()
+		startApplication()
 	case "--debug", "-d":
-		// TODO: Opens melodex in debug mode
+		startDebugMode()
 	case "--default-config", "-dc":
-		// TODO: Regenerate the default config and opens it
-
+		regenerateDefaultConfig()
+		startApplication()
 	default:
-		fmt.Println("Unknown command:", command)
-		fmt.Println("Use --help for a list of available commands.")
+		fmt.Printf("Unknown command: %s\nUse --help for a list of available commands.\n", command)
+	}
+}
+
+func displayVersion() {
+	fmt.Printf("Melodex version %s\nRelease date: %s\nUse --help for a list of available commands.\n", version, release)
+}
+
+func displayHelp() {
+	displayFileContent("src/assets/help.txt", "Help file not found")
+}
+
+func handlePlaylist() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: melodex --playlist <path>")
 		return
 	}
-
-	greeter()
+	playlistPath := os.Args[2]
+	connection.SetPlaylistPath(playlistPath)
 }
 
-func greeter() {
-	file, err := os.ReadFile("src/assets/usBTW.txt")
-	if err != nil {
-		fmt.Println(err)
+func handleConfig() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: melodex --config <path>")
+		return
 	}
-	fmt.Println("\n\033[36m" + string(file) + "\033[0m\n")
+	configPath := os.Args[2]
+	fmt.Printf("Loading config: %s\n", configPath)
+	config.LoadConfig(configPath)
 }
 
-func help() {
-	file, err := os.ReadFile("src/assets/help.txt")
-	if err != nil {
-		fmt.Println(err)
+func startDebugMode() {
+	fmt.Println("Starting Melodex in debug mode...")
+	// TODO: Implement debug mode (logs to stdout instead of log file)
+}
+
+func regenerateDefaultConfig() {
+	fmt.Println("Regenerating default configuration...")
+	if config.GenerateDefaultConfig() {
+		fmt.Println("Default configuration successfully regenerated.")
+	} else {
+		fmt.Println("Failed to regenerate default configuration.")
 	}
-	fmt.Println(string(file) + "\n")
+	startApplication()
+}
+
+func displayFileContent(path string, errorMessage string) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		log.Printf("%s: %v\n", errorMessage, err)
+		return
+	}
+	fmt.Println(string(file))
 }
