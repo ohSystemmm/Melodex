@@ -1,7 +1,7 @@
 package applicationController
 
 import (
-	"log"
+	// "log"
 	"os"
 	"strconv"
 	"strings"
@@ -35,6 +35,7 @@ type Model struct {
 func (m Model) Init() tea.Cmd {
 	return nil
 }
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -84,8 +85,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, cmd
 }
+
 func (m Model) View() string {
-	targetWidth := min(54, m.width-1)
+	var targetWidth = 54
+	var elements = []string{}
 
 	if targetWidth >= m.width+1 {
 		targetWidth = m.width - 2
@@ -94,6 +97,20 @@ func (m Model) View() string {
 	elements = append(elements, lipg.NewStyle().Bold(true).Render("Application Controller"))
 	elements = append(elements, "")
 	elements = append(elements, "Volume "+m.pB.ViewAs(float64(m.volume)/100)+strconv.Itoa(m.volume)+"%")
+
+	var parsedTime time.Duration
+	if m.timeSet.Value() != "" {
+		parsedTime, _ = parseUserDuration(m.timeSet.Value())
+	}
+
+	if m.sleep && !m.sharedState.SettingTime {
+		elapsed := time.Since(m.timebegin)
+		remaining := parsedTime - elapsed
+		m.timeSet.SetValue(formatDuration(remaining))
+	} else if !m.sharedState.SettingTime {
+		m.timeSet.SetValue(formatDuration(parsedTime))
+	}
+
 	sleepTimer := "Sleeptimer: "
 	sleepTimer += m.timeSet.View()
 	if m.sleep {
@@ -103,22 +120,17 @@ func (m Model) View() string {
 	}
 	elements = append(elements, sleepTimer)
 
-	// var parsedTime time.Duration
-	// if m.timeSet.Value() != "" {
-	// 	parsedTime, _ = parseUserDuration(m.timeSet.Value())
-	// }
-	// elements = append(elements, parsedTime.String())
-
-	elements := []string{
-		lipg.NewStyle().Bold(true).Render("Application Controller"),
-		"Volume",
-		"Sleep Timer",
-	}
-
 	final := lipg.JoinVertical(lipg.Center, elements...)
 
-	paddingAmount := max(0, (targetWidth-lipg.Width(final))/2)
-	unevenPadding := (lipg.Width(final) % 2)
+	minWidth := lipg.Width(final)
+	minHeight := lipg.Height(final)
+
+	paddingAmount := (targetWidth - minWidth) / 2
+	unevenPadding := 0
+
+	if minWidth%2 == 1 {
+		unevenPadding += 1
+	}
 
 	if m.width >= minWidth && m.height >= minHeight {
 		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
@@ -128,7 +140,6 @@ func (m Model) View() string {
 			Render(final)
 		return content
 	} else {
-		log.Println("Window too small for Application Controller")
 		return ""
 	}
 }
@@ -171,7 +182,7 @@ func parseUserDuration(s string) (time.Duration, error) {
 		m, err2 := strconv.Atoi(parts[1])
 		sec, err3 := strconv.Atoi(parts[2])
 		if err1 != nil || err2 != nil || err3 != nil {
-			log.Println("Invalid time format:", s)
+			// log.Println("Invalid time format:", s)
 			return 0, err1 // just return the first error found
 		}
 		seconds = h*3600 + m*60 + sec
@@ -179,33 +190,38 @@ func parseUserDuration(s string) (time.Duration, error) {
 		m, err1 := strconv.Atoi(parts[0])
 		sec, err2 := strconv.Atoi(parts[1])
 		if err1 != nil || err2 != nil {
-			log.Println("Invalid time format:", s)
+			// log.Println("Invalid time format:", s)
 			return 0, err1
 		}
 		seconds = m*60 + sec
 	case 1:
 		sec, err := strconv.Atoi(parts[0])
 		if err != nil {
-			log.Println("Invalid time format:", s)
+			// log.Println("Invalid time format:", s)
 			return 0, err
 		}
 		seconds = sec
 	default:
-		log.Println("Invalid time format:", s)
+		// log.Println("Invalid time format:", s)
 		return 0, nil
 	}
 	return time.Duration(seconds) * time.Second, nil
+}
 
-}
-func min(a, b int) int {
-	if a < b {
-		return a
+func formatDuration(d time.Duration) string {
+	totalSeconds := max(int(d.Seconds()), 0)
+	h := totalSeconds / 3600
+	m := (totalSeconds % 3600) / 60
+	s := totalSeconds % 60
+	if h > 0 {
+		return pad2(h) + ":" + pad2(m) + ":" + pad2(s)
 	}
-	return b
+	return pad2(m) + ":" + pad2(s)
 }
-func max(a, b int) int {
-	if a > b {
-		return a
+
+func pad2(n int) string {
+	if n < 10 {
+		return "0" + strconv.Itoa(n)
 	}
-	return b
+	return strconv.Itoa(n)
 }
