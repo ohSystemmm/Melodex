@@ -1,7 +1,7 @@
 package musicList
 
 import (
-	"fmt"
+	// "fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,7 +9,6 @@ import (
 
 	"Melodex/src/backend/music"
 	"Melodex/src/connection"
-
 	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -17,6 +16,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 )
+
+// FIX the list so that the click, clicks at the correct position
 
 type Model struct {
 	sharedState *SharedState.SharedState
@@ -33,12 +34,10 @@ type Model struct {
 	height int
 }
 
-// Init implements the tea.Model interface
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-// Update handles input events
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -62,41 +61,65 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.GotoBottom()
 		}
 
-		if m.sharedState.Searching {
-			switch msg.String() {
-			case "esc", "enter":
-				m.sharedState.Searching = false
-				m.searchBar.Blur()
-				// return m, nil
-			}
+		if m.sharedState.SettingTime {
 		} else {
-			switch msg.String() {
-			case "q":
-				music.Cleanup()
-				return m, tea.Quit
-			case "enter":
-				m.sharedState.Paused = false
+			if m.sharedState.Searching {
+				switch msg.String() {
+				case "esc", "enter":
+					m.sharedState.Searching = false
+					m.searchBar.Blur()
+					// return m, nil
+				}
+			} else {
+				switch msg.String() {
+				case "q":
+					return m, tea.Quit
+				case "enter":
+					m.sharedState.Paused = false
+				// case " ":
+				// 	music.SetVolume(50)
+				// 	// music.PlaySong()
+				// 	m.sharedState.Paused = false
+				case " ":
+					music.PauseSong()
+					// m.sharedState.Paused = !music.IsPlaying()
+				case "f":
+					m.sharedState.Searching = true
+					return m, m.searchBar.Focus()
+				}
 
-				selectedSong := connection.GetPlaylistPath() + m.list.SelectedRow()[0]
-				music.PlaySong(selectedSong)
-				// connection.SetCurrentSong(m.list.SelectedRow()[0])
-				connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
-			case " ":
-				music.PauseSong()
-			case "f":
-				m.sharedState.Searching = true
-				return m, m.searchBar.Focus()
+				if m.sharedState.Searching {
+					switch msg.String() {
+					case "esc", "enter":
+						m.sharedState.Searching = false
+						m.searchBar.Blur()
+					}
+				} else {
+					switch msg.String() {
+					case "q":
+						music.Cleanup()
+						return m, tea.Quit
+					case "enter":
+						m.sharedState.Paused = false
+						connection.Play()
+						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
+					case " ":
+						music.PauseSong()
+					case "f":
+						m.sharedState.Searching = true
+						return m, m.searchBar.Focus()
+
+					}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:
-		// This is to handle the window resize
 		m.width, m.height = msg.Width, msg.Height
 		m.list.SetHeight(m.height - 4)
 		newColumns := m.list.Columns()
 
 		elseWidth := 70
 		titleWidth := max(m.width-elseWidth, 33)
-		// lengthWidth := int(0.1 * float64(availableWidth))
 		lengthWidth := 8
 
 		newColumns[0].Width = titleWidth
@@ -109,11 +132,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Y >= 4 && msg.Y <= m.height-1 && msg.X >= 1 && msg.X <= m.totalListWidth+4 {
 			switch tea.MouseEvent(msg).Button {
 			case tea.MouseButtonWheelUp:
-				// m.list.MoveDown(1) reverse scrolling
-				m.list.MoveUp(1) // natural scrolling
+				m.list.MoveUp(1)
 			case tea.MouseButtonWheelDown:
-				// m.list.MoveUp(1) reverse scrolling
-				m.list.MoveDown(1) // natural scrolling
+				m.list.MoveDown(1)
 			}
 			switch tea.MouseAction(msg.Action) {
 			case tea.MouseAction(tea.MouseButtonLeft):
@@ -127,13 +148,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// NOTE case-unsensitive
 	searchTerm := strings.ToLower(m.searchBar.Value())
 	if searchTerm != "" {
-		filteredRows := make([]table.Row, 0)
-		for _, row := range m.originalRows {
-			rowText := fmt.Sprintf("%v", row)
-			if strings.Contains(strings.ToLower(rowText), searchTerm) {
-				filteredRows = append(filteredRows, row)
-			}
-		}
+		filteredRows := m.filterRows(searchTerm)
 		m.list.SetRows(filteredRows)
 	} else {
 		m.list.SetRows(m.originalRows)
@@ -206,6 +221,7 @@ func (m Model) View() string {
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
 	rows := connection.ConnectSongs()
+
 	longestTitle, longestTime := 35, 6
 
 	for _, row := range rows {
@@ -247,7 +263,7 @@ func New(sharedState *SharedState.SharedState) Model {
 		log.Fatalf("Creating the Log file failed")
 	}
 
-	sharedState.Logger = log.New(file, "List ", log.LstdFlags)
+	sharedState.Logger = log.New(file, "List", log.LstdFlags)
 
 	return Model{
 		sharedState:    sharedState,

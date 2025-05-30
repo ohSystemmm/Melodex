@@ -5,13 +5,12 @@ import (
 )
 
 type SharedState struct {
-	Shuffling bool
-	Looping   bool
-	// Loop Playlist
-	LoopPL    bool
-	Searching bool
-	Paused    bool
-	Logger    *log.Logger
+	Searching   bool
+	SettingTime bool
+	Shuffling   bool
+	SongOption  int
+	Paused      bool
+	Logger      *log.Logger
 }
 
 var GlobalState = &SharedState{}
