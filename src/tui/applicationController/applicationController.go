@@ -9,6 +9,7 @@ import (
 
 	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
+
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
