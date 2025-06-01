@@ -128,10 +128,14 @@ func (m Model) View() string {
 		unevenPadding += 1
 	}
 
-	if m.width >= minWidth && m.height >= minHeight {
+	if m.height <= 30 {
+		return ""
+	} else if m.width >= minWidth && m.height >= minHeight {
 		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
 			PaddingLeft(paddingAmount).
 			PaddingRight(paddingAmount + unevenPadding).
+			PaddingTop(1).
+			PaddingBottom(1).
 			AlignVertical(lipg.Left).
 			Render(final)
 		return content

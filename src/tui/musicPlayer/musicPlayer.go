@@ -22,15 +22,12 @@ type Model struct {
 	width  int
 	height int
 
-	songFile string
-	title    string
-	artist   string
-	album    string
-	length   int
+	title  string
+	artist string
+	album  string
+	length int
 	// In percent
-	progress  int
-	shuffling bool
-	looping   int
+	progress int
 
 	selectedPreview bool
 }
@@ -177,11 +174,23 @@ func (m Model) View() string {
 	elements = append(elements, control)
 
 	content := lipg.JoinVertical(lipg.Center, elements...)
+	contentHeight := lipg.Height(content)
+	targetHeight := m.height - 14
 
+	if targetHeight >= 0 && contentHeight < targetHeight {
+		padTotal := targetHeight - contentHeight
+		padTop := padTotal / 4
+		padBottom := padTotal - padTop
+
+		content = lipg.NewStyle().
+			PaddingTop(padTop).
+			PaddingBottom(padBottom).
+			Render(content)
+	}
 	final := lipg.NewStyle().Padding(2).Align(lipg.Center).BorderStyle(lipg.ThickBorder()).Render(content)
 
 	minWidth := lipg.Width(final)
-	minHeight := lipg.Height(final)
+	minHeight := lipg.Height(final) + 1
 
 	if m.width >= minWidth && m.height >= minHeight {
 		return final
