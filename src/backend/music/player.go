@@ -1,8 +1,10 @@
 package music
 
 import (
+	"Melodex/src/logger"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"math"
 	"os"
@@ -21,107 +23,176 @@ var (
 	media  *vlc.Media
 )
 
+// FUNCTION: Initializes VLC
 func Init() {
-	if err := vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Fatalf("Error initializing VLC: %v", err)
+	var err error
+
+	if err = vlc.Init("--no-video", "--quiet"); err != nil {
+		logger.Log.Errorf("Error initializing VLC: %v", err)
 	}
 
-	var err error
 	player, err = vlc.NewPlayer()
 	if err != nil {
-		log.Fatalf("Error creating VLC player: %v", err)
+		logger.Log.Errorf("Error creating VLC player: %v", err)
 	}
 
-	if muted, err := player.IsMuted(); err == nil && muted {
-		_ = player.SetMute(false)
+	muted, err := player.IsMuted()
+	if err != nil {
+		logger.Log.Errorf("Error checking if player is muted: %v", err)
+	} else if muted {
+		if err = player.SetMute(false); err != nil {
+			logger.Log.Errorf("Error unmuting player: %v", err)
+		}
 	}
 
-	if volume, err := player.Volume(); err == nil && volume == 0 {
-		_ = player.SetVolume(100)
+	volume, err := player.Volume()
+	if err != nil {
+		logger.Log.Errorf("Error checking player volume: %v", err)
+	} else if volume == 0 {
+		if err = player.SetVolume(100); err != nil {
+			logger.Log.Errorf("Error setting volume to 100%%: %v", err)
+		}
 	}
 }
 
-func PlaySong(song string) {
+// FUNCTION: Plays the provided song
+func PlaySong(songPath string) bool {
 	if player.IsPlaying() {
-		player.Stop()
+		if err := player.Stop(); err != nil {
+			logger.Log.Errorf("Error stopping player: %v", err)
+			return false
+		}
 	}
 
-	_, err := player.LoadMediaFromPath(song)
+	_, err := player.LoadMediaFromPath(songPath)
 	if err != nil {
-		log.Fatalf("Error loading song: %v", err)
+		logger.Log.Errorf("Error loading song: %v", err)
+		return false
 	}
 
 	err = player.Play()
-	if err := player.Play(); err != nil {
-		log.Fatalf("Error playing song: %v", err)
+	if err = player.Play(); err != nil {
+		logger.Log.Errorf("Error playing song: %v", err)
+		return false
+	}
+	return true
+}
+
+// FUNCTION: Pauses song
+func PauseSong() {
+	if err := player.SetPause(player.IsPlaying()); err != nil {
+		logger.Log.Errorf("Error toggling pause: %v", err)
 	}
 }
-func PauseSong() {
-	player.SetPause(IsPlaying())
-}
+
+// FUNCTION: Returns the current state of the song
 func IsPlaying() bool {
 	return player.IsPlaying()
 }
-func GetSongPosition() (float32, error) {
-	return player.MediaPosition()
+
+// FUNCTION: Gets the current Song Position
+func CurrentSongPosition() float32 {
+	position, err := player.MediaPosition()
+	if err != nil {
+		logger.Log.Errorf("Error getting media position: %v", err)
+		return 0.0
+	}
+	return position
 }
+
+// FUNCTION: Sets the volume
 func SetVolume(volume int) {
-	_ = player.SetVolume(volume)
+	err := player.SetVolume(volume)
+	if err != nil {
+		logger.Log.Errorf("Error setting volume to %d: %v", volume, err)
+	}
 }
-func SetMediaPosition(pos float32) {
-	_ = player.SetMediaPosition(pos)
+
+// FUNCTION: Sets Media Position
+func SetMediaPosition(position float32) bool {
+	err := player.SetMediaPosition(position)
+	if err != nil {
+		logger.Log.Errorf("Error setting media position: %v", err)
+		return false
+	}
+	return true
 }
+
 func Sleep(duration time.Duration) {
 	log.Printf("Sleeping for %s...\n", duration)
 	time.Sleep(duration)
 	log.Println("Sleep complete. Stopping playback.")
 	Stop()
 }
-func Stop() {
-	if player != nil {
-		player.Stop()
+
+// FUNCTION: Stops the player
+func Stop() bool {
+	if player.IsPlaying() {
+		if err := player.Stop(); err != nil {
+			logger.Log.Errorf("Error stopping player: %v", err)
+			return false
+		}
 	}
-	if media != nil {
-		media.Release()
-	}
+	return true
 }
+
+// FUNCTION: Releases all resources
 func Cleanup() {
 	if player != nil {
-		player.Release()
+		if err := player.Release(); err != nil {
+			logger.Log.Errorf("Error releasing player: %v", err)
+		}
 	}
-	vlc.Release()
+
+	if media != nil {
+		if err := vlc.Release(); err != nil {
+			logger.Log.Errorf("Error releasing VLC: %v", err)
+		}
+	}
 }
 
-func Songlist(playlistPath string) ([]table.Row, error) {
+// FUNCTION: Generates the song list for the music list element
+func SongList(playlistPath string) []table.Row {
 	playlistName := filepath.Base(playlistPath)
 
-	if cachedRows, err := loadCache(playlistName); err == nil {
-		log.Println("Loaded playlist from cache:", playlistName)
-		return cachedRows, nil
+	rows, err := loadCache(playlistName)
+	if err != nil {
+		logger.Log.Errorf("Error loading cache file: %v", err)
+		rows = []table.Row{}
 	}
 
 	durations, err := getAllDurations(playlistPath)
 	if err != nil {
-		return nil, err
+		logger.Log.Errorf("Error getting song durations: %v", err)
+		return rows
 	}
 
-	if err := saveCache(playlistName, durations); err != nil {
-		log.Println("Warning: could not save playlist cache:", err)
+	if err = saveCache(playlistName, durations); err != nil {
+		logger.Log.Warnf("Warning: Could not save playlist cache: %v", err)
 	}
 
-	return durations, nil
+	return durations
 }
+
+// FUNCTION: Gets cache path
 func getCachePath(playlistName string) (string, error) {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
+		logger.Log.Errorf("Error getting cache dir: %v", err)
 		return "", err
 	}
 
 	appCacheDir := filepath.Join(cacheDir, "melodex")
-	_ = os.MkdirAll(appCacheDir, 0755)
+	err = os.MkdirAll(appCacheDir, fs.ModePerm)
+	if err != nil {
+		logger.Log.Errorf("Error creating cache dir: %v", err)
+		return "", err
+	}
 
 	return filepath.Join(appCacheDir, playlistName+".cache"), nil
 }
+
+// FUNCTION: Loads cached data
 func loadCache(playlistName string) ([]table.Row, error) {
 	path, err := getCachePath(playlistName)
 	if err != nil {
@@ -134,29 +205,41 @@ func loadCache(playlistName string) ([]table.Row, error) {
 	}
 
 	var rows []table.Row
-	return rows, json.Unmarshal(data, &rows)
+	if err := json.Unmarshal(data, &rows); err != nil {
+		return nil, err
+	}
+
+	return rows, nil
 }
+
+// FUNCTION: Saves cache
 func saveCache(filename string, rows []table.Row) error {
 	path, err := getCachePath(filename)
 	if err != nil {
+		logger.Log.Errorf("Error getting cache dir: %v", err)
 		return err
 	}
 
 	data, err := json.Marshal(rows)
 	if err != nil {
+		logger.Log.Errorf("Error marshaling cache rows: %v", err)
 		return err
 	}
 
 	return os.WriteFile(path, data, 0644)
 }
+
+// FUNCTION: Gets duration of a song
 func getDuration(songPath string) (string, error) {
 	output, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", songPath).Output()
 	if err != nil {
+		logger.Log.Errorf("Error getting duration: %v", err)
 		return "", err
 	}
 
 	seconds, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
 	if err != nil {
+		logger.Log.Errorf("Error parsing duration: %v", err)
 		return "", err
 	}
 
@@ -173,9 +256,12 @@ func getDuration(songPath string) (string, error) {
 		return fmt.Sprintf("%02d", int(seconds)), nil
 	}
 }
+
+// FUNCTION: Gets durations of all songs in a directory
 func getAllDurations(directory string) ([]table.Row, error) {
 	files, err := os.ReadDir(directory)
 	if err != nil {
+		logger.Log.Errorf("Error reading directory: %v", err)
 		return nil, err
 	}
 
@@ -185,7 +271,9 @@ func getAllDurations(directory string) ([]table.Row, error) {
 			continue
 		}
 		duration, err := getDuration(filepath.Join(directory, file.Name()))
-		if err == nil {
+		if err != nil {
+			logger.Log.Warnf("Error fetching duration for %s: %v", file.Name(), err)
+		} else {
 			durationList = append(durationList, table.Row{file.Name(), duration})
 		}
 	}

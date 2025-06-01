@@ -1,8 +1,6 @@
 package applicationController
 
 import (
-	// "log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,8 +13,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 )
-
-// FIX the clock so that it counts down
 
 type Model struct {
 	sharedState sharedState.SharedState
@@ -45,8 +41,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.sleep && time.Since(m.timebegin) > parsedTime {
-		// TODO Don't exit, rather pause
-		os.Exit(0)
+		music.PauseSong()
 	}
 
 	switch msg := msg.(type) {
@@ -202,7 +197,6 @@ func parseUserDuration(s string) (time.Duration, error) {
 		}
 		seconds = sec
 	default:
-		// log.Println("Invalid time format:", s)
 		return 0, nil
 	}
 	return time.Duration(seconds) * time.Second, nil

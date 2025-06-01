@@ -4,7 +4,6 @@ Usage:
 Available Commands:
   init, i            Initialize Melodex
   --config, -c        Open configuration options
-  --debug, -d         Enable debug mode
   --help, -h          Show this help message
   --playlist, -p      Use a specific playlist
   --version, -v       Show version information
