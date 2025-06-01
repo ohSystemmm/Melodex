@@ -29,7 +29,12 @@ func GetCurrentSong() string {
 }
 
 func ConnectSongs() []table.Row {
-	allSongs = music.SongList(playlistPath)
+	var err error
+	allSongs, err = music.GenerateSongList(playlistPath, "/home/ohsystemmm/.cache/melodex")
+	if err != nil {
+		logger.Log.Errorf("Error connecting to playlist: %v", err)
+	}
+
 	return allSongs
 }
 

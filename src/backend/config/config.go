@@ -68,7 +68,7 @@ func SaveConfig(path string, cfg *Config) bool {
 
 // FUNCTION: Template for the default config
 func DefaultConfig() *Config {
-	user := getUser()
+	user := GetUser()
 	basePath := filepath.Join("/home", user)
 
 	return &Config{
@@ -93,7 +93,7 @@ func DefaultConfig() *Config {
 }
 
 // FUNCTION: Gets the users home path
-func getUser() string {
+func GetUser() string {
 	if user := os.Getenv("USER"); user != "" {
 		return user
 	}

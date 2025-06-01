@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
@@ -12,8 +13,9 @@ import (
 )
 
 var (
-	version = "0.0.8"
-	release = "2025-XX-XX"
+	version  = "0.0.8"
+	release  = "2025-XX-XX"
+	cacheDir = "/home/" + config.GetUser() + "/.cache/melodex/"
 )
 
 func main() {
@@ -61,6 +63,12 @@ func handleCommand(command string) {
 	case "--playlist", "-p":
 		handlePlaylist()
 		startApplication()
+	case "--clear-cache", "-cc":
+		err := removeCache()
+		if err != nil {
+			logger.Log.Warn("Failed to remove cache: " + err.Error())
+		}
+		fmt.Println("Removed cache")
 	case "--config", "-c":
 		handleConfig()
 		startApplication()
@@ -99,6 +107,29 @@ func regenerateDefaultConfig() {
 		logger.Log.Error("Failed to regenerate the default configuration.")
 	}
 	startApplication()
+}
+
+func removeCache() error {
+	logger.Log.Info("Removing cache...")
+
+	files, err := os.ReadDir(cacheDir)
+	if err != nil {
+		logger.Log.Errorf("Error reading cache directory: %v", err)
+		return err
+	}
+
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ".cache" {
+			filePath := filepath.Join(cacheDir, file.Name())
+			err := os.Remove(filePath)
+			if err != nil {
+				logger.Log.Warnf("Error removing cache file %s: %v", file.Name(), err)
+			} else {
+				logger.Log.Infof("Removed cache file: %s", file.Name())
+			}
+		}
+	}
+	return nil
 }
 
 func displayFileContent(path string, errorMessage string) {

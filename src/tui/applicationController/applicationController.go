@@ -73,7 +73,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.timeSet.Focus()
 			}
 		}
-		music.SetVolume(m.volume)
+		//music.SetVolume(m.volume) FRICK THIS FRICKING BUG
 	}
 
 	m.timeSet, cmd = m.timeSet.Update(msg)

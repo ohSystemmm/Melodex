@@ -2,9 +2,9 @@ Usage:
   melodex <command> [options]
 
 Available Commands:
-  init, i            Initialize Melodex
   --config, -c        Open configuration options
   --help, -h          Show this help message
   --playlist, -p      Use a specific playlist
+  --clear-cache, -cc  Clears all song cache data
   --version, -v       Show version information
   --default-config    Regenerate default config
