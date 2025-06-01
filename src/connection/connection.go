@@ -1,10 +1,9 @@
 package connection
 
 import (
-	"log"
-
 	"Melodex/src/backend/music"
 	"Melodex/src/backend/playlist"
+	"Melodex/src/logger"
 
 	"github.com/charmbracelet/bubbles/table"
 )
@@ -30,18 +29,18 @@ func GetCurrentSong() string {
 }
 
 func ConnectSongs() []table.Row {
-	rows, err := music.Songlist(playlistPath)
+	var err error
+	allSongs, err = music.GenerateSongList(playlistPath, "/home/ohsystemmm/.cache/melodex")
 	if err != nil {
-		log.Println("Error connecting songs:", err)
-		return nil
+		logger.Log.Errorf("Error connecting to playlist: %v", err)
 	}
-	allSongs = rows
-	return rows
+
+	return allSongs
 }
 
 func Play() {
 	if len(allSongs) == 0 {
-		log.Println("No songs available to play.")
+		logger.Log.Warn("No songs found")
 		return
 	}
 
@@ -58,7 +57,7 @@ func Play() {
 			song = playlistPath + "/" + playlist.GetNextSong()
 		}
 	default:
-		log.Println("Invalid mode specified.")
+		logger.Log.Error("Invalid Mode")
 		return
 	}
 
