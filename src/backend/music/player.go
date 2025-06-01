@@ -2,9 +2,6 @@ package music
 
 import (
 	"Melodex/src/logger"
-	"log"
-	"time"
-
 	vlc "github.com/adrg/libvlc-go/v3"
 )
 
@@ -108,11 +105,40 @@ func SetMediaPosition(position float32) bool {
 	return true
 }
 
-func Sleep(duration time.Duration) {
-	log.Printf("Sleeping for %s...\n", duration)
-	time.Sleep(duration)
-	log.Println("Sleep complete. Stopping playback.")
-	Stop()
+// FUNCTION: Increases volume by params value
+func IncreaseVolume(factor int) {
+	currentVolume, err := player.Volume()
+	if err != nil {
+		logger.Log.Errorf("Error getting volume: %v", err)
+	}
+
+	newVolume := currentVolume + factor
+	if newVolume >= 100 {
+		newVolume = 100
+	}
+
+	err = player.SetVolume(newVolume)
+	if err != nil {
+		logger.Log.Errorf("Error increasing volume from %d to %d: %v", currentVolume, newVolume, err)
+	}
+}
+
+// FUNCTION: Decreases volume by params value
+func DecreaseVolume(factor int) {
+	currentVolume, err := player.Volume()
+	if err != nil {
+		logger.Log.Errorf("Error getting volume: %v", err)
+	}
+
+	newVolume := currentVolume - factor
+	if newVolume <= 0 {
+		newVolume = 0
+	}
+
+	err = player.SetVolume(newVolume)
+	if err != nil {
+		logger.Log.Errorf("Error decreasing volume from %d to %d: %v", currentVolume, newVolume, err)
+	}
 }
 
 // FUNCTION: Stops the player

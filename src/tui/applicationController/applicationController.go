@@ -65,15 +65,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "j":
-				m.volume = min(m.volume+1, 100)
+				m.volume = min(m.volume+5, 100)
+				music.DecreaseVolume(5)
 			case "k":
-				m.volume = max(m.volume-1, 0)
+				m.volume = max(m.volume-5, 0)
+				music.IncreaseVolume(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			}
 		}
-		//music.SetVolume(m.volume) FRICK THIS FRICKING BUG
 	}
 
 	m.timeSet, cmd = m.timeSet.Update(msg)

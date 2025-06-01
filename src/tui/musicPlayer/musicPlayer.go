@@ -65,13 +65,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				playlist.GetNextSong() // TODO
 			case "enter":
 				m.title = connection.GetCurrentSong()
-			case ",": // TODO
+			case ",":
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
 					m.sharedState.Shuffling = true
 				}
-			case ".": // TODO
+			case ".":
 				if m.sharedState.SongOption < 0 {
 					m.sharedState.SongOption = 0
 				} else if m.sharedState.SongOption == 0 {
@@ -79,10 +79,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.sharedState.SongOption = -1
 				}
-			case " ": // TODO
+				/* NOTE
+				* -1 = No Repeat
+				*  0 = Repeat Playlist
+				*  1 = Repeat Song
+				 */
+			case " ":
 				if music.IsPlaying() && m.sharedState.Paused {
 					m.sharedState.Paused = !m.sharedState.Paused
-
 				} else {
 					m.sharedState.Paused = !m.sharedState.Paused
 				}
