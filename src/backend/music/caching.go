@@ -61,7 +61,7 @@ func getDuration(songPath string) (string, error) {
 	minutes := int(seconds) / 60
 	seconds = math.Mod(seconds, 60)
 
-	return fmt.Sprintf("%02d:%02d", minutes, int(seconds)), nil
+	return fmt.Sprintf("%02d:%02d", minutes, int(seconds)), nil //TODO
 }
 
 // FUNCTION: Gets all song names in a directory
@@ -129,8 +129,7 @@ func GenerateSongList(directory, cacheDir string) ([]table.Row, error) {
 		songList = append(songList, table.Row{songNames[i], durations[i]})
 	}
 
-	// Cache the results
-	if err := saveCache(cacheDir, playlistName, songList); err != nil {
+	if err = saveCache(cacheDir, playlistName, songList); err != nil {
 		logger.Log.Warnf("Warning: Could not save playlist cache: %v", err)
 	}
 

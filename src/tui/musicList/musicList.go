@@ -1,9 +1,6 @@
 package musicList
 
 import (
-	// "fmt"
-	"log"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -254,16 +251,9 @@ func New(sharedState *SharedState.SharedState) Model {
 	// FIX find a way to somehow seperate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
-	trimmedPath := strings.TrimRight("", "/")
-	playlistName := filepath.Base(trimmedPath)
-
-	// Log files
-	file, err := os.Create("log.txt")
-	if err != nil {
-		log.Fatalf("Creating the Log file failed")
-	}
-
-	sharedState.Logger = log.New(file, "List", log.LstdFlags)
+	//trimmedPath := strings.TrimRight("", "/")
+	//playlistName := filepath.Base(trimmedPath)
+	playlistName := "Playlist: " + connection.GetPlaylistName()
 
 	return Model{
 		sharedState:    sharedState,
@@ -281,8 +271,6 @@ func defineTableStyles() table.Styles {
 	styles.Selected = styles.Selected.
 		Foreground(lipg.Color("230")).
 		Background(lipg.Color("63")).
-		// Foreground(lipg.Color("#111111")).
-		// Background(lipg.Color("#dddddd")).
 		Bold(true)
 	styles.Header = styles.Header.Bold(true).Background(lipg.Color("60"))
 	return styles

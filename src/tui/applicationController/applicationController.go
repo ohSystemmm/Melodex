@@ -106,7 +106,7 @@ func (m Model) View() string {
 		m.timeSet.SetValue(formatDuration(parsedTime))
 	}
 
-	sleepTimer := "Sleeptimer: "
+	sleepTimer := "Sleep: "
 	sleepTimer += m.timeSet.View()
 	if m.sleep {
 		sleepTimer += "󰱒 "
@@ -148,9 +148,8 @@ func New(sharedState sharedState.SharedState) Model {
 
 	tS := textinput.New()
 	tS.Width = 8
-	tS.CharLimit = 8
 	// tS.Placeholder = "00:30:00"
-	tS.Placeholder = "20s"
+	tS.Placeholder = "30s"
 	tS.Prompt = " "
 
 	return Model{

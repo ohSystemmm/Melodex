@@ -1,11 +1,16 @@
 package connection
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/backend/playlist"
 	"Melodex/src/logger"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
+)
+import (
+	"path/filepath"
 )
 
 var (
@@ -15,6 +20,10 @@ var (
 	mode         int
 	allSongs     []table.Row
 )
+
+func GetPlaylistName() string {
+	return filepath.Base(strings.TrimSpace(playlistPath))
+}
 
 func SetPlaylistPath(passedPlaylistPath string) {
 	playlistPath = passedPlaylistPath
@@ -30,7 +39,7 @@ func GetCurrentSong() string {
 
 func ConnectSongs() []table.Row {
 	var err error
-	allSongs, err = music.GenerateSongList(playlistPath, "/home/ohsystemmm/.cache/melodex")
+	allSongs, err = music.GenerateSongList(playlistPath, "/home/"+config.GetUser()+"/.cache/melodex")
 	if err != nil {
 		logger.Log.Errorf("Error connecting to playlist: %v", err)
 	}

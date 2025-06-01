@@ -2,6 +2,7 @@ package musicPlayer
 
 import (
 	"Melodex/src/backend/music"
+	"Melodex/src/backend/playlist"
 	"Melodex/src/connection"
 	"Melodex/src/tui/sharedState"
 
@@ -27,9 +28,9 @@ type Model struct {
 	album    string
 	length   int
 	// In percent
-	progress        int
-	shuffling       bool
-	looping         int
+	progress  int
+	shuffling bool
+	looping   int
 
 	selectedPreview bool
 }
@@ -53,39 +54,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "right":
-
-				m.progress = min(m.progress+1, m.length)
+				m.progress = min(m.progress+5, m.length)
+				music.SetMediaPosition(0) // TODO
 			case "left":
-				m.progress = max(m.progress-1, 0)
-
+				m.progress = max(m.progress-5, 0)
+				music.SetMediaPosition(0) // TODO
 			case "b":
-				//playlist.PlayNextSong()
-				// TODO
+				playlist.GetPreviousSong() // TODO
 			case "n":
-				//playlist.PlayPreviousSong()
-				// TODO
-
+				playlist.GetNextSong() // TODO
 			case "enter":
 				m.title = connection.GetCurrentSong()
-				m.artist = ""
-
-				// var err error
-				// m.length, err = music.SongLength(m.songFile, m.songFile)
-				// if err != nil {
-				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				// }
-				// m.progress, err = music.SongPosition()
-				// if err == nil {
-				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				// }
-
-			case ",":
+			case ",": // TODO
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
 					m.sharedState.Shuffling = true
 				}
-			case ".":
+			case ".": // TODO
 				if m.sharedState.SongOption < 0 {
 					m.sharedState.SongOption = 0
 				} else if m.sharedState.SongOption == 0 {
@@ -93,17 +79,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.sharedState.SongOption = -1
 				}
-			case " ":
+			case " ": // TODO
 				if music.IsPlaying() && m.sharedState.Paused {
 					m.sharedState.Paused = !m.sharedState.Paused
 
 				} else {
 					m.sharedState.Paused = !m.sharedState.Paused
 				}
-			case "tab":
-				m.selectedPreview = !m.selectedPreview
 			}
-
 		}
 	}
 	return m, nil
@@ -116,11 +99,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	if m.selectedPreview {
-		elements = append(elements, "Currently Viewing")
-	} else {
-		elements = append(elements, "Playing")
-	}
+	elements = append(elements, "Welcome to Melodex!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -187,7 +166,6 @@ func (m Model) View() string {
 
 	control += totalTime
 
-	m.album = "" // TODO
 	elements = append(elements, m.title)
 	elements = append(elements, m.artist+" \n "+m.album)
 
@@ -243,12 +221,12 @@ func (m Model) View() string {
 		leftPadding = max(leftPadding, 0)
 		topPadding = max(topPadding, 0)
 
-		error := lipg.NewStyle().
+		style := lipg.NewStyle().
 			PaddingTop(topPadding).
 			PaddingLeft(leftPadding).
 			Bold(true).
 			Render(errorContent)
-		return error
+		return style
 	}
 }
 
@@ -267,9 +245,6 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		title:       "Example Title",
-		artist:      "Example Artist",
-		album:       "Example Album",
 		length:      181,
 		progress:    50,
 		progressBar: pb,

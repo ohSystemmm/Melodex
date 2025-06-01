@@ -37,3 +37,7 @@ func GetNextSong() string {
 	currentIndex++
 	return song
 }
+
+func GetPreviousSong() string {
+	return ""
+}
