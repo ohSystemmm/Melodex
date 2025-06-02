@@ -24,17 +24,22 @@ var (
 func GetPlaylistName() string {
 	return filepath.Base(strings.TrimSpace(playlistPath))
 }
-
 func SetPlaylistPath(passedPlaylistPath string) {
 	playlistPath = passedPlaylistPath
 }
-
 func SetCurrentSong(song string) {
 	currentSong = song
 }
-
 func GetCurrentSong() string {
 	return currentSong
+}
+
+func SetShuffle(state bool) {
+	shuffle = state
+}
+
+func SetMode(state int) {
+	mode = state
 }
 
 func ConnectSongs() []table.Row {
@@ -48,27 +53,26 @@ func ConnectSongs() []table.Row {
 }
 
 func Play() {
-	if len(allSongs) == 0 {
-		logger.Log.Warn("No songs found")
-		return
-	}
-
 	playlist.GetAllSongs(allSongs)
-
-	var song string
-	switch {
-	case mode < 0:
-		song = playlistPath + "/" + currentSong
-	case mode == 0:
-		if shuffle {
-			song = playlistPath + "/" + playlist.GetRandomSong()
-		} else {
-			song = playlistPath + "/" + playlist.GetNextSong()
-		}
-	default:
-		logger.Log.Error("Invalid Mode")
+	if len(allSongs) == 0 {
+		logger.Log.Info("No songs found")
 		return
 	}
-
+	var song string
+	if mode >= 0 {
+		for {
+			if shuffle {
+				song = playlist.GetRandomSong()
+			} else {
+				if mode == 0 {
+					song = playlist.RepeatPlaylist()
+				} else {
+					song = playlist.RepeatSong()
+				}
+			}
+		}
+	} else {
+		song = playlist.PlayCurrentSong()
+	}
 	music.PlaySong(song)
 }

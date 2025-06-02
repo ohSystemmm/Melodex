@@ -26,16 +26,39 @@ func init() {
 }
 
 func GetRandomSong() string {
-	// Return a Random song from songList
-	return ""
+	if len(songList) == 0 {
+		return ""
+	}
+	randomIndex := rand.Intn(len(songList))
+	return songList[randomIndex][0]
 }
 
 func GetNextSong() string {
-	// Return Selected Song  + Index 1
-	return ""
+	if len(songList) == 0 {
+		return ""
+	}
+	nextIndex := (currentIndex + 1) % len(songList)
+	currentIndex = nextIndex
+	return songList[currentIndex][0]
 }
 
 func GetPreviousSong() string {
-	// Return Selected Song -1
+	if len(songList) == 0 {
+		return ""
+	}
+	previousIndex := (currentIndex - 1 + len(songList)) % len(songList)
+	currentIndex = previousIndex
+	return songList[currentIndex][0]
+}
+
+func RepeatPlaylist() string {
+	return ""
+}
+
+func RepeatSong() string {
+	return ""
+}
+
+func PlayCurrentSong() string {
 	return ""
 }
