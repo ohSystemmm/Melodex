@@ -198,3 +198,14 @@ func WaitTillSongEnd() {
 func GetIndex() int {
 	return songIndex
 }
+
+func GetCurrentSongLength() float64 {
+	if player == nil {
+		return 0.0
+	}
+	length, err := player.MediaLength()
+	if err != nil {
+		logger.Log.Errorf("Error getting media length: %v", err)
+	}
+	return float64(length)
+}
