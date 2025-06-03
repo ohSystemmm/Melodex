@@ -65,7 +65,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "esc", "enter":
 					m.sharedState.Searching = false
 					m.searchBar.Blur()
-					// return m, nil
 				}
 			} else {
 				switch msg.String() {
@@ -73,18 +72,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false
-				// case " ":
-				// 	music.SetVolume(50)
-				// 	// music.PlaySong()
-				// 	m.sharedState.Paused = false
 				case " ":
 					music.PauseSong()
-					// m.sharedState.Paused = !music.IsPlaying()
 				case "f":
 					m.sharedState.Searching = true
 					return m, m.searchBar.Focus()
 				}
-
 				if m.sharedState.Searching {
 					switch msg.String() {
 					case "esc", "enter":
@@ -98,7 +91,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						connection.Play()
 						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
 					case " ":
 						music.PauseSong()
@@ -207,7 +199,7 @@ func (m Model) View() string {
 		BorderRight(true).
 		Render(m.list.View())
 
-	// NOTE Idealy this number should be dynamic, but this is not necessary
+	// NOTE Ideally this number should be dynamic, but this is not necessary
 	if m.width > 102 {
 		return lipg.JoinVertical(lipg.Top, header, musicList)
 	} else {
@@ -248,7 +240,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.CharLimit = 0
 	sB.Placeholder = "Search"
 
-	// FIX find a way to somehow seperate the filter and search boxes in their own borders
+	// FIX find a way to somehow separate the filter and search boxes in their own borders
 	sB.Prompt = " "
 
 	//trimmedPath := strings.TrimRight("", "/")

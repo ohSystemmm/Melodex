@@ -20,6 +20,9 @@ func GetAllSongs(songs []table.Row) {
 func IncreaseIndex() {
 	currentIndex++
 }
+func DecreaseIndex() {
+	currentIndex--
+}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())

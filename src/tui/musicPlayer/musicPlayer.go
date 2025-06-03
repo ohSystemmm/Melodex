@@ -4,6 +4,7 @@ import (
 	"Melodex/src/backend/music"
 	"Melodex/src/backend/playlist"
 	"Melodex/src/connection"
+	"Melodex/src/logger"
 	"Melodex/src/tui/sharedState"
 
 	"fmt"
@@ -52,14 +53,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				music.SetMediaPosition(0) // TODO
+				//music.SetMediaPosition(0) // TODO
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				music.SetMediaPosition(0) // TODO
+				//music.SetMediaPosition(0) // TODO
 			case "b":
+				playlist.DecreaseIndex()
+				connection.Play(music.GetIndex())
 				playlist.GetPreviousSong() // TODO
 			case "n":
-				playlist.GetNextSong() // TODO
+				playlist.IncreaseIndex()
+				connection.Play(music.GetIndex()) // TODO
 			case "enter":
 				m.title = connection.GetCurrentSong()
 			case ",":
@@ -68,14 +72,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.sharedState.Shuffling = true
 				}
+				connection.SetShuffle(m.sharedState.Shuffling)
+				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
-				if m.sharedState.SongOption < 0 {
+				switch m.sharedState.SongOption {
+				case -1:
 					m.sharedState.SongOption = 0
-				} else if m.sharedState.SongOption == 0 {
+				case 0:
 					m.sharedState.SongOption = 1
-				} else {
+				case 1:
 					m.sharedState.SongOption = -1
 				}
+
+				connection.SetMode(m.sharedState.SongOption)
+				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
 				/* NOTE
 				* -1 = No Repeat
 				*  0 = Repeat Playlist
@@ -130,22 +140,23 @@ func (m Model) View() string {
 	}
 
 	controlCenter += "󰒮 "
-
-	if m.sharedState.Paused {
+	switch m.sharedState.Paused {
+	case true:
 		controlCenter += "\U000F040A "
-	} else {
+	case false:
 		controlCenter += "\U000F03E4 "
 	}
 
 	controlCenter += "󰒭 "
 
 	if m.width >= 28 {
-		if m.sharedState.SongOption < 0 {
-			controlCenter += "\U000F0458"
-		} else if m.sharedState.SongOption > 0 {
-			controlCenter += "\U000F0456"
-		} else {
+		switch m.sharedState.SongOption {
+		case -1:
 			controlCenter += "\U000F0457"
+		case 0:
+			controlCenter += "\U000F0456"
+		case 1:
+			controlCenter += "\U000F0458"
 		}
 	}
 

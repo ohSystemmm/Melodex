@@ -3,11 +3,13 @@ package music
 import (
 	"Melodex/src/logger"
 	vlc "github.com/adrg/libvlc-go/v3"
+	"time"
 )
 
 var (
-	player *vlc.Player
-	media  *vlc.Media
+	player    *vlc.Player
+	media     *vlc.Media
+	songIndex int
 )
 
 // FUNCTION: Initializes VLC
@@ -40,6 +42,7 @@ func Init() {
 			logger.Log.Errorf("Error setting volume to 100: %v", err)
 		}
 	}
+	songIndex = 0
 }
 
 // FUNCTION: Plays the provided song
@@ -57,6 +60,7 @@ func PlaySong(songPath string) bool {
 		return false
 	}
 
+	songIndex++
 	err = player.Play()
 	if err = player.Play(); err != nil {
 		logger.Log.Errorf("Error playing song: %v", err)
@@ -165,4 +169,32 @@ func Cleanup() {
 			logger.Log.Errorf("Error releasing VLC: %v", err)
 		}
 	}
+}
+
+func WaitTillSongEnd() {
+	for {
+		currentPosition, err := player.MediaPosition()
+		if err != nil {
+			logger.Log.Errorf("Error getting media position: %v", err)
+			return
+		}
+
+		mediaLength, err := player.MediaLength()
+		if err != nil {
+			logger.Log.Errorf("Error getting media length: %v", err)
+			return
+		}
+
+		if currentPosition >= float32(mediaLength) {
+			break
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	logger.Log.Info("Song Finished")
+}
+
+func GetIndex() int {
+	return songIndex
 }

@@ -3,7 +3,6 @@ package connection
 import (
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
-	"Melodex/src/backend/playlist"
 	"Melodex/src/logger"
 	"strings"
 
@@ -52,27 +51,5 @@ func ConnectSongs() []table.Row {
 	return allSongs
 }
 
-func Play() {
-	playlist.GetAllSongs(allSongs)
-	if len(allSongs) == 0 {
-		logger.Log.Info("No songs found")
-		return
-	}
-	var song string
-	if mode >= 0 {
-		for {
-			if shuffle {
-				song = playlist.GetRandomSong()
-			} else {
-				if mode == 0 {
-					song = playlist.RepeatPlaylist()
-				} else {
-					song = playlist.RepeatSong()
-				}
-			}
-		}
-	} else {
-		song = playlist.PlayCurrentSong()
-	}
-	music.PlaySong(song)
+func Play(index int) {
 }
