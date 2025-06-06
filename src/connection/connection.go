@@ -4,12 +4,10 @@ import (
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/logger"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
-)
-import (
-	"path/filepath"
 )
 
 var (

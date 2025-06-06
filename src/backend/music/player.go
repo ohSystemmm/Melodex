@@ -1,6 +1,7 @@
 package music
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/logger"
 	vlc "github.com/adrg/libvlc-go/v3"
 	"time"
@@ -34,13 +35,10 @@ func Init() {
 		}
 	}
 
-	volume, err := player.Volume()
+	err = player.SetVolume(config.ConfGetVolume())
+	logger.Log.Infof("Set volume to %d", config.ConfGetVolume())
 	if err != nil {
-		logger.Log.Errorf("Error checking player volume: %v", err)
-	} else if volume == 0 {
-		if err = player.SetVolume(100); err != nil {
-			logger.Log.Errorf("Error setting volume to 100: %v", err)
-		}
+		logger.Log.Errorf("Error setting volume to %d: %v", config.ConfGetVolume(), err)
 	}
 	songIndex = 0
 }
