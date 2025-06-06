@@ -16,9 +16,9 @@ Melodex is a local, lightweight CLI music player. A Go application using the Bub
 <details>
   <summary>Maintainers</summary>
   
-- **Lead Developer**: [OhSystemmm](https://github.com/ohSystemmm)
+- **Lead Developer**: [ohSystemmm](https://github.com/ohSystemmm)
 - **Contributer**: [Y2kun](https://github.com/Y2kun)
-- **Contributer**: [NvmChris](https://github.com/nvmChris)
+- **Contributer**: [nvmChris](https://github.com/nvmChris)
 
 </details>
 <details>
