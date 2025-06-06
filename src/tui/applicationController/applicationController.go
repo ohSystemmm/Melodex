@@ -65,9 +65,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "j":
-				m.volume = min(m.volume+1, 100)
+				m.volume = min(m.volume+5, 100)
+				music.DecreaseVolume(5)
 			case "k":
-				m.volume = max(m.volume-1, 0)
+				m.volume = max(m.volume-5, 0)
+				music.IncreaseVolume(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
@@ -106,7 +108,7 @@ func (m Model) View() string {
 		m.timeSet.SetValue(formatDuration(parsedTime))
 	}
 
-	sleepTimer := "Sleeptimer: "
+	sleepTimer := "Sleep: "
 	sleepTimer += m.timeSet.View()
 	if m.sleep {
 		sleepTimer += "󰱒 "
@@ -127,10 +129,14 @@ func (m Model) View() string {
 		unevenPadding += 1
 	}
 
-	if m.width >= minWidth && m.height >= minHeight {
+	if m.height <= 30 {
+		return ""
+	} else if m.width >= minWidth && m.height >= minHeight {
 		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
 			PaddingLeft(paddingAmount).
 			PaddingRight(paddingAmount + unevenPadding).
+			PaddingTop(1).
+			PaddingBottom(1).
 			AlignVertical(lipg.Left).
 			Render(final)
 		return content
@@ -148,9 +154,8 @@ func New(sharedState sharedState.SharedState) Model {
 
 	tS := textinput.New()
 	tS.Width = 8
-	tS.CharLimit = 8
 	// tS.Placeholder = "00:30:00"
-	tS.Placeholder = "20s"
+	tS.Placeholder = "30s"
 	tS.Prompt = " "
 
 	return Model{

@@ -4,6 +4,8 @@ import (
 	"Melodex/src/logger"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -41,7 +43,9 @@ func LoadConfig(path string) *Config {
 	}
 
 	var cfg Config
-	if err := toml.Unmarshal(data, &cfg); err != nil {
+
+	if err = toml.Unmarshal(data, &cfg); err != nil {
+
 		logger.Log.Error("Load config file error:", err)
 		return nil
 	}
@@ -51,10 +55,16 @@ func LoadConfig(path string) *Config {
 
 // FUNCTION: Saves the config
 func SaveConfig(path string, cfg *Config) bool {
-	data, err := toml.Marshal(cfg)
-	if err != nil {
-		logger.Log.Error("Save config file error:", err)
-		return false
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0755)
+		if err != nil {
+			logger.Log.Error("Failed to create config directory:", err)
+			return false
+		}
+	}
+
+
 	}
 
 	err = os.WriteFile(path, data, 0644)
@@ -112,3 +122,56 @@ func GenerateDefaultConfig() bool {
 	logger.Log.Info("Generate default configuration success")
 	return true
 }
+
+func GetConfig() *Config {
+	configPath := filepath.Join(dirConfig, fileConfig)
+	cfg := LoadConfig(configPath)
+
+	if cfg == nil {
+		logger.Log.Errorf("Error loading config: %s", configPath)
+
+		defaultCfg := DefaultConfig()
+		logger.Log.Infof("Using default config: %+v", defaultCfg)
+
+		saveErr := SaveConfig(configPath, defaultCfg)
+		if !saveErr {
+			logger.Log.Errorf("Failed to save default config")
+			return defaultCfg
+		}
+
+		return defaultCfg
+	}
+	return cfg
+}
+
+var cfg = GetConfig()
+
+func ConfGetVolume() int {
+	volume, err := strconv.Atoi(strings.TrimSuffix(cfg.General.DefaultVolume, "%"))
+	if err != nil {
+		logger.Log.Error("Invalid volume format in config, using default (100%)")
+		return 100
+	}
+	logger.Log.Warnf("Using volume %d", volume)
+	return volume
+}
+
+func ConfGetUser() string {
+	user := cfg.General.User
+	if user == "" {
+		user = os.Getenv("USER")
+		logger.Log.Infof("User not valid, using environment user: %s", user)
+	}
+	logger.Log.Infof("Using user from config: %s", user)
+	return user
+}
+
+func ConfGetDefaultPlaylist() string {
+	playlist := cfg.General.DefaultPlaylist
+	if playlist == "" {
+		logger.Log.Errorf("Playlist not found.")
+		return ""
+	}
+	return playlist
+}
+

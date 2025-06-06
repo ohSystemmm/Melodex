@@ -1,7 +1,6 @@
 package playlist
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -18,6 +17,13 @@ func GetAllSongs(songs []table.Row) {
 	currentIndex = 0
 }
 
+func IncreaseIndex() {
+	currentIndex++
+}
+func DecreaseIndex() {
+	currentIndex--
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -26,14 +32,36 @@ func GetRandomSong() string {
 	if len(songList) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%v", songList[rand.Intn(len(songList))][0])
+	randomIndex := rand.Intn(len(songList))
+	return songList[randomIndex][0]
 }
 
 func GetNextSong() string {
 	if len(songList) == 0 {
 		return ""
 	}
-	song := fmt.Sprintf("%v", songList[currentIndex%len(songList)][0])
-	currentIndex++
-	return song
+	nextIndex := (currentIndex + 1) % len(songList)
+	currentIndex = nextIndex
+	return songList[currentIndex][0]
+}
+
+func GetPreviousSong() string {
+	if len(songList) == 0 {
+		return ""
+	}
+	previousIndex := (currentIndex - 1 + len(songList)) % len(songList)
+	currentIndex = previousIndex
+	return songList[currentIndex][0]
+}
+
+func RepeatPlaylist() string {
+	return ""
+}
+
+func RepeatSong() string {
+	return ""
+}
+
+func PlayCurrentSong() string {
+	return ""
 }

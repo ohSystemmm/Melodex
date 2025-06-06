@@ -1,9 +1,11 @@
 package connection
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
-	"Melodex/src/backend/playlist"
 	"Melodex/src/logger"
+	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 )
@@ -16,21 +18,30 @@ var (
 	allSongs     []table.Row
 )
 
+func GetPlaylistName() string {
+	return filepath.Base(strings.TrimSpace(playlistPath))
+}
 func SetPlaylistPath(passedPlaylistPath string) {
 	playlistPath = passedPlaylistPath
 }
-
 func SetCurrentSong(song string) {
 	currentSong = song
 }
-
 func GetCurrentSong() string {
 	return currentSong
 }
 
+func SetShuffle(state bool) {
+	shuffle = state
+}
+
+func SetMode(state int) {
+	mode = state
+}
+
 func ConnectSongs() []table.Row {
 	var err error
-	allSongs, err = music.GenerateSongList(playlistPath, "/home/ohsystemmm/.cache/melodex")
+	allSongs, err = music.GenerateSongList(playlistPath, "/home/"+config.GetUser()+"/.cache/melodex")
 	if err != nil {
 		logger.Log.Errorf("Error connecting to playlist: %v", err)
 	}
@@ -38,28 +49,5 @@ func ConnectSongs() []table.Row {
 	return allSongs
 }
 
-func Play() {
-	if len(allSongs) == 0 {
-		logger.Log.Warn("No songs found")
-		return
-	}
-
-	playlist.GetAllSongs(allSongs)
-
-	var song string
-	switch {
-	case mode < 0:
-		song = playlistPath + "/" + currentSong
-	case mode == 0:
-		if shuffle {
-			song = playlistPath + "/" + playlist.GetRandomSong()
-		} else {
-			song = playlistPath + "/" + playlist.GetNextSong()
-		}
-	default:
-		logger.Log.Error("Invalid Mode")
-		return
-	}
-
-	music.PlaySong(song)
+func Play(index int) {
 }

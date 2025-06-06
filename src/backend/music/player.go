@@ -1,16 +1,16 @@
 package music
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/logger"
-	"log"
-	"time"
-
 	vlc "github.com/adrg/libvlc-go/v3"
+	"time"
 )
 
 var (
-	player *vlc.Player
-	media  *vlc.Media
+	player    *vlc.Player
+	media     *vlc.Media
+	songIndex int
 )
 
 // FUNCTION: Initializes VLC
@@ -35,14 +35,12 @@ func Init() {
 		}
 	}
 
-	volume, err := player.Volume()
+	err = player.SetVolume(config.ConfGetVolume())
+	logger.Log.Infof("Set volume to %d", config.ConfGetVolume())
 	if err != nil {
-		logger.Log.Errorf("Error checking player volume: %v", err)
-	} else if volume == 0 {
-		if err = player.SetVolume(100); err != nil {
-			logger.Log.Errorf("Error setting volume to 100: %v", err)
-		}
+		logger.Log.Errorf("Error setting volume to %d: %v", config.ConfGetVolume(), err)
 	}
+	songIndex = 0
 }
 
 // FUNCTION: Plays the provided song
@@ -60,6 +58,7 @@ func PlaySong(songPath string) bool {
 		return false
 	}
 
+	songIndex++
 	err = player.Play()
 	if err = player.Play(); err != nil {
 		logger.Log.Errorf("Error playing song: %v", err)
@@ -108,11 +107,40 @@ func SetMediaPosition(position float32) bool {
 	return true
 }
 
-func Sleep(duration time.Duration) {
-	log.Printf("Sleeping for %s...\n", duration)
-	time.Sleep(duration)
-	log.Println("Sleep complete. Stopping playback.")
-	Stop()
+// FUNCTION: Increases volume by params value
+func IncreaseVolume(factor int) {
+	currentVolume, err := player.Volume()
+	if err != nil {
+		logger.Log.Errorf("Error getting volume: %v", err)
+	}
+
+	newVolume := currentVolume + factor
+	if newVolume >= 100 {
+		newVolume = 100
+	}
+
+	err = player.SetVolume(newVolume)
+	if err != nil {
+		logger.Log.Errorf("Error increasing volume from %d to %d: %v", currentVolume, newVolume, err)
+	}
+}
+
+// FUNCTION: Decreases volume by params value
+func DecreaseVolume(factor int) {
+	currentVolume, err := player.Volume()
+	if err != nil {
+		logger.Log.Errorf("Error getting volume: %v", err)
+	}
+
+	newVolume := currentVolume - factor
+	if newVolume <= 0 {
+		newVolume = 0
+	}
+
+	err = player.SetVolume(newVolume)
+	if err != nil {
+		logger.Log.Errorf("Error decreasing volume from %d to %d: %v", currentVolume, newVolume, err)
+	}
 }
 
 // FUNCTION: Stops the player
@@ -139,4 +167,44 @@ func Cleanup() {
 			logger.Log.Errorf("Error releasing VLC: %v", err)
 		}
 	}
+	return true
+}
+
+func WaitTillSongEnd() {
+	for {
+		currentPosition, err := player.MediaPosition()
+		if err != nil {
+			logger.Log.Errorf("Error getting media position: %v", err)
+			return
+		}
+
+		mediaLength, err := player.MediaLength()
+		if err != nil {
+			logger.Log.Errorf("Error getting media length: %v", err)
+			return
+		}
+
+		if currentPosition >= float32(mediaLength) {
+			break
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	logger.Log.Info("Song Finished")
+}
+
+func GetIndex() int {
+	return songIndex
+}
+
+func GetCurrentSongLength() float64 {
+	if player == nil {
+		return 0.0
+	}
+	length, err := player.MediaLength()
+	if err != nil {
+		logger.Log.Errorf("Error getting media length: %v", err)
+	}
+	return float64(length)
 }

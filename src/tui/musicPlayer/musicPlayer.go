@@ -2,7 +2,9 @@ package musicPlayer
 
 import (
 	"Melodex/src/backend/music"
+	"Melodex/src/backend/playlist"
 	"Melodex/src/connection"
+	"Melodex/src/logger"
 	"Melodex/src/tui/sharedState"
 
 	"fmt"
@@ -21,15 +23,12 @@ type Model struct {
 	width  int
 	height int
 
-	songFile string
-	title    string
-	artist   string
-	album    string
-	length   int
+	title  string
+	artist string
+	album  string
+	length int
 	// In percent
-	progress        int
-	shuffling       bool
-	looping         int
+	progress int
 
 	selectedPreview bool
 }
@@ -53,57 +52,52 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch msg.String() {
 			case "right":
-
-				m.progress = min(m.progress+1, m.length)
+				m.progress = min(m.progress+5, m.length)
+				//music.SetMediaPosition(0) // TODO
 			case "left":
-				m.progress = max(m.progress-1, 0)
-
+				m.progress = max(m.progress-5, 0)
+				//music.SetMediaPosition(0) // TODO
 			case "b":
-				//playlist.PlayNextSong()
-				// TODO
+				playlist.DecreaseIndex()
+				connection.Play(music.GetIndex())
+				playlist.GetPreviousSong() // TODO
 			case "n":
-				//playlist.PlayPreviousSong()
-				// TODO
-
+				playlist.IncreaseIndex()
+				connection.Play(music.GetIndex()) // TODO
 			case "enter":
 				m.title = connection.GetCurrentSong()
-				m.artist = ""
-
-				// var err error
-				// m.length, err = music.SongLength(m.songFile, m.songFile)
-				// if err != nil {
-				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				// }
-				// m.progress, err = music.SongPosition()
-				// if err == nil {
-				// 	m.sharedState.Logger.Println("Music Player: Failed to find the Song Length")
-				// }
-
 			case ",":
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
 					m.sharedState.Shuffling = true
 				}
+				connection.SetShuffle(m.sharedState.Shuffling)
+				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
-				if m.sharedState.SongOption < 0 {
+				switch m.sharedState.SongOption {
+				case -1:
 					m.sharedState.SongOption = 0
-				} else if m.sharedState.SongOption == 0 {
+				case 0:
 					m.sharedState.SongOption = 1
-				} else {
+				case 1:
 					m.sharedState.SongOption = -1
 				}
+
+				connection.SetMode(m.sharedState.SongOption)
+				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
+				/* NOTE
+				* -1 = No Repeat
+				*  0 = Repeat Playlist
+				*  1 = Repeat Song
+				 */
 			case " ":
 				if music.IsPlaying() && m.sharedState.Paused {
 					m.sharedState.Paused = !m.sharedState.Paused
-
 				} else {
 					m.sharedState.Paused = !m.sharedState.Paused
 				}
-			case "tab":
-				m.selectedPreview = !m.selectedPreview
 			}
-
 		}
 	}
 	return m, nil
@@ -116,11 +110,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	if m.selectedPreview {
-		elements = append(elements, "Currently Viewing")
-	} else {
-		elements = append(elements, "Playing")
-	}
+	elements = append(elements, "Welcome to Melodex!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -150,22 +140,23 @@ func (m Model) View() string {
 	}
 
 	controlCenter += "󰒮 "
-
-	if m.sharedState.Paused {
+	switch m.sharedState.Paused {
+	case true:
 		controlCenter += "\U000F040A "
-	} else {
+	case false:
 		controlCenter += "\U000F03E4 "
 	}
 
 	controlCenter += "󰒭 "
 
 	if m.width >= 28 {
-		if m.sharedState.SongOption < 0 {
-			controlCenter += "\U000F0458"
-		} else if m.sharedState.SongOption > 0 {
-			controlCenter += "\U000F0456"
-		} else {
+		switch m.sharedState.SongOption {
+		case -1:
 			controlCenter += "\U000F0457"
+		case 0:
+			controlCenter += "\U000F0456"
+		case 1:
+			controlCenter += "\U000F0458"
 		}
 	}
 
@@ -187,7 +178,6 @@ func (m Model) View() string {
 
 	control += totalTime
 
-	m.album = "" // TODO
 	elements = append(elements, m.title)
 	elements = append(elements, m.artist+" \n "+m.album)
 
@@ -195,11 +185,23 @@ func (m Model) View() string {
 	elements = append(elements, control)
 
 	content := lipg.JoinVertical(lipg.Center, elements...)
+	contentHeight := lipg.Height(content)
+	targetHeight := m.height - 14
 
+	if targetHeight >= 0 && contentHeight < targetHeight {
+		padTotal := targetHeight - contentHeight
+		padTop := padTotal / 4
+		padBottom := padTotal - padTop
+
+		content = lipg.NewStyle().
+			PaddingTop(padTop).
+			PaddingBottom(padBottom).
+			Render(content)
+	}
 	final := lipg.NewStyle().Padding(2).Align(lipg.Center).BorderStyle(lipg.ThickBorder()).Render(content)
 
 	minWidth := lipg.Width(final)
-	minHeight := lipg.Height(final)
+	minHeight := lipg.Height(final) + 1
 
 	if m.width >= minWidth && m.height >= minHeight {
 		return final
@@ -243,12 +245,12 @@ func (m Model) View() string {
 		leftPadding = max(leftPadding, 0)
 		topPadding = max(topPadding, 0)
 
-		error := lipg.NewStyle().
+		style := lipg.NewStyle().
 			PaddingTop(topPadding).
 			PaddingLeft(leftPadding).
 			Bold(true).
 			Render(errorContent)
-		return error
+		return style
 	}
 }
 
@@ -267,9 +269,6 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		title:       "Example Title",
-		artist:      "Example Artist",
-		album:       "Example Album",
 		length:      181,
 		progress:    50,
 		progressBar: pb,

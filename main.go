@@ -49,6 +49,7 @@ func startApplication() {
 		}
 	}
 
+	connection.SetPlaylistPath(config.ConfGetDefaultPlaylist())
 	music.Init()
 	tui.Application()
 }
