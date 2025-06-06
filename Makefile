@@ -20,6 +20,12 @@ fmt:
 test:
 	go test ./...
 
+install:
+	install -Dm755 $(APP_NAME) /usr/local/bin
+
+uninstall:
+	sudo rm -rf /usr/local/bin/$(APP_NAME)
+
 help:
 	@echo "Makefile commands:"
 	@echo "  make build   - Build the project"

@@ -77,9 +77,17 @@ func SaveConfig(path string, cfg *Config) bool {
 	return true
 }
 
+func getEnvUser() string {
+	user := os.Getenv("USER")
+	if user == "" {
+		return "unknown"
+	}
+	return user
+}
+
 // FUNCTION: Template for the default config
 func DefaultConfig() *Config {
-	user := GetUser()
+	user := getEnvUser()
 	basePath := filepath.Join("/home", user)
 
 	return &Config{
@@ -101,15 +109,6 @@ func DefaultConfig() *Config {
 			Background: "#000000",
 		},
 	}
-}
-
-// FUNCTION: Gets the users home path
-func GetUser() string {
-	if user := os.Getenv("USER"); user != "" {
-		return user
-	}
-	logger.Log.Error("User environment variable not found")
-	return "unknown"
 }
 
 // FUNCTION: Generates the default config
