@@ -7,7 +7,7 @@ Set FontSize 16
 Set Width 1920
 Set Height 1080
 # Set LineHeight 1.8
-Set TypingSpeed 75ms
+Set TypingSpeed 150ms
 Set CursorBlink false
 
 Hide
