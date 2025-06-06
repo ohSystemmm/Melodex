@@ -167,6 +167,7 @@ func Cleanup() {
 			logger.Log.Errorf("Error releasing VLC: %v", err)
 		}
 	}
+	return true
 }
 
 func WaitTillSongEnd() {

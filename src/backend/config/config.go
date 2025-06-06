@@ -43,7 +43,9 @@ func LoadConfig(path string) *Config {
 	}
 
 	var cfg Config
+
 	if err = toml.Unmarshal(data, &cfg); err != nil {
+
 		logger.Log.Error("Load config file error:", err)
 		return nil
 	}
@@ -62,10 +64,7 @@ func SaveConfig(path string, cfg *Config) bool {
 		}
 	}
 
-	data, err := toml.Marshal(cfg)
-	if err != nil {
-		logger.Log.Error("Save config file error:", err)
-		return false
+
 	}
 
 	err = os.WriteFile(path, data, 0644)
@@ -175,3 +174,4 @@ func ConfGetDefaultPlaylist() string {
 	}
 	return playlist
 }
+
