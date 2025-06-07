@@ -1,10 +1,12 @@
 Usage:
   melodex <command> [options]
 
-Available Commands:
-  --config, -c        Open configuration options
-  --help, -h          Show this help message
-  --playlist, -p      Use a specific playlist
-  --clear-cache, -cc  Clears all song cache data
-  --version, -v       Show version information
-  --default-config    Regenerate default config
+Commands:
+  -c, --config            Open configuration options
+  -h, --help              Display this help message
+  -p, --playlist          Specify a playlist to use
+  -cc, --clear-cache      Clear all cached song data
+  -v, --version           Show version information
+  --default-config        Restore default configuration settings
+  -sp, --stored-playlist  Select an indexed playlist from the configuration
+
