@@ -10,6 +10,7 @@
 	<img src="assets/Melodex-Header.png">
 </div>
 <br>
+
 # Melodex  
 A terminal-based music player designed for playing locally stored music.  
 
