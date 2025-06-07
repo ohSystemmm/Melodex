@@ -94,8 +94,10 @@ A special thanks to the following contributors who helped bring **Melodex** to l
 
 **ohSystemmm** – Lead Developer:  
 Conceived the idea and implemented most of the project.
+
 **Y2kun** – Contributor:  
 Designed and implemented the TUI.
+
 **nvmChris** – Assistance:  
 Provided support and guidance to the developers.
 
