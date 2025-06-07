@@ -2,6 +2,7 @@ package config
 
 import (
 	"Melodex/src/logger"
+	"github.com/pelletier/go-toml/v2"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -43,9 +44,7 @@ func LoadConfig(path string) *Config {
 	}
 
 	var cfg Config
-
 	if err = toml.Unmarshal(data, &cfg); err != nil {
-
 		logger.Log.Error("Load config file error:", err)
 		return nil
 	}
@@ -63,8 +62,10 @@ func SaveConfig(path string, cfg *Config) bool {
 			return false
 		}
 	}
-
-
+	data, err := toml.Marshal(cfg)
+	if err != nil {
+		logger.Log.Error("Save config file error:", err)
+		return false
 	}
 
 	err = os.WriteFile(path, data, 0644)
@@ -76,9 +77,17 @@ func SaveConfig(path string, cfg *Config) bool {
 	return true
 }
 
+func getEnvUser() string {
+	user := os.Getenv("USER")
+	if user == "" {
+		return "unknown"
+	}
+	return user
+}
+
 // FUNCTION: Template for the default config
 func DefaultConfig() *Config {
-	user := GetUser()
+	user := getEnvUser()
 	basePath := filepath.Join("/home", user)
 
 	return &Config{
@@ -100,15 +109,6 @@ func DefaultConfig() *Config {
 			Background: "#000000",
 		},
 	}
-}
-
-// FUNCTION: Gets the users home path
-func GetUser() string {
-	if user := os.Getenv("USER"); user != "" {
-		return user
-	}
-	logger.Log.Error("User environment variable not found")
-	return "unknown"
 }
 
 // FUNCTION: Generates the default config

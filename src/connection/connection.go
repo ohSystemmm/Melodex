@@ -41,7 +41,7 @@ func SetMode(state int) {
 
 func ConnectSongs() []table.Row {
 	var err error
-	allSongs, err = music.GenerateSongList(playlistPath, "/home/"+config.GetUser()+"/.cache/melodex")
+	allSongs, err = music.GenerateSongList(playlistPath, "/home/"+config.ConfGetUser()+"/.cache/melodex")
 	if err != nil {
 		logger.Log.Errorf("Error connecting to playlist: %v", err)
 	}

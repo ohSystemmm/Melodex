@@ -9,13 +9,13 @@ import (
 	"Melodex/src/backend/music"
 	"Melodex/src/connection"
 	"Melodex/src/logger"
-	tui "Melodex/src/tui"
+	"Melodex/src/tui"
 )
 
 var (
 	version  = "0.0.8"
 	release  = "2025-XX-XX"
-	cacheDir = "/home/" + config.GetUser() + "/.cache/melodex/"
+	cacheDir = "/home/" + config.ConfGetUser() + "/.cache/melodex/"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 
 // FUNCTION: Watches for config files and starts the Application
 func startApplication() {
-	configPath := os.Getenv("HOME") + "/.config/melodex/config.toml"
+	configPath := "/home/" + config.ConfGetUser() + "/.config/melodex/config.toml"
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		logger.Log.Info("Config file not found. Creating defaults.")

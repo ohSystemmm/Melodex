@@ -208,3 +208,42 @@ func GetCurrentSongLength() float64 {
 	}
 	return float64(length)
 }
+
+func WaitTillSongEnd() {
+	for {
+		currentPosition, err := player.MediaPosition()
+		if err != nil {
+			logger.Log.Errorf("Error getting media position: %v", err)
+			return
+		}
+
+		mediaLength, err := player.MediaLength()
+		if err != nil {
+			logger.Log.Errorf("Error getting media length: %v", err)
+			return
+		}
+
+		if currentPosition >= float32(mediaLength) {
+			break
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	logger.Log.Info("Song Finished")
+}
+
+func GetIndex() int {
+	return songIndex
+}
+
+func GetCurrentSongLength() float64 {
+	if player == nil {
+		return 0.0
+	}
+	length, err := player.MediaLength()
+	if err != nil {
+		logger.Log.Errorf("Error getting media length: %v", err)
+	}
+	return float64(length)
+}
