@@ -22,12 +22,14 @@ checkdepends=()
 provides=("melodex")
 conflicts=("melodex-git")
 md5sums=("SKIP")
-source=(
-	"Github release link"
-)
+source=("https://github.com/ohSystemmm/melodex/releases/download/v${pkgver}/melodex-${pkgver}.tar.gz")
+
 
 build() {
+    cd "$srcdir/melodex-${pkgver}"
+    make
 }
 
 package() {
+    install -Dm755 "$srcdir/melodex-${pkgver}/melodex" "$pkgdir/usr/bin/melodex"
 }
