@@ -1,7 +1,3 @@
-
-
-
-
 ## Frontend Liberies
 
 | Name           | Link                                                        | Used for                                                                  |
@@ -18,6 +14,5 @@
 | **logrus**        | [GitHub](https://github.com/sirupsen/logrus)         | Logging, Debugging                  |
 | **go-toml**       | [GitHub](https://github.com/pelletier/go-toml/)      | Toml config Generating, toml parsing|
 
-
 ## Others
-[ffmprobe](ffmpeg.org/ffprobe.html), Music analyzing - acquiring music data,
+[ffmprobe](ffmpeg.org/ffprobe.html) - Music analyzing - acquiring music data
