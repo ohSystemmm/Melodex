@@ -50,21 +50,21 @@ melodex <command> [options]
 ## Features & Functionality
 Melodex offers a range of features designed to enhance your terminal-based music experience:
 
-- **Music Playback** 
+- **Music Playback**  
 	Play locally stored audio files with ease.
-- **Multiple Playlists** 
+- **Multiple Playlists**  
 	Create and manage multiple playlists for different moods and occasions.
-- **Sleep Control** 
+- **Sleep Control**  
 	Set timers to stop playback automatically.
-- **Volume Control** 
+- **Volume Control**  
 	Adjust volume levels directly from the terminal.
-- **Shuffle & Repeat** 
+- **Shuffle & Repeat**  
 	Shuffle songs or loop tracks and playlists.
-- **Search & Filter** 
+- **Search & Filter**  
 	Quickly find specific songs or filter your library by artist, album, or genre.
-- **Custom Configuration** 
+- **Custom Configuration**  
 	Tailor settings to your preferences for a personalized experience.
-- **Logging** 
+- **Logging**  
 	Keep track of playback history and system logs for troubleshooting.
 
 Additionally, Melodex uses several libraries listed in [Libraries.md](assets/Libraries.md).
@@ -81,24 +81,27 @@ This project is licensed under the **GPLv3** license. For details, check out the
 ## Contact & Support
 If you need assistance, have a question, or want to contribute to the project, here’s how you can reach out:
 
-- **Issues & Contributions** – Check out the issues and contribution guidelines to see how you can help improve Melodex.
-- **Reporting Bugs & Requests** – Encounter a problem or have a feature suggestion? Feel free to open an issue.
-- **Direct Support** – For direct inquiries, contact the project leader via email: **ohSystemmm@gmail.com**.
+- **Issues & Contributions**  
+	Check out the issues and contribution guidelines to see how you can help improve Melodex.
+- **Reporting Bugs & Requests**  
+	Encounter a problem or have a feature suggestion? Feel free to open an issue.
+- **Direct Support**  
+	For direct inquiries, contact the project leader via email: **ohSystemmm@gmail.com**.
 
 
 ## Acknowledgments
 A special thanks to the following contributors who helped bring **Melodex** to life:
 
-**ohSystemmm** – Lead Developer:
+**ohSystemmm** – Lead Developer:  
 Conceived the idea and implemented most of the project.
-**Y2kun** – Contributor:
+**Y2kun** – Contributor:  
 Designed and implemented the TUI.
-**nvmChris** – Assistance: 
+**nvmChris** – Assistance:  
 Provided support and guidance to the developers.
 
-**Initial Start:** July 2024 
+**Initial Start:** July 2024  
 Concept and early development by ohSystemmm. 
-**Official Project Launch:** October 2024 
+**Official Project Launch:** October 2024  
 Established as an official project, marking the arrival of Y2kun and nvmChris as contributors.
 
 <br>
