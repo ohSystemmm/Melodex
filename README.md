@@ -44,20 +44,28 @@ melodex <command> [options]
 
 **Demonstration**
 
-![[Demonstration.gif]]
+<img src="assets/Demonstration.gif" alt="Demonstration">
 
 
 ## Features & Functionality
 Melodex offers a range of features designed to enhance your terminal-based music experience:
 
-- **Music Playback** – Play locally stored audio files with ease.
-- **Multiple Playlists** – Create and manage multiple playlists for different moods and occasions.
-- **Sleep Control** – Set timers to stop playback automatically.
-- **Volume Control** – Adjust volume levels directly from the terminal.
-- **Shuffle & Repeat** – Shuffle songs or loop tracks and playlists.
-- **Search & Filter** – Quickly find specific songs or filter your library by artist, album, or genre.
-- **Custom Configuration** – Tailor settings to your preferences for a personalized experience.
-- **Logging** – Keep track of playback history and system logs for troubleshooting.
+- **Music Playback** 
+	Play locally stored audio files with ease.
+- **Multiple Playlists** 
+	Create and manage multiple playlists for different moods and occasions.
+- **Sleep Control** 
+	Set timers to stop playback automatically.
+- **Volume Control** 
+	Adjust volume levels directly from the terminal.
+- **Shuffle & Repeat** 
+	Shuffle songs or loop tracks and playlists.
+- **Search & Filter** 
+	Quickly find specific songs or filter your library by artist, album, or genre.
+- **Custom Configuration** 
+	Tailor settings to your preferences for a personalized experience.
+- **Logging** 
+	Keep track of playback history and system logs for troubleshooting.
 
 Additionally, Melodex uses several libraries listed in [Libraries.md](assets/Libraries.md).
 
