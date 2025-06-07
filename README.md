@@ -14,13 +14,16 @@
 # Melodex  
 A terminal-based music player designed for playing locally stored music.  
 
+
 ## Overview  
 Every great project begins with an idea—mine was to create a terminal-based music player. But why use one? What’s the purpose behind it?  
 
 There aren’t many terminal-based music players available, yet for typical Unix-based OS users, TUIs (Text-based User Interfaces) are an essential tool and often the preferred way to interact with software. Given the limited options in this space, Melodex aims to fill that gap, offering a simple yet powerful solution for those who embrace a terminal-first workflow.  
 
+
 ## Installation  
 For installation instructions, refer to [Installation.md](assets/Installation.md).  
+
 
 ## Usage
 **Basic Usage**
@@ -40,7 +43,9 @@ melodex <command> [options]
 ```
 
 **Demonstration**
+
 ![[Demonstration.gif]]
+
 
 ## Features & Functionality
 Melodex offers a range of features designed to enhance your terminal-based music experience:
@@ -56,11 +61,14 @@ Melodex offers a range of features designed to enhance your terminal-based music
 
 Additionally, Melodex uses several libraries listed in [Libraries.md](assets/Libraries.md).
 
+
 ## Contributing  
 Want to contribute? Check out [Contributing.md](CONTRIBUTING.md) for guidelines on how to get involved.  
 
+
 ## License
 This project is licensed under the **GPLv3** license. For details, check out the [GNU General Public License v3](LICENSE).
+
 
 ## Contact & Support
 If you need assistance, have a question, or want to contribute to the project, here’s how you can reach out:
@@ -68,6 +76,7 @@ If you need assistance, have a question, or want to contribute to the project, h
 - **Issues & Contributions** – Check out the issues and contribution guidelines to see how you can help improve Melodex.
 - **Reporting Bugs & Requests** – Encounter a problem or have a feature suggestion? Feel free to open an issue.
 - **Direct Support** – For direct inquiries, contact the project leader via email: **ohSystemmm@gmail.com**.
+
 
 ## Acknowledgments
 A special thanks to the following contributors who helped bring **Melodex** to life:
@@ -84,5 +93,6 @@ Concept and early development by ohSystemmm.
 **Official Project Launch:** October 2024 
 Established as an official project, marking the arrival of Y2kun and nvmChris as contributors.
 
+<br>
 
 <p align = "center"><img src = "https://api.sefinek.net/api/v2/moecounter/@Melodex?length=10&theme=default"/> </p>
