@@ -40,7 +40,6 @@ func ConfGetVolume() int {
 	logger.Log.Warnf("Using volume %d", volume)
 	return volume
 }
-
 func ConfGetUser() string {
 	user := loadedConfig.General.User
 	if user == "" {
@@ -50,7 +49,6 @@ func ConfGetUser() string {
 	logger.Log.Infof("Using user from config: %s", user)
 	return user
 }
-
 func ConfGetDefaultPlaylist() string {
 	playlist := loadedConfig.General.DefaultPlaylist
 	if playlist == "" {

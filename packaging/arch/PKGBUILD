@@ -1,0 +1,33 @@
+# Maintainer: ohSystemmm <ohSystemmm@gmail.com>
+pkgname=melodex
+pkgver="0.0.8"
+pkgrel=1
+pkgdesc="A terminal based Musicplayer designed to play locally stored music."
+arch=("x86_64")
+url="https://github.com/ohSystemmm/melodex"
+license=("GPLv3")
+
+depends=(
+	"libvlc"
+	"ffmpeg"
+	"go"
+)
+
+optdepends=(
+    "kitty: To use Melodex"
+    "ttf-firacode-nerd: To correctly display Unicode Characters."
+)
+
+checkdepends=()
+provides=("melodex")
+conflicts=("melodex-git")
+md5sums=("SKIP")
+source=(
+	"Github release link"
+)
+
+build() {
+}
+
+package() {
+}
