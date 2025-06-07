@@ -5,6 +5,10 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
+
+	"github.com/pelletier/go-toml/v2"
 )
 
 var (
@@ -58,7 +62,6 @@ func SaveConfig(path string, cfg *Config) bool {
 			return false
 		}
 	}
-
 	data, err := toml.Marshal(cfg)
 	if err != nil {
 		logger.Log.Error("Save config file error:", err)
@@ -119,3 +122,56 @@ func GenerateDefaultConfig() bool {
 	logger.Log.Info("Generate default configuration success")
 	return true
 }
+
+func GetConfig() *Config {
+	configPath := filepath.Join(dirConfig, fileConfig)
+	cfg := LoadConfig(configPath)
+
+	if cfg == nil {
+		logger.Log.Errorf("Error loading config: %s", configPath)
+
+		defaultCfg := DefaultConfig()
+		logger.Log.Infof("Using default config: %+v", defaultCfg)
+
+		saveErr := SaveConfig(configPath, defaultCfg)
+		if !saveErr {
+			logger.Log.Errorf("Failed to save default config")
+			return defaultCfg
+		}
+
+		return defaultCfg
+	}
+	return cfg
+}
+
+var cfg = GetConfig()
+
+func ConfGetVolume() int {
+	volume, err := strconv.Atoi(strings.TrimSuffix(cfg.General.DefaultVolume, "%"))
+	if err != nil {
+		logger.Log.Error("Invalid volume format in config, using default (100%)")
+		return 100
+	}
+	logger.Log.Warnf("Using volume %d", volume)
+	return volume
+}
+
+func ConfGetUser() string {
+	user := cfg.General.User
+	if user == "" {
+		user = os.Getenv("USER")
+		logger.Log.Infof("User not valid, using environment user: %s", user)
+	}
+	logger.Log.Infof("Using user from config: %s", user)
+	return user
+}
+
+func ConfGetDefaultPlaylist() string {
+	playlist := cfg.General.DefaultPlaylist
+	if playlist == "" {
+		logger.Log.Errorf("Playlist not found.")
+		return ""
+	}
+	return playlist
+}
+
