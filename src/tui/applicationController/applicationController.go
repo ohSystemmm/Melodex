@@ -14,31 +14,28 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 )
 
-// Model represents the application controller, managing volume and sleep timer settings.
 type Model struct {
-	sharedState sharedState.SharedState // Stores shared application state.
+	sharedState sharedState.SharedState
 
-	width  int // Stores the terminal width.
-	height int // Stores the terminal height.
-	volume int // Stores the volume level.
+	width  int
+	height int
+	volume int
 
-	pB      progress.Model  // Progress bar for volume control.
-	timeSet textinput.Model // Input field for sleep timer.
+	pB      progress.Model
+	timeSet textinput.Model
 
-	sleep     bool      // Indicates whether the sleep timer is active.
-	timeBegin time.Time // Stores the time when sleep timer was activated.
+	sleep     bool
+	timeBegin time.Time
 }
 
-// Init initializes the model.
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-// Update processes user inputs and updates the application controller state.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	var parsedTime time.Duration
 
+	var parsedTime time.Duration
 	if m.timeSet.Value() != "" {
 		parsedTime, _ = parseUserDuration(m.timeSet.Value())
 	}
@@ -50,7 +47,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch action := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = action.Width, action.Height
-
 	case tea.KeyMsg:
 		if m.sharedState.Searching {
 		} else if m.sharedState.SettingTime {
@@ -77,15 +73,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
+			case "m":
+				m.volume = 0 // TODO
 			}
 		}
 	}
 
 	m.timeSet, cmd = m.timeSet.Update(msg)
+
 	return m, cmd
 }
 
-// View renders the application controller UI.
 func (m Model) View() string {
 	var targetWidth = 54
 	var elements = []string{}
@@ -111,7 +109,8 @@ func (m Model) View() string {
 		m.timeSet.SetValue(formatDuration(parsedTime))
 	}
 
-	sleepTimer := "Sleep: " + m.timeSet.View()
+	sleepTimer := "Sleep: "
+	sleepTimer += m.timeSet.View()
 	if m.sleep {
 		sleepTimer += "󰱒 "
 	} else {
@@ -120,10 +119,33 @@ func (m Model) View() string {
 	elements = append(elements, sleepTimer)
 
 	final := lipg.JoinVertical(lipg.Center, elements...)
-	return final
+
+	minWidth := lipg.Width(final)
+	minHeight := lipg.Height(final)
+
+	paddingAmount := (targetWidth - minWidth) / 2
+	unevenPadding := 0
+
+	if minWidth%2 == 1 {
+		unevenPadding += 1
+	}
+
+	if m.height <= 30 {
+		return ""
+	} else if m.width >= minWidth && m.height >= minHeight {
+		content := lipg.NewStyle().BorderStyle(lipg.ThickBorder()).
+			PaddingLeft(paddingAmount).
+			PaddingRight(paddingAmount + unevenPadding).
+			PaddingTop(1).
+			PaddingBottom(1).
+			AlignVertical(lipg.Left).
+			Render(final)
+		return content
+	} else {
+		return ""
+	}
 }
 
-// New initializes a new application controller model.
 func New(sharedState sharedState.SharedState) Model {
 	pb := progress.New(
 		progress.WithWidth(20),
@@ -144,49 +166,54 @@ func New(sharedState sharedState.SharedState) Model {
 	}
 }
 
-// parseUserDuration parses a time string into a time.Duration.
 func parseUserDuration(s string) (time.Duration, error) {
 	if d, err := time.ParseDuration(s); err == nil {
 		return d, nil
 	}
-
 	parts := strings.Split(s, ":")
 	var seconds int
-
 	switch len(parts) {
 	case 3:
-		h, _ := strconv.Atoi(parts[0])
-		m, _ := strconv.Atoi(parts[1])
-		sec, _ := strconv.Atoi(parts[2])
+		h, err1 := strconv.Atoi(parts[0])
+		m, err2 := strconv.Atoi(parts[1])
+		sec, err3 := strconv.Atoi(parts[2])
+		if err1 != nil || err2 != nil || err3 != nil {
+			// log.Println("Invalid time format:", s)
+			return 0, err1 // just return the first error found
+		}
 		seconds = h*3600 + m*60 + sec
 	case 2:
-		m, _ := strconv.Atoi(parts[0])
-		sec, _ := strconv.Atoi(parts[1])
+		m, err1 := strconv.Atoi(parts[0])
+		sec, err2 := strconv.Atoi(parts[1])
+		if err1 != nil || err2 != nil {
+			// log.Println("Invalid time format:", s)
+			return 0, err1
+		}
 		seconds = m*60 + sec
 	case 1:
-		sec, _ := strconv.Atoi(parts[0])
+		sec, err := strconv.Atoi(parts[0])
+		if err != nil {
+			// log.Println("Invalid time format:", s)
+			return 0, err
+		}
 		seconds = sec
 	default:
 		return 0, nil
 	}
-
 	return time.Duration(seconds) * time.Second, nil
 }
 
-// formatDuration converts a time.Duration into a formatted "HH:MM:SS" string.
 func formatDuration(d time.Duration) string {
 	totalSeconds := max(int(d.Seconds()), 0)
 	h := totalSeconds / 3600
 	m := (totalSeconds % 3600) / 60
 	s := totalSeconds % 60
-
 	if h > 0 {
 		return pad2(h) + ":" + pad2(m) + ":" + pad2(s)
 	}
 	return pad2(m) + ":" + pad2(s)
 }
 
-// pad2 ensures a number is formatted with two digits.
 func pad2(n int) string {
 	if n < 10 {
 		return "0" + strconv.Itoa(n)

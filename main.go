@@ -13,12 +13,11 @@ import (
 )
 
 var (
-	version  = "0.0.8"                                              // Defines the current application version.
-	release  = "2025-XX-XX"                                         // Placeholder for the release date.
-	cacheDir = "/home/" + config.ConfGetUser() + "/.cache/melodex/" // Defines the cache directory path.
+	version  = "0.0.8"
+	release  = "2025-XX-XX"
+	cacheDir = "/home/" + config.ConfGetUser() + "/.cache/melodex/"
 )
 
-// main is the entry point for Melodex.
 func main() {
 	displayFileContent("src/assets/usBTW.txt", "Welcome to Melodex!")
 
@@ -31,13 +30,14 @@ func main() {
 	handleCommand(command)
 }
 
-// startApplication initializes the application, checks config files, and starts the UI.
+// FUNCTION: Watches for config files and starts the Application
 func startApplication() {
 	configPath := "/home/" + config.ConfGetUser() + "/.config/melodex/config.toml"
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		logger.Log.Info("Config file not found. Creating defaults.")
 		config.GenerateDefaultConfig()
+
 	} else {
 		cfg := config.LoadConfig(configPath)
 		if err != nil {
@@ -54,7 +54,7 @@ func startApplication() {
 	tui.Application()
 }
 
-// handleCommand processes command-line arguments and executes corresponding actions.
+// FUNCTION: Handles os params
 func handleCommand(command string) {
 	switch command {
 	case "--version", "-v":
@@ -81,7 +81,6 @@ func handleCommand(command string) {
 	}
 }
 
-// handlePlaylist sets the playlist path based on command-line input.
 func handlePlaylist() {
 	if len(os.Args) < 3 {
 		fmt.Println("Usage: melodex --playlist <path>")
@@ -91,7 +90,6 @@ func handlePlaylist() {
 	connection.SetPlaylistPath(playlistPath)
 }
 
-// handleConfig loads the specified configuration file from command-line input.
 func handleConfig() {
 	if len(os.Args) < 3 {
 		fmt.Println("Usage: melodex --config <path>")
@@ -102,7 +100,6 @@ func handleConfig() {
 	config.LoadConfig(configPath)
 }
 
-// regenerateDefaultConfig resets the application to its default configuration.
 func regenerateDefaultConfig() {
 	logger.Log.Info("Regenerating default configuration...")
 	if config.GenerateDefaultConfig() {
@@ -113,7 +110,6 @@ func regenerateDefaultConfig() {
 	startApplication()
 }
 
-// removeCache deletes cached files in the application's cache directory.
 func removeCache() error {
 	logger.Log.Info("Removing cache...")
 
@@ -137,7 +133,6 @@ func removeCache() error {
 	return nil
 }
 
-// displayFileContent reads and prints file content or an error message if reading fails.
 func displayFileContent(path string, errorMessage string) {
 	file, err := os.ReadFile(path)
 	if err != nil {

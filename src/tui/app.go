@@ -14,24 +14,21 @@ import (
 	"os"
 )
 
-// MainModel represents the primary UI model that integrates various components.
 type MainModel struct {
-	SharedState *SharedState.SharedState // Stores shared application state.
+	SharedState *SharedState.SharedState
 
-	MList       MusicList.Model             // Handles the music list UI.
-	MPlayer     MusicPlayer.Model           // Handles the music player UI.
-	AController ApplicationController.Model // Handles the application controller UI.
+	MList       MusicList.Model
+	MPlayer     MusicPlayer.Model
+	AController ApplicationController.Model
 
-	width  int // Stores the window width.
-	height int // Stores the window height.
+	width  int
+	height int
 }
 
-// Init initializes the MainModel and its subcomponents.
 func (m MainModel) Init() tea.Cmd {
 	return tea.Batch(m.MList.Init(), m.MPlayer.Init())
 }
 
-// Update processes incoming messages and updates UI components accordingly.
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var command tea.Cmd
 	var commands []tea.Cmd
@@ -74,7 +71,6 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(commands...)
 }
 
-// View renders the UI components in a structured layout.
 func (m MainModel) View() string {
 	return lipg.JoinHorizontal(
 		lipg.Top,
@@ -87,7 +83,6 @@ func (m MainModel) View() string {
 	)
 }
 
-// Application initializes and runs the terminal user interface.
 func Application() {
 	sharedState := SharedState.GetGlobalState()
 

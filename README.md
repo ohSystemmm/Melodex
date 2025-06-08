@@ -94,15 +94,13 @@ A special thanks to the following contributors who helped bring **Melodex** to l
 
 **ohSystemmm** – Lead Developer:  
 Conceived the idea and implemented most of the project.
-
 **Y2kun** – Contributor:  
 Designed and implemented the TUI.
-
 **nvmChris** – Assistance:  
 Provided support and guidance to the developers.
 
 **Initial Start:** July 2024  
-Concept and early development by ohSystemmm.  
+Concept and early development by ohSystemmm. 
 **Official Project Launch:** October 2024  
 Established as an official project, marking the arrival of Y2kun and nvmChris as contributors.
 
