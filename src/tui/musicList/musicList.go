@@ -90,8 +90,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					case "enter":
 						m.sharedState.Paused = false
 						connection.SetCurrentSong(m.list.SelectedRow()[0])
-						// m.length = music.MediaLength
 						connection.Play()
+						connection.SetSongLength(music.SongLength())
 					case " ":
 						music.PauseSong()
 					case "f":

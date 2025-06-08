@@ -13,6 +13,7 @@ var (
 	modeState    int
 	index        int
 	playListName string
+	songLength   int
 )
 
 func GetSongList() []table.Row {
@@ -59,4 +60,11 @@ func IncreaseIndex() {
 
 func GetPlayListName() string {
 	return filepath.Base(playlistPath)
+}
+
+func SetSongLength(length int) {
+	songLength = length
+}
+func GetSongLength() int {
+	return songLength
 }

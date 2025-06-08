@@ -202,5 +202,5 @@ func SongLength() int {
 		logger.Log.Errorf("Error getting media length: %v", err)
 	}
 
-	return length + 1000
+	return length / 1000
 }

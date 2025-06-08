@@ -1,13 +1,15 @@
 package musicPlayer
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
+	"Melodex/src/connection"
 	"Melodex/src/logger"
 	"Melodex/src/tui/sharedState"
-
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -26,8 +28,6 @@ type Model struct {
 	album    string
 	length   int
 	progress int
-
-	// selectedPreview bool
 }
 
 func (m Model) Init() tea.Cmd {
@@ -62,9 +62,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "n":
 				//playlist.IncreaseIndex()
 				//connection.Play(music.GetIndex()) // TODO
-			case "enter":
-				//m.title = connection.GetCurrentSong() // TODO
-			case ",":
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
@@ -101,6 +98,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func getGreeting() string {
+	hour := time.Now().Hour()
+
+	switch {
+	case hour >= 5 && hour < 12:
+		return "Good morning"
+	case hour >= 12 && hour < 18:
+		return "Good afternoon"
+	case hour >= 18 && hour < 22:
+		return "Good evening"
+	default:
+		return "Good night"
+	}
+}
+
 func (m Model) View() string {
 	percent := float64(m.progress) / float64(m.length)
 	totalTime := formatTime(m.length)
@@ -108,7 +120,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	elements = append(elements, "Welcome to Melodex!")
+	elements = append(elements, getGreeting()+", @"+config.ConfGetUser()+"!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -175,9 +187,12 @@ func (m Model) View() string {
 	}
 
 	control += totalTime
+	m.title = "Currently Playing:\n" + connection.GetCurrentSong()
+	if connection.GetCurrentSong() == "" {
+		m.title = "Viewing Song List"
+	}
 
-	elements = append(elements, m.title)
-	elements = append(elements, m.artist+" \n "+m.album)
+	elements = append(elements, m.title+"\n\n")
 
 	elements = append(elements, m.progressBar.ViewAs(percent))
 	elements = append(elements, control)
@@ -254,8 +269,8 @@ func (m Model) View() string {
 
 func formatTime(seconds int) string {
 	minutes := seconds / 60
-	remainingSeconds := seconds % 60
-	return fmt.Sprintf("%02d:%02d", minutes, remainingSeconds)
+	secs := seconds % 60
+	return fmt.Sprintf("%02d:%02d", minutes, secs)
 }
 
 func New(sharedState *sharedState.SharedState) Model {
