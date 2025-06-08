@@ -73,6 +73,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
+			case "m":
+				m.volume = 0 // TODO
 			}
 		}
 	}
