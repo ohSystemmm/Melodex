@@ -27,7 +27,7 @@ type Model struct {
 	length   int
 	progress int
 
-	selectedPreview bool
+	// selectedPreview bool
 }
 
 func (m Model) Init() tea.Cmd {
@@ -45,7 +45,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
-		if m.sharedState.Searching || m.sharedState.SettingTime {
+		if m.sharedState.SettingTime {
+		} else if m.sharedState.Searching {
 		} else {
 			switch action.String() {
 			case "right":
@@ -266,8 +267,8 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		length:      0, // TODO
-		progress:    0, // TODO
+		length:      120,
+		progress:    0,
 		progressBar: pb,
 	}
 }

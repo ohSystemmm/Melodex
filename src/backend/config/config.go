@@ -2,9 +2,13 @@ package config
 
 import (
 	"Melodex/src/logger"
-	"github.com/pelletier/go-toml/v2"
+	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/pelletier/go-toml/v2"
 )
 
 var (
@@ -99,10 +103,30 @@ func DefaultConfig() *Config {
 	user := getEnvUser()
 	basePath := filepath.Join("/home", user)
 
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Do you wish to set the default playlist? (this is the playlist that melodex enters per default) (y/n)")
+	input, _ := reader.ReadString('\n')
+	input = strings.ToLower(strings.TrimSpace(input))
+
+	defaultPlaylist := filepath.Join(basePath, "example_playlist")
+
+	switch input {
+	case "y", "yes":
+		fmt.Println("Enter full location from root e.g. /home/johndoe/music")
+		_, err := fmt.Scanln(&defaultPlaylist)
+		if err != nil {
+			logger.Log.Error("Invalid Input in selecting default Playlist")
+		}
+	case "n", "no":
+		fmt.Println("Choosing default option: " + defaultPlaylist)
+	default:
+		fmt.Println("Invalid input, choosing default option of automaticaly selecting:" + defaultPlaylist)
+	}
+
 	return &Config{
 		General: General{
 			User:            user,
-			DefaultPlaylist: filepath.Join(basePath, "example_playlist"),
+			DefaultPlaylist: defaultPlaylist,
 			DefaultVolume:   "100%",
 		},
 		Playlist: Playlist{
