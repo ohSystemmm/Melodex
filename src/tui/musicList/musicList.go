@@ -39,7 +39,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch action := msg.(type) {
 	case tea.KeyMsg:
 		switch action.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			music.Cleanup()
 			return m, tea.Quit
 		case "up":
@@ -67,6 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				switch action.String() {
 				case "q":
+					music.Cleanup()
 					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false

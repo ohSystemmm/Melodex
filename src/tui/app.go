@@ -12,6 +12,7 @@ import (
 	SharedState "Melodex/src/tui/sharedState"
 
 	"os"
+	// "time"
 )
 
 type MainModel struct {
@@ -21,12 +22,17 @@ type MainModel struct {
 	MPlayer     MusicPlayer.Model
 	AController ApplicationController.Model
 
+	// ticker chan time.Time
 	width  int
 	height int
 }
 
 func (m MainModel) Init() tea.Cmd {
-	return tea.Batch(m.MList.Init(), m.MPlayer.Init())
+	return tea.Batch(
+		m.MList.Init(),
+		m.MPlayer.Init(),
+		m.AController.Init(),
+	)
 }
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -91,7 +97,7 @@ func Application() {
 
 		MList:       MusicList.New(sharedState),
 		MPlayer:     MusicPlayer.New(sharedState),
-		AController: ApplicationController.New(*sharedState),
+		AController: ApplicationController.New(sharedState),
 	}
 
 	bzone.NewGlobal()
