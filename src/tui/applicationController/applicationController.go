@@ -1,6 +1,7 @@
 package applicationController
 
 import (
+
 	"errors"
 	"regexp"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
+  "Melodex/src/backend/config"
 
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -67,16 +69,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch action.String() {
 			case "j":
-				m.volume = min(m.volume+5, 100)
+				m.volume = min(m.volume-5, 100)
+				if m.volume <= 0 {
+					m.volume = 0
+				}
 				music.DecreaseVolume(5)
 			case "k":
-				m.volume = max(m.volume-5, 0)
+				m.volume = max(m.volume+5, 0)
+				if m.volume >= 100 {
+					m.volume = 100
+				}
 				music.IncreaseVolume(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				m.volume = 0 // TODO
+				if !music.IsMuted() {
+					music.SetMute(true)
+					m.volume = 0
+				} else {
+					music.SetMute(false)
+					m.volume = 100
+				}
 			}
 		}
 	}
@@ -96,7 +110,7 @@ func (m Model) View() string {
 
 	elements = append(elements, lipg.NewStyle().Bold(true).Render("Application Controller"))
 	elements = append(elements, "")
-	elements = append(elements, "Volume "+m.pB.ViewAs(float64(m.volume)/100)+strconv.Itoa(m.volume)+"%")
+	elements = append(elements, "Volume: "+m.pB.ViewAs(float64(m.volume)/100)+" "+strconv.Itoa(m.volume)+"%")
 
 	var parsedTime time.Duration
 	if m.timeSet.Value() != "" {
@@ -165,6 +179,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
+		volume:      config.ConfGetVolume(),
 	}
 }
 

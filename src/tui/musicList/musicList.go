@@ -1,7 +1,6 @@
 package musicList
 
 import (
-	"path/filepath"
 	"strings"
 
 	"Melodex/src/backend/music"
@@ -90,11 +89,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
-						// TODO
+						connection.SetCurrentSong(m.list.SelectedRow()[0])
+						// m.length = music.MediaLength
+						connection.Play()
 					case " ":
 						music.PauseSong()
-						// TODO
 					case "f":
 						m.sharedState.Searching = true
 						return m, m.searchBar.Focus()
@@ -146,11 +145,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func isSubsequence(sub, word string) bool {
+	j := 0
+	for i := 0; i < len(word) && j < len(sub); i++ {
+		if word[i] == sub[j] {
+			j++
+		}
+	}
+	return j == len(sub)
+}
+
 func (m Model) filterRows(searchTerm string) []table.Row {
+	searchTerm = strings.ToLower(searchTerm)
 	var filteredRows []table.Row
+
 	for _, row := range m.originalRows {
 		for _, cell := range row {
-			if strings.Contains(strings.ToLower(cell), searchTerm) {
+			cellLower := strings.ToLower(cell)
+			if isSubsequence(searchTerm, cellLower) {
 				filteredRows = append(filteredRows, row)
 				break
 			}
@@ -233,7 +245,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := "Playlist: " + connection.GetPlaylistName()
+	playlistName := "Playlist: " + connection.GetPlayListName()
 
 	return Model{
 		sharedState:    sharedState,

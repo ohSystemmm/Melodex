@@ -51,10 +51,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				//music.SetMediaPosition(0) // TODO
+				music.SetMediaPosition(music.CurrentSongPosition() + 0.05)
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				//music.SetMediaPosition(0) // TODO
+				music.SetMediaPosition(music.CurrentSongPosition() - 0.05)
 			case "b":
 				//playlist.DecreaseIndex()
 				//connection.Play(music.GetIndex())
