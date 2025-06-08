@@ -25,7 +25,7 @@ type Model struct {
 	timeSet textinput.Model
 
 	sleep     bool
-	timebegin time.Time
+	timeBegin time.Time
 }
 
 func (m Model) Init() tea.Cmd {
@@ -40,17 +40,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		parsedTime, _ = parseUserDuration(m.timeSet.Value())
 	}
 
-	if m.sleep && time.Since(m.timebegin) > parsedTime {
+	if m.sleep && time.Since(m.timeBegin) > parsedTime {
 		music.PauseSong()
 	}
 
-	switch msg := msg.(type) {
+	switch action := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width, m.height = msg.Width, msg.Height
+		m.width, m.height = action.Width, action.Height
 	case tea.KeyMsg:
 		if m.sharedState.Searching {
 		} else if m.sharedState.SettingTime {
-			switch msg.String() {
+			switch action.String() {
 			case "esc":
 				m.sharedState.SettingTime = false
 				m.timeSet.Blur()
@@ -59,11 +59,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.timeSet.Blur()
 				m.sleep = !m.sleep
 				if m.sleep {
-					m.timebegin = time.Now()
+					m.timeBegin = time.Now()
 				}
 			}
 		} else {
-			switch msg.String() {
+			switch action.String() {
 			case "j":
 				m.volume = min(m.volume+5, 100)
 				music.DecreaseVolume(5)
@@ -100,7 +100,7 @@ func (m Model) View() string {
 	}
 
 	if m.sleep && !m.sharedState.SettingTime {
-		elapsed := time.Since(m.timebegin)
+		elapsed := time.Since(m.timeBegin)
 		remaining := parsedTime - elapsed
 		m.timeSet.SetValue(formatDuration(remaining))
 	} else if !m.sharedState.SettingTime {
@@ -153,7 +153,6 @@ func New(sharedState sharedState.SharedState) Model {
 
 	tS := textinput.New()
 	tS.Width = 8
-	// tS.Placeholder = "00:30:00"
 	tS.Placeholder = "30s"
 	tS.Prompt = " "
 
@@ -165,14 +164,10 @@ func New(sharedState sharedState.SharedState) Model {
 	}
 }
 
-// parseUserDuration parses "1h2m3s", "hh:mm:ss", "mm:ss", or "ss" formats.
 func parseUserDuration(s string) (time.Duration, error) {
-	// Try Go duration format first
 	if d, err := time.ParseDuration(s); err == nil {
 		return d, nil
 	}
-
-	// Try colon format (hh:mm:ss, mm:ss, ss)
 	parts := strings.Split(s, ":")
 	var seconds int
 	switch len(parts) {

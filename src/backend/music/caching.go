@@ -13,12 +13,13 @@ import (
 	"strings"
 )
 
-// FUNCTION: Gets cache path
+// getCachePath constructs the cache file path for a given playlist.
 func getCachePath(cacheDir, playlistName string) string {
 	return filepath.Join(cacheDir, playlistName+".cache")
 }
 
-// FUNCTION: Loads cached data
+// loadCache reads cached data for a given playlist.
+// Returns the table rows if successful, otherwise returns an error.
 func loadCache(cacheDir, playlistName string) ([]table.Row, error) {
 	path := getCachePath(cacheDir, playlistName)
 	data, err := os.ReadFile(path)
@@ -34,7 +35,8 @@ func loadCache(cacheDir, playlistName string) ([]table.Row, error) {
 	return rows, nil
 }
 
-// FUNCTION: Saves cache
+// saveCache writes playlist data to the cache.
+// Returns an error if saving fails.
 func saveCache(cacheDir, playlistName string, rows []table.Row) error {
 	path := getCachePath(cacheDir, playlistName)
 	data, err := json.Marshal(rows)
@@ -45,7 +47,8 @@ func saveCache(cacheDir, playlistName string, rows []table.Row) error {
 	return os.WriteFile(path, data, 0644)
 }
 
-// FUNCTION: Gets duration of a song
+// getDuration retrieves the duration of a song using ffprobe.
+// Returns the duration as a formatted string (mm:ss) or an error if failed.
 func getDuration(songPath string) (string, error) {
 	output, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration",
 		"-of", "default=noprint_wrappers=1:nokey=1", songPath).Output()
@@ -61,10 +64,11 @@ func getDuration(songPath string) (string, error) {
 	minutes := int(seconds) / 60
 	seconds = math.Mod(seconds, 60)
 
-	return fmt.Sprintf("%02d:%02d", minutes, int(seconds)), nil //TODO
+	return fmt.Sprintf("%02d:%02d", minutes, int(seconds)), nil // TODO: Handle default duration
 }
 
-// FUNCTION: Gets all song names in a directory
+// getAllSongNames retrieves all song names in the specified directory.
+// Returns a slice of song names or an error if reading fails.
 func getAllSongNames(directory string) ([]string, error) {
 	files, err := os.ReadDir(directory)
 	if err != nil {
@@ -82,7 +86,8 @@ func getAllSongNames(directory string) ([]string, error) {
 	return songNames, nil
 }
 
-// FUNCTION: Gets durations of all songs in a directory
+// getAllDurations retrieves the duration of each song in the specified directory.
+// Returns a slice of duration strings or an error if reading fails.
 func getAllDurations(directory string) ([]string, error) {
 	files, err := os.ReadDir(directory)
 	if err != nil {
@@ -106,7 +111,9 @@ func getAllDurations(directory string) ([]string, error) {
 	return durations, nil
 }
 
-// FUNCTION: Generates song list and applies caching
+// GenerateSongList creates a song list for a playlist directory,
+// utilizing caching to improve performance.
+// Returns a slice of table rows or an error if retrieval fails.
 func GenerateSongList(directory, cacheDir string) ([]table.Row, error) {
 	playlistName := filepath.Base(directory)
 	rows, err := loadCache(cacheDir, playlistName)

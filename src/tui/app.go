@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"Melodex/src/logger"
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
@@ -10,7 +11,6 @@ import (
 	MusicPlayer "Melodex/src/tui/musicPlayer"
 	SharedState "Melodex/src/tui/sharedState"
 
-	"fmt"
 	"os"
 )
 
@@ -30,45 +30,45 @@ func (m MainModel) Init() tea.Cmd {
 }
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-	var cmds []tea.Cmd
+	var command tea.Cmd
+	var commands []tea.Cmd
 
-	switch msg := msg.(type) {
+	switch action := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width, m.height = msg.Width, msg.Height
+		m.width, m.height = action.Width, action.Height
 
 		var mList tea.Model
-		mList, cmd = m.MList.Update(msg)
+		mList, command = m.MList.Update(msg)
 		m.MList = mList.(MusicList.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 
 		var mPlayer tea.Model
-		mPlayer, cmd = m.MPlayer.Update(msg)
+		mPlayer, command = m.MPlayer.Update(msg)
 		m.MPlayer = mPlayer.(MusicPlayer.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 
 		var aController tea.Model
-		aController, cmd = m.AController.Update(msg)
+		aController, command = m.AController.Update(msg)
 		m.AController = aController.(ApplicationController.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 	default:
 		var mList tea.Model
-		mList, cmd = m.MList.Update(msg)
+		mList, command = m.MList.Update(msg)
 		m.MList = mList.(MusicList.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 
 		var mPlayer tea.Model
-		mPlayer, cmd = m.MPlayer.Update(msg)
+		mPlayer, command = m.MPlayer.Update(msg)
 		m.MPlayer = mPlayer.(MusicPlayer.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 
 		var aController tea.Model
-		aController, cmd = m.AController.Update(msg)
+		aController, command = m.AController.Update(msg)
 		m.AController = aController.(ApplicationController.Model)
-		cmds = append(cmds, cmd)
+		commands = append(commands, command)
 	}
 
-	return m, tea.Batch(cmds...)
+	return m, tea.Batch(commands...)
 }
 
 func (m MainModel) View() string {
@@ -103,7 +103,7 @@ func Application() {
 	)
 
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		logger.Log.Errorf("Error running program: %v", err)
 		os.Exit(1)
 	}
 }

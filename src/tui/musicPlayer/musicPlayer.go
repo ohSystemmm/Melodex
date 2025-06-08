@@ -2,8 +2,6 @@ package musicPlayer
 
 import (
 	"Melodex/src/backend/music"
-	"Melodex/src/backend/playlist"
-	"Melodex/src/connection"
 	"Melodex/src/logger"
 	"Melodex/src/tui/sharedState"
 
@@ -23,11 +21,10 @@ type Model struct {
 	width  int
 	height int
 
-	title  string
-	artist string
-	album  string
-	length int
-	// In percent
+	title    string
+	artist   string
+	album    string
+	length   int
 	progress int
 
 	selectedPreview bool
@@ -38,11 +35,11 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	switch action := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width, m.height = msg.Width, msg.Height
+		m.width, m.height = action.Width, action.Height
 		if m.width <= 55 {
-			m.progressBar.Width = (m.width - 6)
+			m.progressBar.Width = m.width - 6
 		} else {
 			m.progressBar.Width = 50
 		}
@@ -50,7 +47,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.sharedState.Searching || m.sharedState.SettingTime {
 		} else {
-			switch msg.String() {
+			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
 				//music.SetMediaPosition(0) // TODO
@@ -58,21 +55,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.progress = max(m.progress-5, 0)
 				//music.SetMediaPosition(0) // TODO
 			case "b":
-				playlist.DecreaseIndex()
-				connection.Play(music.GetIndex())
-				playlist.GetPreviousSong() // TODO
+				//playlist.DecreaseIndex()
+				//connection.Play(music.GetIndex())
+				//playlist.GetPreviousSong() // TODO
 			case "n":
-				playlist.IncreaseIndex()
-				connection.Play(music.GetIndex()) // TODO
+				//playlist.IncreaseIndex()
+				//connection.Play(music.GetIndex()) // TODO
 			case "enter":
-				m.title = connection.GetCurrentSong()
+				//m.title = connection.GetCurrentSong() // TODO
 			case ",":
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
 					m.sharedState.Shuffling = true
 				}
-				connection.SetShuffle(m.sharedState.Shuffling)
+				//connection.SetShuffle(m.sharedState.Shuffling) // TODO
 				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
@@ -84,7 +81,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.SongOption = -1
 				}
 
-				connection.SetMode(m.sharedState.SongOption)
+				//connection.SetMode(m.sharedState.SongOption) TODO
 				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
 				/* NOTE
 				* -1 = No Repeat
@@ -262,7 +259,7 @@ func formatTime(seconds int) string {
 
 func New(sharedState *sharedState.SharedState) Model {
 	pb := progress.New(
-		progress.WithGradient("#00ffcc", "#00b8e6"),
+		progress.WithGradient("#00FFCC", "#00b8e6"),
 		progress.WithoutPercentage(),
 	)
 	sharedState.Paused = true
