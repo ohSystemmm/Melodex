@@ -1,4 +1,4 @@
-package connection
+package connection // TODO Whole Package
 
 import (
 	"Melodex/src/backend/config"

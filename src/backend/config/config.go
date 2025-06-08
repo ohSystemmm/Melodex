@@ -5,54 +5,70 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
-
-	"github.com/pelletier/go-toml/v2"
 )
 
 var (
+	// fileConfig defines the name of the configuration file.
 	fileConfig = "config.toml"
-	dirConfig  = filepath.Join(os.Getenv("HOME"), ".config/melodex")
+
+	// dirConfig specifies the directory where the configuration file is stored.
+	dirConfig = filepath.Join(os.Getenv("HOME"), ".config/melodex")
 )
 
+// Config represents the main configuration structure, grouping General, Playlist, and Design settings.
 type Config struct {
 	General  General  `toml:"general"`
 	Playlist Playlist `toml:"playlist"`
 	Design   Design   `toml:"design"`
 }
+
+// General contains general application settings such as user information and default values.
 type General struct {
-	User            string `toml:"user"`
-	DefaultPlaylist string `toml:"default_playlist"`
-	DefaultVolume   string `toml:"default_volume"`
-}
-type Playlist struct {
-	Playlists []string `toml:"playlists"`
-}
-type Design struct {
-	Border     string `toml:"border"`
-	Foreground string `toml:"foreground"`
-	Background string `toml:"background"`
+	User            string `toml:"user"`             // User defines the current system user.
+	DefaultPlaylist string `toml:"default_playlist"` // DefaultPlaylist specifies the default playlist path.
+	DefaultVolume   string `toml:"default_volume"`   // DefaultVolume sets the default volume level.
 }
 
-// FUNCTION: Tries loading the config
+// Playlist manages a collection of user-defined playlists.
+type Playlist struct {
+	Playlists []string `toml:"playlists"` // Playlists holds a list of paths to user-created playlists.
+}
+
+// Design holds the visual settings for the application's interface.
+type Design struct {
+	Border     string `toml:"border"`     // Border color setting for the UI.
+	Foreground string `toml:"foreground"` // Foreground color setting for text and icons.
+	Background string `toml:"background"` // Background color setting for the UI.
+}
+
+// getEnvUser retrieves the current system user from the environment variables.
+// If the user is not found, it returns "unknown".
+func getEnvUser() string {
+	user := os.Getenv("USER")
+	if user == "" {
+		return "unknown"
+	}
+	return user
+}
+
+// LoadConfig reads the configuration file from the given path and un-marshals it into a Config struct.
+// If an error occurs, it logs the error and returns nil.
 func LoadConfig(path string) *Config {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		logger.Log.Error("Load config file error:", err)
 		return nil
 	}
-
 	var cfg Config
 	if err = toml.Unmarshal(data, &cfg); err != nil {
 		logger.Log.Error("Load config file error:", err)
 		return nil
 	}
-
 	return &cfg
 }
 
-// FUNCTION: Saves the config
+// SaveConfig writes the provided configuration to the specified file path.
+// It creates the directory if it does not exist. Returns true on success, false on failure.
 func SaveConfig(path string, cfg *Config) bool {
 	dir := filepath.Dir(path)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -77,15 +93,8 @@ func SaveConfig(path string, cfg *Config) bool {
 	return true
 }
 
-func getEnvUser() string {
-	user := os.Getenv("USER")
-	if user == "" {
-		return "unknown"
-	}
-	return user
-}
-
-// FUNCTION: Template for the default config
+// DefaultConfig initializes a default configuration with predefined values,
+// using the system user to determine base file paths.
 func DefaultConfig() *Config {
 	user := getEnvUser()
 	basePath := filepath.Join("/home", user)
@@ -111,7 +120,8 @@ func DefaultConfig() *Config {
 	}
 }
 
-// FUNCTION: Generates the default config
+// GenerateDefaultConfig creates and saves the default configuration file.
+// Returns true if successful, false otherwise.
 func GenerateDefaultConfig() bool {
 	configPath := filepath.Join(dirConfig, fileConfig)
 
@@ -122,56 +132,3 @@ func GenerateDefaultConfig() bool {
 	logger.Log.Info("Generate default configuration success")
 	return true
 }
-
-func GetConfig() *Config {
-	configPath := filepath.Join(dirConfig, fileConfig)
-	cfg := LoadConfig(configPath)
-
-	if cfg == nil {
-		logger.Log.Errorf("Error loading config: %s", configPath)
-
-		defaultCfg := DefaultConfig()
-		logger.Log.Infof("Using default config: %+v", defaultCfg)
-
-		saveErr := SaveConfig(configPath, defaultCfg)
-		if !saveErr {
-			logger.Log.Errorf("Failed to save default config")
-			return defaultCfg
-		}
-
-		return defaultCfg
-	}
-	return cfg
-}
-
-var cfg = GetConfig()
-
-func ConfGetVolume() int {
-	volume, err := strconv.Atoi(strings.TrimSuffix(cfg.General.DefaultVolume, "%"))
-	if err != nil {
-		logger.Log.Error("Invalid volume format in config, using default (100%)")
-		return 100
-	}
-	logger.Log.Warnf("Using volume %d", volume)
-	return volume
-}
-
-func ConfGetUser() string {
-	user := cfg.General.User
-	if user == "" {
-		user = os.Getenv("USER")
-		logger.Log.Infof("User not valid, using environment user: %s", user)
-	}
-	logger.Log.Infof("Using user from config: %s", user)
-	return user
-}
-
-func ConfGetDefaultPlaylist() string {
-	playlist := cfg.General.DefaultPlaylist
-	if playlist == "" {
-		logger.Log.Errorf("Playlist not found.")
-		return ""
-	}
-	return playlist
-}
-

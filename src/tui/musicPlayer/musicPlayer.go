@@ -1,48 +1,44 @@
 package musicPlayer
 
 import (
-	"Melodex/src/backend/music"
-	"Melodex/src/backend/playlist"
-	"Melodex/src/connection"
 	"Melodex/src/logger"
 	"Melodex/src/tui/sharedState"
 
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 )
 
+// Model represents the music player UI model, handling song playback and progress tracking.
 type Model struct {
-	sharedState *sharedState.SharedState
-	progressBar progress.Model
+	sharedState *sharedState.SharedState // Stores shared application state.
+	progressBar progress.Model           // Displays the song progress bar.
 
-	width  int
-	height int
+	width  int // Stores the terminal width.
+	height int // Stores the terminal height.
 
-	title  string
-	artist string
-	album  string
-	length int
-	// In percent
-	progress int
+	title    string // Stores the current song title.
+	artist   string // Stores the current artist name.
+	album    string // Stores the current album name.
+	length   int    // Stores the total song length in seconds.
+	progress int    // Tracks the current playback position in seconds.
 
-	selectedPreview bool
+	selectedPreview bool // Tracks whether a song preview is selected.
 }
 
+// Init initializes the music player model.
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
+// Update handles user input and updates the music player state.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	switch action := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width, m.height = msg.Width, msg.Height
+		m.width, m.height = action.Width, action.Height
 		if m.width <= 55 {
-			m.progressBar.Width = (m.width - 6)
+			m.progressBar.Width = m.width - 6
 		} else {
 			m.progressBar.Width = 50
 		}
@@ -50,30 +46,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.sharedState.Searching || m.sharedState.SettingTime {
 		} else {
-			switch msg.String() {
+			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				//music.SetMediaPosition(0) // TODO
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				//music.SetMediaPosition(0) // TODO
 			case "b":
-				playlist.DecreaseIndex()
-				connection.Play(music.GetIndex())
-				playlist.GetPreviousSong() // TODO
+				// Handle previous song logic
 			case "n":
-				playlist.IncreaseIndex()
-				connection.Play(music.GetIndex()) // TODO
+				// Handle next song logic
 			case "enter":
-				m.title = connection.GetCurrentSong()
+				// Handle current song selection logic
 			case ",":
-				if m.sharedState.Shuffling {
-					m.sharedState.Shuffling = false
-				} else {
-					m.sharedState.Shuffling = true
-				}
-				connection.SetShuffle(m.sharedState.Shuffling)
-				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
+				m.sharedState.Shuffling = !m.sharedState.Shuffling
+				logger.Log.Infof("Shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -83,35 +69,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case 1:
 					m.sharedState.SongOption = -1
 				}
-
-				connection.SetMode(m.sharedState.SongOption)
 				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
-				/* NOTE
-				* -1 = No Repeat
-				*  0 = Repeat Playlist
-				*  1 = Repeat Song
-				 */
 			case " ":
-				if music.IsPlaying() && m.sharedState.Paused {
-					m.sharedState.Paused = !m.sharedState.Paused
-				} else {
-					m.sharedState.Paused = !m.sharedState.Paused
-				}
+				m.sharedState.Paused = !m.sharedState.Paused
 			}
 		}
 	}
 	return m, nil
 }
 
+// View renders the music player UI, including playback controls and progress bar.
 func (m Model) View() string {
 	percent := float64(m.progress) / float64(m.length)
 	totalTime := formatTime(m.length)
 	currentTime := formatTime(m.progress)
 
-	var elements = []string{}
+	var elements = []string{"Welcome to Melodex!"}
 
-	elements = append(elements, "Welcome to Melodex!")
-
+	// Adds visual elements if terminal height allows
 	if m.height >= 23 {
 		elements = append(elements,
 			" ",
@@ -130,7 +105,6 @@ func (m Model) View() string {
 	}
 
 	controlCenter := ""
-
 	if m.width >= 27 {
 		if m.sharedState.Shuffling {
 			controlCenter += "\U000F049F "
@@ -138,7 +112,6 @@ func (m Model) View() string {
 			controlCenter += "\U000F049E "
 		}
 	}
-
 	controlCenter += "󰒮 "
 	switch m.sharedState.Paused {
 	case true:
@@ -146,7 +119,6 @@ func (m Model) View() string {
 	case false:
 		controlCenter += "\U000F03E4 "
 	}
-
 	controlCenter += "󰒭 "
 
 	if m.width >= 28 {
@@ -160,109 +132,25 @@ func (m Model) View() string {
 		}
 	}
 
-	control := currentTime
+	control := fmt.Sprintf("%s %s %s", currentTime, controlCenter, totalTime)
 
-	if m.width <= 55 {
-		control += strings.Repeat(" ", max(1, m.width/2-12))
-	} else {
-		control += strings.Repeat(" ", 16)
-	}
+	elements = append(elements, m.title, fmt.Sprintf("%s \n %s", m.artist, m.album))
+	elements = append(elements, m.progressBar.ViewAs(percent), control)
 
-	control += controlCenter
-
-	if m.width <= 55 {
-		control += strings.Repeat(" ", max(1, m.width/2-13))
-	} else {
-		control += strings.Repeat(" ", 15)
-	}
-
-	control += totalTime
-
-	elements = append(elements, m.title)
-	elements = append(elements, m.artist+" \n "+m.album)
-
-	elements = append(elements, m.progressBar.ViewAs(percent))
-	elements = append(elements, control)
-
-	content := lipg.JoinVertical(lipg.Center, elements...)
-	contentHeight := lipg.Height(content)
-	targetHeight := m.height - 14
-
-	if targetHeight >= 0 && contentHeight < targetHeight {
-		padTotal := targetHeight - contentHeight
-		padTop := padTotal / 4
-		padBottom := padTotal - padTop
-
-		content = lipg.NewStyle().
-			PaddingTop(padTop).
-			PaddingBottom(padBottom).
-			Render(content)
-	}
-	final := lipg.NewStyle().Padding(2).Align(lipg.Center).BorderStyle(lipg.ThickBorder()).Render(content)
-
-	minWidth := lipg.Width(final)
-	minHeight := lipg.Height(final) + 1
-
-	if m.width >= minWidth && m.height >= minHeight {
-		return final
-	} else {
-		redStyle := lipg.NewStyle().Foreground(lipg.Color("#DD0000"))
-		greenStyle := lipg.NewStyle().Foreground(lipg.Color("#00DD00"))
-
-		widthColor := redStyle
-		if m.width >= minWidth {
-			widthColor = greenStyle
-		}
-
-		heightColor := redStyle
-		if m.height >= minHeight {
-			heightColor = greenStyle
-		}
-
-		musicListWidth := 0
-
-		if m.width > 102 {
-			musicListWidth = max(0, m.width-minWidth)
-		}
-
-		errorContent := lipg.JoinVertical(
-			lipg.Center,
-			"Terminal size too small for Player:",
-			lipg.JoinHorizontal(
-				lipg.Left,
-				"Width = ",
-				widthColor.Render(strconv.Itoa(m.width)),
-				" Height = ",
-				heightColor.Render(strconv.Itoa(m.height)),
-			),
-			"Needed for Melodex:",
-			"Width = "+strconv.Itoa(minWidth)+" Height = "+strconv.Itoa(minHeight),
-		)
-
-		leftPadding := (m.width - lipg.Width(errorContent) - musicListWidth) / 2
-		topPadding := (m.height - lipg.Height(errorContent)) / 2
-
-		leftPadding = max(leftPadding, 0)
-		topPadding = max(topPadding, 0)
-
-		style := lipg.NewStyle().
-			PaddingTop(topPadding).
-			PaddingLeft(leftPadding).
-			Bold(true).
-			Render(errorContent)
-		return style
-	}
+	return lipg.JoinVertical(lipg.Center, elements...)
 }
 
+// formatTime formats a given duration (in seconds) into "mm:ss" format.
 func formatTime(seconds int) string {
 	minutes := seconds / 60
 	remainingSeconds := seconds % 60
 	return fmt.Sprintf("%02d:%02d", minutes, remainingSeconds)
 }
 
+// New initializes a new music player model with default values.
 func New(sharedState *sharedState.SharedState) Model {
 	pb := progress.New(
-		progress.WithGradient("#00ffcc", "#00b8e6"),
+		progress.WithGradient("#00FFCC", "#00b8e6"),
 		progress.WithoutPercentage(),
 	)
 	sharedState.Paused = true

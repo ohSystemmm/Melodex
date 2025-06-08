@@ -8,6 +8,8 @@ import (
 
 var Log *logrus.Logger
 
+// init initializes the logging system by creating necessary directories and setting up log output.
+// The log file is stored in the user's cache directory under "melodex/app.log".
 func init() {
 	Log = logrus.New()
 

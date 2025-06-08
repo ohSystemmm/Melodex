@@ -4,7 +4,6 @@ import (
 	"Melodex/src/backend/config"
 	"Melodex/src/logger"
 	vlc "github.com/adrg/libvlc-go/v3"
-	"time"
 )
 
 var (
@@ -13,7 +12,8 @@ var (
 	songIndex int
 )
 
-// FUNCTION: Initializes VLC
+// Init initializes the VLC player with configured settings.
+// It ensures VLC is not muted and sets the initial volume.
 func Init() {
 	var err error
 
@@ -43,7 +43,8 @@ func Init() {
 	songIndex = 0
 }
 
-// FUNCTION: Plays the provided song
+// PlaySong plays the provided song file.
+// If a song is already playing, it stops the current playback before loading the new song.
 func PlaySong(songPath string) bool {
 	if player.IsPlaying() {
 		if err := player.Stop(); err != nil {
@@ -67,19 +68,20 @@ func PlaySong(songPath string) bool {
 	return true
 }
 
-// FUNCTION: Pauses song
+// PauseSong toggles the playback state between paused and playing.
 func PauseSong() {
 	if err := player.SetPause(player.IsPlaying()); err != nil {
 		logger.Log.Errorf("Error toggling pause: %v", err)
 	}
 }
 
-// FUNCTION: Returns the current state of the song
+// IsPlaying checks if a song is currently playing.
 func IsPlaying() bool {
 	return player.IsPlaying()
 }
 
-// FUNCTION: Gets the current Song Position
+// CurrentSongPosition returns the playback position of the current song as a float.
+// If an error occurs, it defaults to 0.0.
 func CurrentSongPosition() float32 {
 	position, err := player.MediaPosition()
 	if err != nil {
@@ -89,7 +91,7 @@ func CurrentSongPosition() float32 {
 	return position
 }
 
-// FUNCTION: Sets the volume
+// SetVolume adjusts the playback volume to the specified level.
 func SetVolume(volume int) {
 	err := player.SetVolume(volume)
 	if err != nil {
@@ -97,7 +99,8 @@ func SetVolume(volume int) {
 	}
 }
 
-// FUNCTION: Sets Media Position
+// SetMediaPosition moves playback to the specified position in the media.
+// Returns false if setting the position fails.
 func SetMediaPosition(position float32) bool {
 	err := player.SetMediaPosition(position)
 	if err != nil {
@@ -107,7 +110,8 @@ func SetMediaPosition(position float32) bool {
 	return true
 }
 
-// FUNCTION: Increases volume by params value
+// IncreaseVolume raises the playback volume by the given factor.
+// The volume is capped at 100%.
 func IncreaseVolume(factor int) {
 	currentVolume, err := player.Volume()
 	if err != nil {
@@ -125,7 +129,8 @@ func IncreaseVolume(factor int) {
 	}
 }
 
-// FUNCTION: Decreases volume by params value
+// DecreaseVolume lowers the playback volume by the given factor.
+// The volume cannot go below 0%.
 func DecreaseVolume(factor int) {
 	currentVolume, err := player.Volume()
 	if err != nil {
@@ -143,7 +148,7 @@ func DecreaseVolume(factor int) {
 	}
 }
 
-// FUNCTION: Stops the player
+// Stop halts the playback if a song is currently playing.
 func Stop() bool {
 	if player.IsPlaying() {
 		if err := player.Stop(); err != nil {
@@ -154,7 +159,7 @@ func Stop() bool {
 	return true
 }
 
-// FUNCTION: Releases all resources
+// Cleanup releases all allocated resources related to the VLC player and media.
 func Cleanup() {
 	if player != nil {
 		if err := player.Release(); err != nil {
@@ -167,83 +172,4 @@ func Cleanup() {
 			logger.Log.Errorf("Error releasing VLC: %v", err)
 		}
 	}
-	return true
-}
-
-func WaitTillSongEnd() {
-	for {
-		currentPosition, err := player.MediaPosition()
-		if err != nil {
-			logger.Log.Errorf("Error getting media position: %v", err)
-			return
-		}
-
-		mediaLength, err := player.MediaLength()
-		if err != nil {
-			logger.Log.Errorf("Error getting media length: %v", err)
-			return
-		}
-
-		if currentPosition >= float32(mediaLength) {
-			break
-		}
-
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	logger.Log.Info("Song Finished")
-}
-
-func GetIndex() int {
-	return songIndex
-}
-
-func GetCurrentSongLength() float64 {
-	if player == nil {
-		return 0.0
-	}
-	length, err := player.MediaLength()
-	if err != nil {
-		logger.Log.Errorf("Error getting media length: %v", err)
-	}
-	return float64(length)
-}
-
-func WaitTillSongEnd() {
-	for {
-		currentPosition, err := player.MediaPosition()
-		if err != nil {
-			logger.Log.Errorf("Error getting media position: %v", err)
-			return
-		}
-
-		mediaLength, err := player.MediaLength()
-		if err != nil {
-			logger.Log.Errorf("Error getting media length: %v", err)
-			return
-		}
-
-		if currentPosition >= float32(mediaLength) {
-			break
-		}
-
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	logger.Log.Info("Song Finished")
-}
-
-func GetIndex() int {
-	return songIndex
-}
-
-func GetCurrentSongLength() float64 {
-	if player == nil {
-		return 0.0
-	}
-	length, err := player.MediaLength()
-	if err != nil {
-		logger.Log.Errorf("Error getting media length: %v", err)
-	}
-	return float64(length)
 }
