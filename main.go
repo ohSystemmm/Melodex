@@ -1,144 +1,98 @@
 package main
 
 import (
+	"Melodex/src/backend/cache"
+	"Melodex/src/backend/config"
+	"Melodex/src/backend/music"
+	"Melodex/src/log"
+	"Melodex/src/settings"
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"Melodex/src/backend/config"
-	"Melodex/src/backend/music"
-	"Melodex/src/connection"
-	"Melodex/src/logger"
-	"Melodex/src/tui"
-)
-
-var (
-	version  = "0.0.8"
-	release  = "2025-XX-XX"
-	cacheDir = "/home/" + config.ConfGetUser() + "/.cache/melodex/"
+	"strconv"
 )
 
 func main() {
-	displayFileContent("src/assets/usBTW.txt", "Welcome to Melodex!")
+	fmt.Print(printFileContent("src/assets/melodex.txt", "Welcome to Melodex!"))
 
 	if len(os.Args) < 2 {
-		startApplication()
+		startMelodex()
 		return
 	}
 
-	command := os.Args[1]
-	handleCommand(command)
+	handleCmd(os.Args[1])
 }
 
-// FUNCTION: Watches for config files and starts the Application
-func startApplication() {
-	configPath := "/home/" + config.ConfGetUser() + "/.config/melodex/config.toml"
-
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		logger.Log.Info("Config file not found. Creating defaults.")
-		config.GenerateDefaultConfig()
-
-	} else {
-		cfg := config.LoadConfig(configPath)
-		if err != nil {
-			logger.Log.Info("Config file corrupted. Creating defaults.")
-			config.GenerateDefaultConfig()
-		} else {
-			logger.Log.Info("Config file found at " + configPath)
-			_ = cfg
-		}
-	}
-
-	connection.SetPlaylistPath(config.ConfGetDefaultPlaylist())
-	music.Init()
-	tui.Application()
+func startMelodex() {
+	music.InitVLC()
 }
 
-// FUNCTION: Handles os params
-func handleCommand(command string) {
-	switch command {
-	case "--version", "-v":
-		fmt.Printf("Melodex version %s\nRelease date: %s\nUse --help for a list of available commands.\n", version, release)
-	case "--help", "-h":
-		displayFileContent("src/assets/help.txt", "Options not found, check out https://github.com/ohSystemmm/Melodex")
-	case "--playlist", "-p":
-		handlePlaylist()
-		startApplication()
-	case "--clear-cache", "-cc":
-		err := removeCache()
-		if err != nil {
-			logger.Log.Warn("Failed to remove cache: " + err.Error())
+func handleCmd(cmd string) {
+	switch cmd {
+	case "init":
+		settings.SetupMelodex()
+	case "-h", "--help":
+		fmt.Print(printFileContent("src/assets/help.txt",
+			"Options not found, check out https://github.com/ohSystemmm/Melodex"))
+	case "-v", "--version":
+		fmt.Printf("Melodex version %s\nRelease date: %s\n\nUse --help for a list of available commands.\n\n",
+			settings.AppConfig.Version, settings.AppConfig.Release)
+	case "-c", "--config":
+		path := parsePath()
+		config.LoadConfig(path)
+		//config.LoadConfig(path)
+	case "-p", "--playlist":
+		//path := parsePath()
+		//playlist.UsePlaylist(path)
+	case "-cc", "--clear-cache":
+		cache.DelCache()
+	case "-dc", "--default-config":
+		config.SaveConfig(config.GenerateDefaultConfig())
+	case "-sp", "--select-playlist":
+		if len(os.Args) < 4 {
+			log.Log.Error("Missing playlist index argument.")
+			return
 		}
-		fmt.Println("Removed cache")
-	case "--config", "-c":
-		handleConfig()
-		startApplication()
-	case "--default-config", "-dc":
-		regenerateDefaultConfig()
-		startApplication()
+		index, err := strconv.Atoi(os.Args[3])
+		if err != nil {
+			log.Log.Error("Invalid playlist index:", err)
+			return
+		}
+		cache.LoadStoredPlaylist(index)
 	default:
-		fmt.Printf("Unknown command: %s\nUse --help for a list of available commands.\n", command)
+		fmt.Printf("Unknown command: %s\n\nUse --help for a list of available commands.\n\n", cmd)
 	}
 }
 
-func handlePlaylist() {
+func parsePath() string {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: melodex --playlist <path>")
-		return
+		fmt.Printf("Error: No path provided\n\nUse --help for a list of available commands.\n\n")
+		return ""
 	}
-	playlistPath := os.Args[2]
-	connection.SetPlaylistPath(playlistPath)
-}
-
-func handleConfig() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: melodex --config <path>")
-		return
-	}
-	configPath := os.Args[2]
-	fmt.Printf("Loading config: %s\n", configPath)
-	config.LoadConfig(configPath)
-}
-
-func regenerateDefaultConfig() {
-	logger.Log.Info("Regenerating default configuration...")
-	if config.GenerateDefaultConfig() {
-		logger.Log.Info("All configurations successfully regenerated.")
-	} else {
-		logger.Log.Error("Failed to regenerate the default configuration.")
-	}
-	startApplication()
-}
-
-func removeCache() error {
-	logger.Log.Info("Removing cache...")
-
-	files, err := os.ReadDir(cacheDir)
-	if err != nil {
-		logger.Log.Errorf("Error reading cache directory: %v", err)
-		return err
-	}
-
-	for _, file := range files {
-		if filepath.Ext(file.Name()) == ".cache" {
-			filePath := filepath.Join(cacheDir, file.Name())
-			err = os.Remove(filePath)
-			if err != nil {
-				logger.Log.Warnf("Error removing cache file %s: %v", file.Name(), err)
-			} else {
-				logger.Log.Infof("Removed cache file: %s", file.Name())
-			}
+	path := os.Args[2]
+	if path[:2] == "~/" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Log.Errorf("Error getting user home directory: %v", err)
+			return ""
 		}
+		path = filepath.Join(homeDir, path[2:])
 	}
-	return nil
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Log.Errorf("Error converting to absolute path: %v", err)
+		return ""
+	}
+	return absPath
 }
 
-func displayFileContent(path string, errorMessage string) {
-	file, err := os.ReadFile(path)
+func printFileContent(file string, errorMessage string) string {
+	content, err := os.ReadFile(file)
 	if err != nil {
-		logger.Log.Warningf("Error reading file %s: %v\n", path, err)
+		log.Log.Errorf("Error reading file %s: %v", file, err)
 		fmt.Println(errorMessage)
-		return
+		return ""
 	}
-	fmt.Println(string(file))
+	return string(content)
 }

@@ -33,13 +33,13 @@ melodex <command> [options]
 
 **Commands**
 ```sh
--c, --config             Open configuration options.
+-c, --settings             Open configuration options.
 -h, --help               Display this help message.
 -p, --playlist           Specify a playlist to use.
 -cc, --clear-cache       Clear all cached song data.
 -v, --version            Show version information.
---default-config         Restore default configuration settings.
--sp, --stored-playlist   Select an indexed playlist from the config.
+--default-settings         Restore default configuration settings.
+-sp, --stored-playlist   Select an indexed playlist from the settings.
 ```
 
 **Demonstration**

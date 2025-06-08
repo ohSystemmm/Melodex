@@ -3,7 +3,6 @@ package musicList
 import (
 	"strings"
 
-	"Melodex/src/backend/music"
 	"Melodex/src/connection"
 	SharedState "Melodex/src/tui/sharedState"
 
@@ -39,7 +38,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch action.String() {
 		case "ctrl+c":
-			music.Cleanup()
+			//music.Cleanup(//TODO)
 			return m, tea.Quit
 		case "up":
 			m.list.MoveUp(1)
@@ -66,12 +65,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				switch action.String() {
 				case "q":
-					music.Cleanup()
+					//music.Cleanup(//TODO)
 					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false
 				case " ":
-					music.PauseSong()
+					//music.PauseSong(//TODO)
 				case "f":
 					m.sharedState.Searching = true
 					return m, m.searchBar.Focus()
@@ -85,15 +84,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					switch action.String() {
 					case "q":
-						music.Cleanup()
+						//music.Cleanup(//TODO)
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						connection.SetCurrentSong(m.list.SelectedRow()[0])
-						connection.Play()
-						connection.SetSongLength(music.SongLength())
+						//connection.SetCurrentSong(m.list.SelectedRow()[0])
+						//connection.Play()
+						//connection.SetSongLength(music.SongLength()//TODO)
 					case " ":
-						music.PauseSong()
+						//music.PauseSong(//TODO)
 					case "f":
 						m.sharedState.Searching = true
 						return m, m.searchBar.Focus()

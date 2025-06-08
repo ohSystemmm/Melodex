@@ -2,9 +2,8 @@ package musicPlayer
 
 import (
 	"Melodex/src/backend/config"
-	"Melodex/src/backend/music"
 	"Melodex/src/connection"
-	"Melodex/src/logger"
+	"Melodex/src/log"
 	"Melodex/src/tui/sharedState"
 	"fmt"
 	"strconv"
@@ -51,10 +50,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				music.SetMediaPosition(music.CurrentSongPosition() + 0.05)
+				//music.SetMediaPosition(music.CurrentSongPosition() + 0.05//TODO)
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				music.SetMediaPosition(music.CurrentSongPosition() - 0.05)
+				//music.SetMediaPosition(music.CurrentSongPosition() - 0.05//TODO)
 			case "b":
 				//playlist.DecreaseIndex()
 				//connection.Play(music.GetIndex())
@@ -68,7 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.Shuffling = true
 				}
 				//connection.SetShuffle(m.sharedState.Shuffling) // TODO
-				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
+				log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -80,18 +79,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				//connection.SetMode(m.sharedState.SongOption) TODO
-				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
+				log.Log.Infof("Mode: %v", m.sharedState.SongOption)
 				/* NOTE
 				* -1 = No Repeat
 				*  0 = Repeat Playlist
 				*  1 = Repeat Song
 				 */
 			case " ":
-				if music.IsPlaying() && m.sharedState.Paused {
-					m.sharedState.Paused = !m.sharedState.Paused
-				} else {
-					m.sharedState.Paused = !m.sharedState.Paused
-				}
+				//if music.IsPlaying() && m.sharedState.Paused {
+				//	m.sharedState.Paused = !m.sharedState.Paused
+				//} else {
+				//	m.sharedState.Paused = !m.sharedState.Paused
+				////TODO}
 			}
 		}
 	}
@@ -282,7 +281,7 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		length:      120,
+		length:      10,
 		progress:    0,
 		progressBar: pb,
 	}
