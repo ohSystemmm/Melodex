@@ -100,7 +100,7 @@ Designed and implemented the TUI.
 Provided support and guidance to the developers.
 
 **Initial Start:** July 2024  
-Concept and early development by ohSystemmm. 
+Concept and early development by ohSystemmm.  
 **Official Project Launch:** October 2024  
 Established as an official project, marking the arrival of Y2kun and nvmChris as contributors.
 

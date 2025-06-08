@@ -74,6 +74,28 @@ func PauseSong() {
 		logger.Log.Errorf("Error toggling pause: %v", err)
 	}
 }
+func SetMute(option bool) {
+	var err error
+	if option {
+		err = player.SetMute(true)
+		if err != nil {
+			logger.Log.Errorf("Error toggling mute: %v", err)
+		}
+	} else {
+		err = player.SetMute(false)
+		if err != nil {
+			logger.Log.Errorf("Error toggling mute: %v", err)
+		}
+	}
+}
+
+func IsMuted() bool {
+	state, err := player.IsMuted()
+	if err != nil {
+		logger.Log.Errorf("Error checking if player is muted: %v", err)
+	}
+	return state
+}
 
 // IsPlaying checks if a song is currently playing.
 func IsPlaying() bool {
@@ -172,4 +194,13 @@ func Cleanup() {
 			logger.Log.Errorf("Error releasing VLC: %v", err)
 		}
 	}
+}
+
+func SongLength() int {
+	length, err := player.MediaLength()
+	if err != nil {
+		logger.Log.Errorf("Error getting media length: %v", err)
+	}
+
+	return length / 1000
 }

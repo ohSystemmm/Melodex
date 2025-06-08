@@ -1,12 +1,16 @@
 package applicationController
 
 import (
+
+	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
+  "Melodex/src/backend/config"
 
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -15,7 +19,7 @@ import (
 )
 
 type Model struct {
-	sharedState sharedState.SharedState
+	sharedState *sharedState.SharedState
 
 	width  int
 	height int
@@ -65,16 +69,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			switch action.String() {
 			case "j":
-				m.volume = min(m.volume+5, 100)
+				m.volume = min(m.volume-5, 100)
+				if m.volume <= 0 {
+					m.volume = 0
+				}
 				music.DecreaseVolume(5)
 			case "k":
-				m.volume = max(m.volume-5, 0)
+				m.volume = max(m.volume+5, 0)
+				if m.volume >= 100 {
+					m.volume = 100
+				}
 				music.IncreaseVolume(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				m.volume = 0 // TODO
+				if !music.IsMuted() {
+					music.SetMute(true)
+					m.volume = 0
+				} else {
+					music.SetMute(false)
+					m.volume = 100
+				}
 			}
 		}
 	}
@@ -94,7 +110,7 @@ func (m Model) View() string {
 
 	elements = append(elements, lipg.NewStyle().Bold(true).Render("Application Controller"))
 	elements = append(elements, "")
-	elements = append(elements, "Volume "+m.pB.ViewAs(float64(m.volume)/100)+strconv.Itoa(m.volume)+"%")
+	elements = append(elements, "Volume: "+m.pB.ViewAs(float64(m.volume)/100)+" "+strconv.Itoa(m.volume)+"%")
 
 	var parsedTime time.Duration
 	if m.timeSet.Value() != "" {
@@ -146,7 +162,7 @@ func (m Model) View() string {
 	}
 }
 
-func New(sharedState sharedState.SharedState) Model {
+func New(newSharedState *sharedState.SharedState) Model {
 	pb := progress.New(
 		progress.WithWidth(20),
 		progress.WithGradient("#ff00cc", "#b800e6"),
@@ -159,17 +175,41 @@ func New(sharedState sharedState.SharedState) Model {
 	tS.Prompt = " "
 
 	return Model{
-		sharedState: sharedState,
+		sharedState: newSharedState,
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
+		volume:      config.ConfGetVolume(),
 	}
 }
 
 func parseUserDuration(s string) (time.Duration, error) {
+	s = strings.ReplaceAll(s, " ", "")
+
 	if d, err := time.ParseDuration(s); err == nil {
 		return d, nil
 	}
+
+	// Accept units that start with h, m, s (case-insensitive)
+	re := regexp.MustCompile(`(?i)(\d+)([hms])`)
+	matches := re.FindAllStringSubmatch(s, -1)
+	if len(matches) > 0 {
+		var total time.Duration
+		for _, m := range matches {
+			val, _ := strconv.Atoi(m[1])
+			switch strings.ToLower(m[2]) {
+			case "h":
+				total += time.Duration(val) * time.Hour
+			case "m":
+				total += time.Duration(val) * time.Minute
+			case "s":
+				total += time.Duration(val) * time.Second
+			}
+		}
+		return total, nil
+	}
+
+	// colon-separated (hh:mm:ss, mm:ss, ss)
 	parts := strings.Split(s, ":")
 	var seconds int
 	switch len(parts) {
@@ -178,27 +218,24 @@ func parseUserDuration(s string) (time.Duration, error) {
 		m, err2 := strconv.Atoi(parts[1])
 		sec, err3 := strconv.Atoi(parts[2])
 		if err1 != nil || err2 != nil || err3 != nil {
-			// log.Println("Invalid time format:", s)
-			return 0, err1 // just return the first error found
+			return 0, errors.New("invalid time format")
 		}
 		seconds = h*3600 + m*60 + sec
 	case 2:
 		m, err1 := strconv.Atoi(parts[0])
 		sec, err2 := strconv.Atoi(parts[1])
 		if err1 != nil || err2 != nil {
-			// log.Println("Invalid time format:", s)
-			return 0, err1
+			return 0, errors.New("invalid time format")
 		}
 		seconds = m*60 + sec
 	case 1:
 		sec, err := strconv.Atoi(parts[0])
 		if err != nil {
-			// log.Println("Invalid time format:", s)
-			return 0, err
+			return 0, errors.New("invalid time format")
 		}
 		seconds = sec
 	default:
-		return 0, nil
+		return 0, errors.New("invalid time format")
 	}
 	return time.Duration(seconds) * time.Second, nil
 }
