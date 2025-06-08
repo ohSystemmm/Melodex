@@ -74,7 +74,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				m.volume = 0 // TODO
+				if !music.IsMuted() {
+					music.SetMute(true)
+					m.volume = 0
+				} else {
+					music.SetMute(false)
+					m.volume = 100
+				}
 			}
 		}
 	}

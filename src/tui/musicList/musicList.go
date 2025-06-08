@@ -1,7 +1,6 @@
 package musicList
 
 import (
-	"path/filepath"
 	"strings"
 
 	"Melodex/src/backend/music"
@@ -89,11 +88,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
-						// TODO
+						connection.SetCurrentSong(m.list.SelectedRow()[0])
+						connection.Play()
 					case " ":
 						music.PauseSong()
-						// TODO
 					case "f":
 						m.sharedState.Searching = true
 						return m, m.searchBar.Focus()
@@ -232,7 +230,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := "Playlist: " + connection.GetPlaylistName()
+	playlistName := "Playlist: " + connection.GetPlayListName()
 
 	return Model{
 		sharedState:    sharedState,
