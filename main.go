@@ -122,7 +122,7 @@ func removeCache() error {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".cache" {
 			filePath := filepath.Join(cacheDir, file.Name())
-			err := os.Remove(filePath)
+			err = os.Remove(filePath)
 			if err != nil {
 				logger.Log.Warnf("Error removing cache file %s: %v", file.Name(), err)
 			} else {
