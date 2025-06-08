@@ -1,7 +1,6 @@
 package musicList
 
 import (
-	"path/filepath"
 	"strings"
 
 	"Melodex/src/backend/music"
@@ -14,25 +13,28 @@ import (
 	lipg "github.com/charmbracelet/lipgloss"
 )
 
+// Model represents the music list UI, including search functionality and table-based display.
 type Model struct {
-	sharedState *SharedState.SharedState
+	sharedState *SharedState.SharedState // Stores shared application state.
 
-	list      table.Model
-	searchBar textinput.Model
+	list      table.Model     // Table model for displaying the song list.
+	searchBar textinput.Model // Search bar for filtering song results.
 
-	originalRows []table.Row
+	originalRows []table.Row // Holds the original unfiltered song list.
 
-	playlistName   string
-	totalListWidth int
+	playlistName   string // Stores the current playlist name.
+	totalListWidth int    // Stores the total width of the song list.
 
-	width  int
-	height int
+	width  int // Stores the terminal width.
+	height int // Stores the terminal height.
 }
 
+// Init initializes the model. No startup command is required.
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
+// Update handles user input and updates the music list UI.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -66,8 +68,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			} else {
 				switch action.String() {
-				case "q":
-					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false
 				case " ":
@@ -76,32 +76,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.Searching = true
 					return m, m.searchBar.Focus()
 				}
-				if m.sharedState.Searching {
-					switch action.String() {
-					case "esc", "enter":
-						m.sharedState.Searching = false
-						m.searchBar.Blur()
-					}
-				} else {
-					switch action.String() {
-					case "q":
-						music.Cleanup()
-						return m, tea.Quit
-					case "enter":
-						m.sharedState.Paused = false
-						connection.SetCurrentSong(strings.TrimSuffix(m.list.SelectedRow()[0], filepath.Ext(m.list.SelectedRow()[0])))
-						// TODO
-					case " ":
-						music.PauseSong()
-						// TODO
-					case "f":
-						m.sharedState.Searching = true
-						return m, m.searchBar.Focus()
-
-					}
-				}
 			}
 		}
+
 	case tea.WindowSizeMsg:
 		m.width, m.height = action.Width, action.Height
 		m.list.SetHeight(m.height - 4)
@@ -125,13 +102,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.MouseButtonWheelDown:
 				m.list.MoveDown(1)
 			}
-			switch tea.MouseAction(action.Action) {
-			case tea.MouseAction(tea.MouseButtonLeft):
-				rowIdx := action.Y - 4
-				m.list.SetCursor(rowIdx)
-			}
 		}
 	}
+
 	m.searchBar, cmd = m.searchBar.Update(msg)
 
 	searchTerm := strings.ToLower(m.searchBar.Value())
@@ -145,6 +118,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// filterRows filters the song list based on the provided search term.
 func (m Model) filterRows(searchTerm string) []table.Row {
 	var filteredRows []table.Row
 	for _, row := range m.originalRows {
@@ -158,30 +132,12 @@ func (m Model) filterRows(searchTerm string) []table.Row {
 	return filteredRows
 }
 
+// View renders the music list UI, including search functionality.
 func (m Model) View() string {
 	searchBar := m.searchBar.View()
-	padding := m.totalListWidth - lipg.Width(" "+m.playlistName) - lipg.Width(searchBar) + 4
-	padding = max(padding, 0)
+	padding := max(m.totalListWidth-lipg.Width(" "+m.playlistName)-lipg.Width(searchBar)+4, 0)
 
-	headerBorder := lipg.Border{
-		Top:         "━",
-		Bottom:      "━",
-		Left:        "┃",
-		Right:       "┃",
-		TopLeft:     "┏",
-		TopRight:    "┓",
-		BottomLeft:  "┣",
-		BottomRight: "┫",
-	}
-
-	header := lipg.NewStyle().
-		BorderStyle(headerBorder).
-		Render(
-			lipg.NewStyle().
-				Bold(true).Render(" " +
-				m.playlistName +
-				strings.Repeat(" ", padding) +
-				searchBar))
+	header := lipg.NewStyle().Bold(true).Render(" " + m.playlistName + strings.Repeat(" ", padding) + searchBar)
 
 	musicList := lipg.NewStyle().
 		BorderStyle(lipg.ThickBorder()).
@@ -193,17 +149,15 @@ func (m Model) View() string {
 
 	if m.width > 102 {
 		return lipg.JoinVertical(lipg.Top, header, musicList)
-	} else {
-		return ""
 	}
+	return ""
 }
 
-// New initializes the music list
+// New initializes a new music list model.
 func New(sharedState *SharedState.SharedState) Model {
 	rows := connection.ConnectSongs()
 
 	longestTitle, longestTime := 35, 6
-
 	for _, row := range rows {
 		longestTitle = max(longestTitle, len(row[0]))
 		longestTime = max(longestTime, len(row[1]))
@@ -228,9 +182,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	sB := textinput.New()
 	sB.Width = 20
-	sB.CharLimit = 0
 	sB.Placeholder = "Search"
-
 	sB.Prompt = " "
 	playlistName := "Playlist: " + connection.GetPlaylistName()
 
@@ -244,13 +196,10 @@ func New(sharedState *SharedState.SharedState) Model {
 	}
 }
 
-// defineTableStyles sets the table styles
+// defineTableStyles sets the table styles for the song list.
 func defineTableStyles() table.Styles {
 	styles := table.DefaultStyles()
-	styles.Selected = styles.Selected.
-		Foreground(lipg.Color("230")).
-		Background(lipg.Color("63")).
-		Bold(true)
+	styles.Selected = styles.Selected.Foreground(lipg.Color("230")).Background(lipg.Color("63")).Bold(true)
 	styles.Header = styles.Header.Bold(true).Background(lipg.Color("60"))
 	return styles
 }
