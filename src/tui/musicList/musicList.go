@@ -89,6 +89,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					case "enter":
 						m.sharedState.Paused = false
 						connection.SetCurrentSong(m.list.SelectedRow()[0])
+						// m.length = music.MediaLength
 						connection.Play()
 					case " ":
 						music.PauseSong()
@@ -143,11 +144,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func isSubsequence(sub, word string) bool {
+	j := 0
+	for i := 0; i < len(word) && j < len(sub); i++ {
+		if word[i] == sub[j] {
+			j++
+		}
+	}
+	return j == len(sub)
+}
+
 func (m Model) filterRows(searchTerm string) []table.Row {
+	searchTerm = strings.ToLower(searchTerm)
 	var filteredRows []table.Row
+
 	for _, row := range m.originalRows {
 		for _, cell := range row {
-			if strings.Contains(strings.ToLower(cell), searchTerm) {
+			cellLower := strings.ToLower(cell)
+			if isSubsequence(searchTerm, cellLower) {
 				filteredRows = append(filteredRows, row)
 				break
 			}
