@@ -14,13 +14,16 @@ import (
 
 func main() {
 	fmt.Print(printFileContent("src/assets/melodex.txt", "Welcome to Melodex!"))
+	music.InitVLC()
+	music.AddSong("/home/ohsystemmm/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/0000001_Eye-Of-The-Tiger_Survivor.m4a")
+	music.AddSong("/home/ohsystemmm/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/0000768_Mayday_Syrex.m4a")
 
-	if len(os.Args) < 2 {
-		startMelodex()
-		return
-	}
-
-	handleCmd(os.Args[1])
+	//if len(os.Args) < 2 {
+	//	startMelodex()
+	//	return
+	//}
+	//
+	//handleCmd(os.Args[1])
 }
 
 func startMelodex() {

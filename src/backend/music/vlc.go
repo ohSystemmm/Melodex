@@ -9,7 +9,15 @@ var (
 	player    *vlc.Player
 	mediaList *vlc.MediaList
 	songIndex int
+	mode      int
+	shuffle   bool
 )
+
+/* NOTE mode
+* -1 = No Repeat
+*  0 = Repeat Playlist
+*  1 = Repeat Song
+ */
 
 func InitVLC() {
 	var err error

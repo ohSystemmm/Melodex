@@ -3,8 +3,6 @@ package music
 import (
 	"Melodex/src/log"
 	vlc "github.com/adrg/libvlc-go/v3"
-	"math/rand"
-	"time"
 )
 
 func AddSong(songPath string) {
@@ -25,101 +23,61 @@ func AddSong(songPath string) {
 	log.Log.Infof("Added song to medialist: %s", songPath)
 }
 
-func PlayPlaylistFixedOrder() {
+func isMediaListValid() bool {
 	if mediaList == nil {
 		log.Log.Errorf("Media list is not initialized")
-		return
+		return false
 	}
+	return true
+}
 
-	counter, err := mediaList.Count()
+func playSongAtIndex(index int) {
+	media, err := mediaList.MediaAtIndex(uint(index))
 	if err != nil {
-		log.Log.Errorf("Error counting media list: %v", err)
+		log.Log.Errorf("Error getting media at index %d: %v", index, err)
+		return
+	}
+	defer releaseMedia(media, index)
+
+	if err := player.SetMedia(media); err != nil {
+		log.Log.Errorf("Error setting media at index %d: %v", index, err)
 		return
 	}
 
-	if counter == 0 {
-		log.Log.Errorf("Media list is empty")
+	if err := player.Play(); err != nil {
+		log.Log.Errorf("Error playing media at index %d: %v", index, err)
 		return
 	}
 
-	for i := 0; i < counter; i++ {
-		media, err := mediaList.MediaAtIndex(uint(i))
-		if err != nil {
-			log.Log.Errorf("Error getting media at index %d: %v", i, err)
-			continue
-		}
+	log.Log.Infof("Playing song at index %d", index)
 
-		err = player.SetMedia(media)
-		if err != nil {
-			log.Log.Errorf("Error setting media at index %d: %v", i, err)
-			continue
-		}
+	waitForSongCompletion()
+}
 
-		err = player.Play()
-		if err != nil {
-			log.Log.Errorf("Error playing media at index %d: %v", i, err)
-			continue
-		}
-
-		log.Log.Infof("Playing song at index %d", i)
-
-		for player.IsPlaying() {
-			time.Sleep(500 * time.Millisecond)
-		}
-		err = media.Release()
-		if err != nil {
-			log.Log.Errorf("Error releasing media at index %d: %v", i, err)
-		}
+func releaseMedia(media *vlc.Media, index int) {
+	if err := media.Release(); err != nil {
+		log.Log.Errorf("Error releasing media at index %d: %v", index, err)
 	}
 }
 
-func PlayPlaylistRandomOrder() {
-	if mediaList == nil {
-		log.Log.Errorf("Media list is not initialized")
-		return
-	}
-
-	counter, err := mediaList.Count()
+func waitForSongCompletion() {
+	eventManager, err := player.EventManager()
 	if err != nil {
-		log.Log.Errorf("Error counting media list: %v", err)
+		log.Log.Errorf("Error getting media event manager: %v", err)
 		return
 	}
 
-	if counter == 0 {
-		log.Log.Errorf("Media list is empty")
-		return
-	}
+	ch := make(chan struct{})
 
-	rand.Seed(time.Now().UnixNano())
-	indices := rand.Perm(counter)
+	go func() {
+		eventManager.Attach(vlc.MediaPlayerEndReached, func(event vlc.Event, data interface{}) {
+			select {
+			case <-ch:
+			default:
+				close(ch)
+			}
+		}, nil)
+	}()
 
-	for _, randomIndex := range indices {
-		media, err := mediaList.MediaAtIndex(uint(randomIndex))
-		if err != nil {
-			log.Log.Errorf("Error getting media at index %d: %v", randomIndex, err)
-			continue
-		}
-
-		err = player.SetMedia(media)
-		if err != nil {
-			log.Log.Errorf("Error setting media at index %d: %v", randomIndex, err)
-			continue
-		}
-
-		err = player.Play()
-		if err != nil {
-			log.Log.Errorf("Error playing media at index %d: %v", randomIndex, err)
-			continue
-		}
-
-		log.Log.Infof("Playing song at index %d", randomIndex)
-
-		for player.IsPlaying() {
-			time.Sleep(500 * time.Millisecond)
-		}
-		err = media.Release()
-		if err != nil {
-			log.Log.Errorf("Error releasing media at index %d: %v", randomIndex, err)
-		}
-	}
+	<-ch
 }
