@@ -1,7 +1,6 @@
 package main
 
 import (
-	"Melodex/src/backend/cache"
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/log"
@@ -9,21 +8,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 )
 
 func main() {
 	fmt.Print(printFileContent("src/assets/melodex.txt", "Welcome to Melodex!"))
-	music.InitVLC()
-	music.AddSong("/home/ohsystemmm/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/0000001_Eye-Of-The-Tiger_Survivor.m4a")
-	music.AddSong("/home/ohsystemmm/HolyMoly/008_Music/Best_Songs_Ever-ohSystemmm/0000768_Mayday_Syrex.m4a")
+	if len(os.Args) < 2 {
+		startMelodex()
+		return
+	}
 
-	//if len(os.Args) < 2 {
-	//	startMelodex()
-	//	return
-	//}
-	//
-	//handleCmd(os.Args[1])
+	handleCmd(os.Args[1])
 }
 
 func startMelodex() {
@@ -48,20 +42,20 @@ func handleCmd(cmd string) {
 		//path := parsePath()
 		//playlist.UsePlaylist(path)
 	case "-cc", "--clear-cache":
-		cache.DelCache()
+		//cache.DelCache()
 	case "-dc", "--default-config":
 		config.SaveConfig(config.GenerateDefaultConfig())
 	case "-sp", "--select-playlist":
-		if len(os.Args) < 4 {
-			log.Log.Error("Missing playlist index argument.")
-			return
-		}
-		index, err := strconv.Atoi(os.Args[3])
-		if err != nil {
-			log.Log.Error("Invalid playlist index:", err)
-			return
-		}
-		cache.LoadStoredPlaylist(index)
+		//if len(os.Args) < 4 {
+		//	log.Log.Error("Missing playlist index argument.")
+		//	return
+		//}
+		//index, err := strconv.Atoi(os.Args[3])
+		//if err != nil {
+		//	log.Log.Error("Invalid playlist index:", err)
+		//	return
+		//}
+		//cache.LoadStoredPlaylist(index)
 	default:
 		fmt.Printf("Unknown command: %s\n\nUse --help for a list of available commands.\n\n", cmd)
 	}

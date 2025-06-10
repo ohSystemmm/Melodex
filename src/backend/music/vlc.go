@@ -6,11 +6,12 @@ import (
 )
 
 var (
-	player    *vlc.Player
-	mediaList *vlc.MediaList
-	songIndex int
-	mode      int
-	shuffle   bool
+	player     *vlc.Player
+	mediaList  *vlc.MediaList
+	listPlayer *vlc.ListPlayer
+	songIndex  int
+	mode       int
+	shuffle    bool
 )
 
 /* NOTE mode
@@ -39,6 +40,38 @@ func InitVLC() {
 		return
 	}
 
+	listPlayer, err = vlc.NewListPlayer()
+	if err != nil {
+		log.Log.Errorf("Error creating list player: %v", err)
+	}
+
 	songIndex = 0
 	log.Log.Infof("VLC initialized successfully!")
+}
+
+func CleanUp() error {
+	var err error
+
+	err = player.Release()
+	if err != nil {
+		return err
+	}
+
+	err = mediaList.Release()
+	if err != nil {
+		return err
+	}
+
+	err = listPlayer.Release()
+	if err != nil {
+		return err
+	}
+
+	err = vlc.Release()
+	if err != nil {
+		return err
+	}
+
+	log.Log.Info("VLC cleaned up successfully!")
+	return nil
 }
