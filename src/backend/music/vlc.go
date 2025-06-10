@@ -9,7 +9,6 @@ var (
 	player     *vlc.Player
 	mediaList  *vlc.MediaList
 	listPlayer *vlc.ListPlayer
-	songIndex  int
 	mode       int
 	shuffle    bool
 )
@@ -19,6 +18,13 @@ var (
 *  0 = Repeat Playlist
 *  1 = Repeat Song
  */
+
+func SetMode(passedMode int) {
+	mode = passedMode
+}
+func SetShuffle(passedShuffle bool) {
+	shuffle = passedShuffle
+}
 
 func InitVLC() {
 	var err error
@@ -45,7 +51,6 @@ func InitVLC() {
 		log.Log.Errorf("Error creating list player: %v", err)
 	}
 
-	songIndex = 0
 	log.Log.Infof("VLC initialized successfully!")
 }
 

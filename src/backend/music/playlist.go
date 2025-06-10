@@ -33,7 +33,6 @@ func PlayMediaList() error {
 	if err != nil {
 		return err
 	}
-
 	log.Log.Info("Playing media list")
 
 	return nil
@@ -67,8 +66,8 @@ func PreviousSong() error {
 	return nil
 }
 
-func PauseSong(option bool) error {
-	err := listPlayer.SetPause(option)
+func PauseSong() error {
+	err := listPlayer.TogglePause()
 	if err != nil {
 		return err
 	}
@@ -97,14 +96,16 @@ func MuteSong(option bool) error {
 	return nil
 }
 
-func SetMediaPosition(position float32) error {
+func SetMediaPosition(factor float32) error {
 	var err error
 	player, err = listPlayer.Player()
 	if err != nil {
 		return err
 	}
 
-	err = player.SetMediaPosition(position)
+	currentPos, err := getCurrentMediaPosition()
+
+	err = player.SetMediaPosition(currentPos + factor)
 	if err != nil {
 		return err
 	}
@@ -112,7 +113,7 @@ func SetMediaPosition(position float32) error {
 	return nil
 }
 
-func GetMediaPosition() (float32, error) {
+func getCurrentMediaPosition() (float32, error) {
 	var err error
 	player, err = listPlayer.Player()
 	if err != nil {
@@ -136,14 +137,20 @@ func SetVolume(volume int) error {
 	return nil
 }
 
-func GetVolume() (int, error) {
+func GetVolume() int {
 	var err error
 	player, err = listPlayer.Player()
 	if err != nil {
-		return 0, err
+		log.Log.Errorf("Error getting volume from player: %v", err)
+		return 0
 	}
 
-	return player.Volume()
+	volume, err := player.Volume()
+	if err != nil {
+		log.Log.Errorf("Error getting volume from player: %v", err)
+		return 0
+	}
+	return volume
 }
 
 //func isMediaListValid() bool {
