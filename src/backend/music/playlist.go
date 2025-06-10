@@ -67,6 +67,85 @@ func PreviousSong() error {
 	return nil
 }
 
+func PauseSong(option bool) error {
+	err := listPlayer.SetPause(option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func StopSong() error {
+	err := listPlayer.Stop()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func MuteSong(option bool) error {
+	var err error
+	player, err = listPlayer.Player()
+	if err != nil {
+		return err
+	}
+
+	err = player.SetMute(option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetMediaPosition(position float32) error {
+	var err error
+	player, err = listPlayer.Player()
+	if err != nil {
+		return err
+	}
+
+	err = player.SetMediaPosition(position)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetMediaPosition() (float32, error) {
+	var err error
+	player, err = listPlayer.Player()
+	if err != nil {
+		return 0, err
+	}
+	return player.MediaPosition()
+}
+
+func SetVolume(volume int) error {
+	var err error
+	player, err = listPlayer.Player()
+	if err != nil {
+		return err
+	}
+
+	err = player.SetVolume(volume)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetVolume() (int, error) {
+	var err error
+	player, err = listPlayer.Player()
+	if err != nil {
+		return 0, err
+	}
+
+	return player.Volume()
+}
+
 //func isMediaListValid() bool {
 //	if mediaList == nil {
 //		log.Log.Errorf("Media list is not initialized")
