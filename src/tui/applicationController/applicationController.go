@@ -1,16 +1,14 @@
 package applicationController
 
 import (
-
 	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"Melodex/src/backend/music"
+	"Melodex/src/backend/config"
 	"Melodex/src/tui/sharedState"
-  "Melodex/src/backend/config"
 
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -44,8 +42,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		parsedTime, _ = parseUserDuration(m.timeSet.Value())
 	}
 
-	if m.sleep && time.Since(m.timeBegin) > parsedTime {
-		music.PauseSong()
+	if m.sleep && time.Since(m.timeBegin) >= parsedTime {
+		//music.PauseSong() //TODO
+		m.sleep = false
 	}
 
 	switch action := msg.(type) {
@@ -73,24 +72,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.volume <= 0 {
 					m.volume = 0
 				}
-				music.DecreaseVolume(5)
+				//music.DecreaseVolume(5) //TODO
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
-				music.IncreaseVolume(5)
+				//music.IncreaseVolume(5) //TODO
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				if !music.IsMuted() {
-					music.SetMute(true)
-					m.volume = 0
-				} else {
-					music.SetMute(false)
-					m.volume = 100
-				}
+				//if !music.IsMuted() {//TODO
+				//	music.SetMute(true)
+				//	m.volume = 0
+				//} else {
+				//	music.SetMute(false)
+				//	m.volume = settings.ConfGetVolume()
+				//}
 			}
 		}
 	}
@@ -171,7 +170,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 
 	tS := textinput.New()
 	tS.Width = 8
-	tS.Placeholder = "30s"
+	tS.Placeholder = "00:30:00"
 	tS.Prompt = " "
 
 	return Model{
@@ -190,7 +189,6 @@ func parseUserDuration(s string) (time.Duration, error) {
 		return d, nil
 	}
 
-	// Accept units that start with h, m, s (case-insensitive)
 	re := regexp.MustCompile(`(?i)(\d+)([hms])`)
 	matches := re.FindAllStringSubmatch(s, -1)
 	if len(matches) > 0 {
@@ -209,7 +207,6 @@ func parseUserDuration(s string) (time.Duration, error) {
 		return total, nil
 	}
 
-	// colon-separated (hh:mm:ss, mm:ss, ss)
 	parts := strings.Split(s, ":")
 	var seconds int
 	switch len(parts) {

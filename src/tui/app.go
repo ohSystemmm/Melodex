@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"Melodex/src/logger"
+	"Melodex/src/log"
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
@@ -109,7 +109,7 @@ func Application() {
 	)
 
 	if _, err := p.Run(); err != nil {
-		logger.Log.Errorf("Error running program: %v", err)
+		log.Log.Errorf("Error running program: %v", err)
 		os.Exit(1)
 	}
 }
