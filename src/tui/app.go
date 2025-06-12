@@ -12,7 +12,6 @@ import (
 	SharedState "Melodex/src/tui/sharedState"
 
 	"os"
-	// "time"
 )
 
 type MainModel struct {
@@ -22,7 +21,6 @@ type MainModel struct {
 	MPlayer     MusicPlayer.Model
 	AController ApplicationController.Model
 
-	// ticker chan time.Time
 	width  int
 	height int
 }

@@ -205,7 +205,7 @@ func (m Model) View() string {
 		Render(
 			lipg.NewStyle().
 				Bold(true).Render(" " +
-				m.playlistName +
+				m.playlistName + services.GetPlaylistName() +
 				strings.Repeat(" ", padding) +
 				searchBar))
 
@@ -226,14 +226,8 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := []table.Row{
-		{"Song", "03:00"},
-		{"Song", "03:00"},
-		{"Song", "03:00"},
-		{"Song", "03:00"},
-		{"Song", "03:00"},
-		{"Song", "03:00"},
-	} // TODO
+
+	rows := services.SongList()
 
 	longestTitle, longestTime := 35, 6
 

@@ -1,7 +1,9 @@
 package applicationController
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
+	"Melodex/src/log"
 	"errors"
 	"regexp"
 	"strconv"
@@ -72,24 +74,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.volume <= 0 {
 					m.volume = 0
 				}
-				//music.DecreaseVolume(5) //TODO
+				music.PutVolume(-5) //TODO
+
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
-				//music.IncreaseVolume(5) //TODO
+				music.PutVolume(5) //TODO
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				//if !music.IsMuted() {//TODO
-				//	music.SetMute(true)
-				//	m.volume = 0
-				//} else {
-				//	music.SetMute(false)
-				//	m.volume = settings.ConfGetVolume()
-				//}
+				var err error
+				if music.IsMuted() {
+					err = music.SetMute(false)
+					if err != nil {
+						log.Log.Error("Error while setting mute: %s", err)
+					}
+					err = music.SetVolume(100)
+					if err != nil {
+						log.Log.Error("Error while setting volume: %s", err)
+					}
+					m.volume = 100
+				} else {
+					err = music.SetMute(true)
+					if err != nil {
+						log.Log.Error("Error while setting mute: %s", err)
+					}
+					err = music.SetVolume(0)
+					if err != nil {
+						log.Log.Error("Error while setting volume: %s", err)
+					}
+					m.volume = 0
+				}
+				log.Log.Infof("Volume is now %d", music.GetVolume())
+
+				// TODO
 			}
 		}
 	}
@@ -178,7 +199,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
-		volume:      music.GetVolume(),
+		volume:      config.GetDefaultVolume(),
 	}
 }
 

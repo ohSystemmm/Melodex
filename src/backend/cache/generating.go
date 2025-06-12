@@ -30,7 +30,6 @@ func loadCache(cacheDir, playlistName string) ([]table.Row, error) {
 		log.Log.Warnf("Cache file is corrupt, regenerating: %s", path)
 		return nil, err
 	}
-
 	return rows, nil
 }
 
