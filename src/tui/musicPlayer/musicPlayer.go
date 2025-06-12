@@ -3,8 +3,8 @@ package musicPlayer
 import (
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
-	"Melodex/src/connection"
-	"Melodex/src/logger"
+	"Melodex/src/log"
+	"Melodex/src/services"
 	"Melodex/src/tui/sharedState"
 	"fmt"
 	"strconv"
@@ -56,19 +56,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.progress = max(m.progress-5, 0)
 				music.SetMediaPosition(music.CurrentSongPosition() - 0.05)
 			case "b":
-				//playlist.DecreaseIndex()
-				//connection.Play(music.GetIndex())
-				//playlist.GetPreviousSong() // TODO
+				//services.PlayPrevious()
+				music.Stop()
+				music.PlaySong("/home/ohsystemmm/Demonstration/0000001_Eye-Of-The-Tiger_Survivor.m4a")
 			case "n":
-				//playlist.IncreaseIndex()
-				//connection.Play(music.GetIndex()) // TODO
+				music.Stop()
+				music.PlaySong("/home/ohsystemmm/Demonstration/0000003_Africa_TOTO.m4a")
 				if m.sharedState.Shuffling {
 					m.sharedState.Shuffling = false
 				} else {
 					m.sharedState.Shuffling = true
 				}
-				//connection.SetShuffle(m.sharedState.Shuffling) // TODO
-				logger.Log.Infof("shuffled %v", m.sharedState.Shuffling)
+				services.SetShuffle(m.sharedState.Shuffling)
+				log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -79,8 +79,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.SongOption = -1
 				}
 
-				//connection.SetMode(m.sharedState.SongOption) TODO
-				logger.Log.Infof("Mode: %v", m.sharedState.SongOption)
+				services.SetModeState(m.sharedState.SongOption)
+				log.Log.Infof("Mode: %v", m.sharedState.SongOption)
 				/* NOTE
 				* -1 = No Repeat
 				*  0 = Repeat Playlist
@@ -120,7 +120,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	elements = append(elements, getGreeting()+", @"+config.ConfGetUser()+"!")
+	elements = append(elements, getGreeting()+", @"+config.GetUser()+"!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -187,8 +187,8 @@ func (m Model) View() string {
 	}
 
 	control += totalTime
-	m.title = "Currently Playing:\n" + connection.GetCurrentSong()
-	if connection.GetCurrentSong() == "" {
+	m.title = "Currently Playing:\n" + services.GetCurrentSong()
+	if services.GetCurrentSong() == "" {
 		m.title = "Viewing Song List"
 	}
 

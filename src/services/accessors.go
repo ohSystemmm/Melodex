@@ -1,4 +1,4 @@
-package connection
+package services
 
 import (
 	"github.com/charmbracelet/bubbles/table"
@@ -16,9 +16,10 @@ var (
 	songLength   int
 )
 
-func GetSongList() []table.Row {
-	return songList
+func SetShuffle(shuffle bool) {
+	shuffleState = shuffle
 }
+
 func SetSongList(list []table.Row) {
 	songList = list
 }

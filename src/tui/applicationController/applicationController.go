@@ -1,16 +1,15 @@
 package applicationController
 
 import (
-
 	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
-  "Melodex/src/backend/config"
 
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -31,9 +30,15 @@ type Model struct {
 	sleep     bool
 	timeBegin time.Time
 }
+type TickMsg struct{}
 
+func tick() tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg {
+		return TickMsg{}
+	})
+}
 func (m Model) Init() tea.Cmd {
-	return nil
+	return tick()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -73,13 +78,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.volume <= 0 {
 					m.volume = 0
 				}
-				music.DecreaseVolume(5)
+				music.PutVolume(-5)
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
-				music.IncreaseVolume(5)
+				music.PutVolume(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
@@ -89,7 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.volume = 0
 				} else {
 					music.SetMute(false)
-					m.volume = 100
+					m.volume = config.GetVolume()
 				}
 			}
 		}
@@ -179,7 +184,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
-		volume:      config.ConfGetVolume(),
+		volume:      config.GetVolume(),
 	}
 }
 
@@ -190,7 +195,6 @@ func parseUserDuration(s string) (time.Duration, error) {
 		return d, nil
 	}
 
-	// Accept units that start with h, m, s (case-insensitive)
 	re := regexp.MustCompile(`(?i)(\d+)([hms])`)
 	matches := re.FindAllStringSubmatch(s, -1)
 	if len(matches) > 0 {

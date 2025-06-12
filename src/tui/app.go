@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"Melodex/src/logger"
+	"Melodex/src/log"
 	tea "github.com/charmbracelet/bubbletea"
 	lipg "github.com/charmbracelet/lipgloss"
 	bzone "github.com/lrstanley/bubblezone"
@@ -12,7 +12,6 @@ import (
 	SharedState "Melodex/src/tui/sharedState"
 
 	"os"
-	// "time"
 )
 
 type MainModel struct {
@@ -22,7 +21,6 @@ type MainModel struct {
 	MPlayer     MusicPlayer.Model
 	AController ApplicationController.Model
 
-	// ticker chan time.Time
 	width  int
 	height int
 }
@@ -109,7 +107,7 @@ func Application() {
 	)
 
 	if _, err := p.Run(); err != nil {
-		logger.Log.Errorf("Error running program: %v", err)
+		log.Log.Errorf("Error running program: %v", err)
 		os.Exit(1)
 	}
 }

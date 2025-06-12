@@ -1,0 +1,4 @@
+package settings
+
+func SetupMelodex() {
+}

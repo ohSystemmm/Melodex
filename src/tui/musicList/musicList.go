@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"Melodex/src/backend/music"
-	"Melodex/src/connection"
+	"Melodex/src/services"
 	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -89,9 +89,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						connection.SetCurrentSong(m.list.SelectedRow()[0])
-						connection.Play()
-						connection.SetSongLength(music.SongLength())
+						services.SetCurrentSong(m.list.SelectedRow()[0])
+						services.Play(m.list.SelectedRow()[0])
+						services.SetSongLength(music.SongLength())
 					case " ":
 						music.PauseSong()
 					case "f":
@@ -211,9 +211,8 @@ func (m Model) View() string {
 	}
 }
 
-// New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := connection.ConnectSongs()
+	rows := services.ConnectSongs()
 
 	longestTitle, longestTime := 35, 6
 
@@ -224,7 +223,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	columns := []table.Column{
 		{Title: "Title", Width: longestTitle},
-		{Title: " Length", Width: longestTime},
+		{Title: "Length", Width: longestTime},
 	}
 
 	t := table.New(
@@ -245,7 +244,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := "Playlist: " + connection.GetPlayListName()
+	playlistName := "Playlist: " + services.GetPlayListName()
 
 	return Model{
 		sharedState:    sharedState,
@@ -257,7 +256,6 @@ func New(sharedState *SharedState.SharedState) Model {
 	}
 }
 
-// defineTableStyles sets the table styles
 func defineTableStyles() table.Styles {
 	styles := table.DefaultStyles()
 	styles.Selected = styles.Selected.
