@@ -1,9 +1,11 @@
 package musicList
 
 import (
+	"Melodex/src/backend/music"
+	"Melodex/src/log"
+	"Melodex/src/services"
 	"strings"
 
-	"Melodex/src/connection"
 	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -65,12 +67,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				switch action.String() {
 				case "q":
-					//music.Cleanup(//TODO)
+					err := music.CleanUp()
+					if err != nil {
+						log.Log.Error("Error while cleaning up music: %s", err)
+					}
 					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false
 				case " ":
-					//music.PauseSong(//TODO)
+					err := music.PauseSong()
+					if err != nil {
+						log.Log.Error("Error while pausing song: %s", err)
+					}
 				case "f":
 					m.sharedState.Searching = true
 					return m, m.searchBar.Focus()
@@ -84,15 +92,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					switch action.String() {
 					case "q":
-						//music.Cleanup(//TODO)
+						err := music.CleanUp()
+						if err != nil {
+							log.Log.Error("Error while cleaning up music: %s", err)
+						}
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						//connection.SetCurrentSong(m.list.SelectedRow()[0])
+						services.SetCurrentSong(m.list.SelectedRow()[0])
 						//connection.Play()
 						//connection.SetSongLength(music.SongLength()//TODO)
 					case " ":
-						//music.PauseSong(//TODO)
+						err := music.PauseSong()
+						if err != nil {
+							log.Log.Error("Error while pausing song: %s", err)
+						}
 					case "f":
 						m.sharedState.Searching = true
 						return m, m.searchBar.Focus()
@@ -212,7 +226,14 @@ func (m Model) View() string {
 
 // New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-	rows := connection.ConnectSongs()
+	rows := []table.Row{
+		{"Song", "03:00"},
+		{"Song", "03:00"},
+		{"Song", "03:00"},
+		{"Song", "03:00"},
+		{"Song", "03:00"},
+		{"Song", "03:00"},
+	} // TODO
 
 	longestTitle, longestTime := 35, 6
 
@@ -244,7 +265,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := "Playlist: " + connection.GetPlayListName()
+	playlistName := services.GetPlaylistName()
 
 	return Model{
 		sharedState:    sharedState,

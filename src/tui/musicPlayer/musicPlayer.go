@@ -1,9 +1,10 @@
 package musicPlayer
 
 import (
-	"Melodex/src/backend/config"
-	"Melodex/src/connection"
+	"Melodex/src/backend/music"
 	"Melodex/src/log"
+	"Melodex/src/services"
+	"Melodex/src/settings"
 	"Melodex/src/tui/sharedState"
 	"fmt"
 	"strconv"
@@ -50,24 +51,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				//music.SetMediaPosition(music.CurrentSongPosition() + 0.05//TODO)
+				err := music.SetMediaPosition(0.05)
+				if err != nil {
+					log.Log.Errorf("Error setting media position: %v", err)
+				}
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				//music.SetMediaPosition(music.CurrentSongPosition() - 0.05//TODO)
-			case "b":
-				//playlist.DecreaseIndex()
-				//connection.Play(music.GetIndex())
-				//playlist.GetPreviousSong() // TODO
-			case "n":
-				//playlist.IncreaseIndex()
-				//connection.Play(music.GetIndex()) // TODO
-				if m.sharedState.Shuffling {
-					m.sharedState.Shuffling = false
-				} else {
-					m.sharedState.Shuffling = true
+				err := music.SetMediaPosition(-0.05)
+				if err != nil {
+					log.Log.Errorf("Error setting media position: %v", err)
 				}
-				//connection.SetShuffle(m.sharedState.Shuffling) // TODO
-				log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
+			case "b":
+				err := music.NextSong()
+				if err != nil {
+					log.Log.Errorf("Error getting next song: %v", err)
+				}
+			case "n":
+				err := music.NextSong()
+				if err != nil {
+					log.Log.Errorf("Error getting next song: %v", err)
+				}
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -78,13 +81,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.SongOption = -1
 				}
 
-				//connection.SetMode(m.sharedState.SongOption) TODO
+				music.SetMode(m.sharedState.SongOption)
 				log.Log.Infof("Mode: %v", m.sharedState.SongOption)
-				/* NOTE
-				* -1 = No Repeat
-				*  0 = Repeat Playlist
-				*  1 = Repeat Song
-				 */
 			case " ":
 				//if music.IsPlaying() && m.sharedState.Paused {
 				//	m.sharedState.Paused = !m.sharedState.Paused
@@ -119,7 +117,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	elements = append(elements, getGreeting()+", @"+config.ConfGetUser()+"!")
+	elements = append(elements, getGreeting()+", @"+settings.AppConfig.SystemUser+"!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -186,8 +184,8 @@ func (m Model) View() string {
 	}
 
 	control += totalTime
-	m.title = "Currently Playing:\n" + connection.GetCurrentSong()
-	if connection.GetCurrentSong() == "" {
+	m.title = "Currently Playing:\n" + services.GetCurrentSong()
+	if services.GetCurrentSong() == "" {
 		m.title = "Viewing Song List"
 	}
 

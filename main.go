@@ -5,6 +5,7 @@ import (
 	"Melodex/src/backend/music"
 	"Melodex/src/log"
 	"Melodex/src/settings"
+	"Melodex/src/tui"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ func main() {
 
 func startMelodex() {
 	music.InitVLC()
+	tui.Application()
 }
 
 func handleCmd(cmd string) {

@@ -1,13 +1,13 @@
 package applicationController
 
 import (
+	"Melodex/src/backend/music"
 	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"Melodex/src/backend/config"
 	"Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/progress"
@@ -178,7 +178,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
-		volume:      config.ConfGetVolume(),
+		volume:      music.GetVolume(),
 	}
 }
 
