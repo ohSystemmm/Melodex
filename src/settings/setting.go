@@ -23,7 +23,6 @@ var AppConfig = Config{
 	Release:    "07/01/2025",
 	SystemUser: GetUser(),
 	ConfigFile: "melodex.toml",
-	CacheFile:  "", // TODO PlaylistName.cache
 	LogFile:    "melodex.log",
 }
 

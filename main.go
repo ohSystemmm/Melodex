@@ -46,7 +46,7 @@ func handleCmd(cmd string) {
 	case "-cc", "--clear-cache":
 		//cache.DelCache()
 	case "-dc", "--default-config":
-		config.SaveConfig(config.GenerateDefaultConfig())
+		//config.SaveConfig(config.GenerateDefaultConfig())
 	case "-sp", "--select-playlist":
 		//if len(os.Args) < 4 {
 		//	log.Log.Error("Missing playlist index argument.")

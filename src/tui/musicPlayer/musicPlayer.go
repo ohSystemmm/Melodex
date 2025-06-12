@@ -51,26 +51,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				err := music.SetMediaPosition(0.05)
-				if err != nil {
-					log.Log.Errorf("Error setting media position: %v", err)
-				}
+				//err := music.SetMediaPosition(0.05)
+				//if err != nil {
+				//	log.Log.Errorf("Error setting media position: %v", err)
+				//}
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				err := music.SetMediaPosition(-0.05)
-				if err != nil {
-					log.Log.Errorf("Error setting media position: %v", err)
-				}
+				//err := music.SetMediaPosition(-0.05)
+				//if err != nil {
+				//	log.Log.Errorf("Error setting media position: %v", err)
+				//}
 			case "b":
-				err := music.NextSong()
-				if err != nil {
-					log.Log.Errorf("Error getting next song: %v", err)
-				}
+				//err := music.NextSong()
+				//if err != nil {
+				//	log.Log.Errorf("Error getting next song: %v", err)
+				//}
 			case "n":
-				err := music.NextSong()
-				if err != nil {
-					log.Log.Errorf("Error getting next song: %v", err)
-				}
+				//err := music.NextSong()
+				//if err != nil {
+				//	log.Log.Errorf("Error getting next song: %v", err)
+				//} //TODO
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -88,7 +88,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				//	m.sharedState.Paused = !m.sharedState.Paused
 				//} else {
 				//	m.sharedState.Paused = !m.sharedState.Paused
-				////TODO}
+				//}
 			}
 		}
 	}

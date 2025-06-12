@@ -1,6 +1,7 @@
 package music
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/log"
 	vlc "github.com/adrg/libvlc-go/v3"
 )
@@ -51,7 +52,14 @@ func InitVLC() {
 		log.Log.Errorf("Error creating list player: %v", err)
 	}
 
+	err = player.SetVolume(config.GetDefaultVolume())
+	if err != nil {
+		log.Log.Errorf("Error setting volume to %d: %v", config.GetDefaultVolume(), err)
+	}
+
+	log.Log.Infof("Setting volume to %d", config.GetDefaultVolume())
 	log.Log.Infof("VLC initialized successfully!")
+
 }
 
 func CleanUp() error {
