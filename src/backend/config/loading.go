@@ -7,16 +7,16 @@ import (
 )
 
 func LoadConfig() *Config {
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(configFilePath)
 	if err != nil {
-		log.Log.Errorf("Error loading config file (%s): %v", filePath, err)
-		return DefaultConfig()
+		log.Log.Errorf("Error loading config file (%s): %v", configFilePath, err)
+		return DefaultConfig(true)
 	}
 
 	var cfg Config
 	if err = toml.Unmarshal(data, &cfg); err != nil {
-		log.Log.Errorf("Error parsing config file (%s): %v", filePath, err)
-		return DefaultConfig()
+		log.Log.Errorf("Error parsing config file (%s): %v", configFilePath, err)
+		return DefaultConfig(false)
 	}
 
 	return &cfg

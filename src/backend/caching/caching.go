@@ -1,6 +1,7 @@
 package caching
 
 import (
+	"Melodex/src/settings"
 	"fmt"
 	"math"
 	"os"
@@ -11,10 +12,6 @@ import (
 
 	"Melodex/src/log"
 )
-
-func getCachePath(cacheDir, playlistName string) string {
-	return filepath.Join(cacheDir, playlistName+".cache")
-}
 
 func getDuration(songPath string) string {
 	output, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration",
@@ -36,8 +33,8 @@ func getDuration(songPath string) string {
 	return fmt.Sprintf("%02d:%02d", minutes, int(seconds))
 }
 
-func getAllSongNames(directory string) ([]string, error) {
-	files, err := os.ReadDir(directory)
+func getAllSongNames() ([]string, error) {
+	files, err := os.ReadDir(settings.AppConfig.PlaylistPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read directory: %w", err)
 	}
@@ -52,8 +49,8 @@ func getAllSongNames(directory string) ([]string, error) {
 	return songNames, nil
 }
 
-func getAllDurations(directory string) ([]string, error) {
-	files, err := os.ReadDir(directory)
+func getAllDurations() ([]string, error) {
+	files, err := os.ReadDir(settings.AppConfig.PlaylistPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read directory: %w", err)
 	}
@@ -63,7 +60,7 @@ func getAllDurations(directory string) ([]string, error) {
 		if file.IsDir() {
 			continue
 		}
-		durations = append(durations, getDuration(filepath.Join(directory, file.Name())))
+		durations = append(durations, getDuration(filepath.Join(settings.AppConfig.PlaylistPath, file.Name())))
 	}
 
 	return durations, nil

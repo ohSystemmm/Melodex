@@ -1,7 +1,5 @@
 package config
 
-import "Melodex/src/backend/settings"
-
 type Config struct {
 	General  General  `toml:"general"`
 	Playlist Playlist `toml:"playlist"`
@@ -25,6 +23,11 @@ type Design struct {
 }
 
 var (
-	loadedConfig = LoadConfig()
-	filePath     = settings.AppConfig.ConfigDir + settings.AppConfig.ConfigFile
+	loadedConfig   *Config
+	configFilePath string
 )
+
+func InitConfig() {
+	configFilePath = "/home/ohsystemmm/.config/melodex/melodex.toml"
+	loadedConfig = LoadConfig()
+}

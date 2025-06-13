@@ -18,7 +18,7 @@ func SaveConfig(path string, cfg *Config) error {
 		return fmt.Errorf("failed to serialize config data: %w", err)
 	}
 
-	if err := os.WriteFile(path, data, 0644); err != nil {
+	if err = os.WriteFile(path, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 

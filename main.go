@@ -1,20 +1,20 @@
 package main
 
 import (
+	"Melodex/src/settings"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
-	"Melodex/src/backend/settings"
 	"Melodex/src/log"
-	"Melodex/src/services"
 	"Melodex/src/tui"
 )
 
 func main() {
-	displayFileContent("src/assets/usBTW.txt", "Welcome to Melodex!")
+	displayFileContent("src/assets/melodex.txt", "Welcome to Melodex!")
+	config.InitConfig()
 
 	if len(os.Args) < 2 {
 		startApplication()
@@ -26,26 +26,27 @@ func main() {
 }
 
 func startApplication() {
-	configPath := filepath.Join(settings.AppConfig.ConfigDir, settings.AppConfig.ConfigFile)
+	cfgPath := "/home/ohsystemmm/.config/melodex/melodex.toml"
 
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
 		log.Log.Info("Config file not found. Creating defaults.")
-		if err := config.GenerateDefaultConfig(); err != nil {
+
+		err = config.GenerateDefaultConfig()
+		if err != nil {
 			log.Log.Errorf("Error creating default configuration: %v", err)
 		}
 	} else {
 		cfg := config.LoadConfig()
 		if cfg == nil {
 			log.Log.Warn("Config file corrupted. Creating defaults.")
-			if err := config.GenerateDefaultConfig(); err != nil {
+			err = config.GenerateDefaultConfig()
+			if err != nil {
 				log.Log.Errorf("Error creating default configuration: %v", err)
 			}
 		} else {
-			log.Log.Info("Config file found at " + configPath)
+			log.Log.Info("Config file found at " + cfgPath)
 		}
 	}
-
-	services.SetPlaylistPath(config.GetDefaultPlaylist())
 	music.InitVLC()
 	tui.Application()
 }
@@ -87,7 +88,10 @@ func handlePlaylist() {
 		return
 	}
 	playlistPath := os.Args[2]
-	services.SetPlaylistPath(playlistPath)
+
+	settings.SetPlaylistPath(playlistPath)
+	settings.SetPlaylistName(filepath.Base(playlistPath))
+
 	startApplication()
 }
 
@@ -97,9 +101,9 @@ func handleConfig() {
 		return
 	}
 	configPath := os.Args[2]
-	fmt.Printf("Loading config: %s\n", configPath)
 	settings.SetConfigFile(configPath)
 	config.LoadConfig()
+	fmt.Printf("Config Loaded: %s\n", configPath)
 	startApplication()
 }
 
@@ -113,21 +117,9 @@ func regenerateDefaultConfig() {
 
 func removeCache() error {
 	log.Log.Info("Removing cache...")
-
-	files, err := os.ReadDir(settings.AppConfig.CacheDir)
+	err := os.RemoveAll(settings.AppConfig.CacheDir)
 	if err != nil {
-		return fmt.Errorf("error reading cache directory: %w", err)
-	}
-
-	for _, file := range files {
-		if filepath.Ext(file.Name()) == ".cache" {
-			filePath := filepath.Join(settings.AppConfig.CacheDir, file.Name())
-			if err := os.Remove(filePath); err != nil {
-				log.Log.Warnf("Error removing cache file %s: %v", file.Name(), err)
-			} else {
-				log.Log.Infof("Removed cache file: %s", file.Name())
-			}
-		}
+		return fmt.Errorf("error removing cache directory: %w", err)
 	}
 	return nil
 }

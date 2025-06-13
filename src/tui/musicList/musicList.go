@@ -1,6 +1,7 @@
 package musicList
 
 import (
+	"Melodex/src/settings"
 	"strings"
 
 	"Melodex/src/backend/music"
@@ -89,9 +90,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						services.SetCurrentSong(m.list.SelectedRow()[0])
-						services.Play(m.list.SelectedRow()[0])
-						services.SetSongLength(music.SongLength())
+						settings.SetCurrentSong(m.list.SelectedRow()[0])
+						settings.SetSongLength(m.list.SelectedRow()[1])
+						for i, song := range settings.AppConfig.SongList {
+							if len(song) > 0 && len(m.list.SelectedRow()) > 0 && song[0] == m.list.SelectedRow()[0] {
+								settings.SetCurrentSongIndex(i)
+								break
+							}
+						}
+						music.PlaySong(settings.AppConfig.PlaylistPath + m.list.SelectedRow()[0])
 					case " ":
 						music.PauseSong()
 					case "f":
@@ -212,7 +219,7 @@ func (m Model) View() string {
 }
 
 func New(sharedState *SharedState.SharedState) Model {
-	rows := services.ConnectSongs()
+	rows := services.GenerateMusicList()
 
 	longestTitle, longestTime := 35, 6
 
@@ -244,7 +251,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := "Playlist: " + services.GetPlayListName()
+	playlistName := "Playlist: " + settings.AppConfig.PlaylistName
 
 	return Model{
 		sharedState:    sharedState,

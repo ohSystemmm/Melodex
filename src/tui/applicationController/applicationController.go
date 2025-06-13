@@ -78,13 +78,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.volume <= 0 {
 					m.volume = 0
 				}
-				music.PutVolume(-5)
+				music.ChangeVolumeBy(-5)
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
-				music.PutVolume(5)
+				music.ChangeVolumeBy(5)
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
@@ -213,7 +213,6 @@ func parseUserDuration(s string) (time.Duration, error) {
 		return total, nil
 	}
 
-	// colon-separated (hh:mm:ss, mm:ss, ss)
 	parts := strings.Split(s, ":")
 	var seconds int
 	switch len(parts) {

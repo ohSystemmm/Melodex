@@ -4,7 +4,7 @@ import (
 	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/log"
-	"Melodex/src/services"
+	"Melodex/src/settings"
 	"Melodex/src/tui/sharedState"
 	"fmt"
 	"strconv"
@@ -51,24 +51,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				music.SetMediaPosition(music.CurrentSongPosition() + 0.05)
+				music.SetMediaPosition(music.CurrentMediaPosition() + 0.05)
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				music.SetMediaPosition(music.CurrentSongPosition() - 0.05)
+				music.SetMediaPosition(music.CurrentMediaPosition() - 0.05)
 			case "b":
-				//services.PlayPrevious()
-				music.Stop()
-				music.PlaySong("/home/ohsystemmm/Demonstration/0000001_Eye-Of-The-Tiger_Survivor.m4a")
+				music.PlayPreviousSong()
+				settings.DecreaseUpdateCurrentSong()
 			case "n":
-				music.Stop()
-				music.PlaySong("/home/ohsystemmm/Demonstration/0000003_Africa_TOTO.m4a")
-				if m.sharedState.Shuffling {
-					m.sharedState.Shuffling = false
-				} else {
-					m.sharedState.Shuffling = true
-				}
-				services.SetShuffle(m.sharedState.Shuffling)
-				log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
+				music.PlayNextSong()
+				settings.IncreaseUpdateCurrentSong()
+				//if m.sharedState.Shuffling {
+				//	m.sharedState.Shuffling = false
+				//} else {
+				//	m.sharedState.Shuffling = true
+				//}
+				//settings.SetShuffle(m.sharedState.Shuffling)
+				//log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -79,7 +78,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.SongOption = -1
 				}
 
-				services.SetModeState(m.sharedState.SongOption)
+				settings.SetMode(m.sharedState.SongOption)
 				log.Log.Infof("Mode: %v", m.sharedState.SongOption)
 				/* NOTE
 				* -1 = No Repeat
@@ -95,6 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
+	m.length = timeToMinutes(settings.AppConfig.CurrentSongLength)
 	return m, nil
 }
 
@@ -187,8 +187,8 @@ func (m Model) View() string {
 	}
 
 	control += totalTime
-	m.title = "Currently Playing:\n" + services.GetCurrentSong()
-	if services.GetCurrentSong() == "" {
+	m.title = "Currently Playing:\n" + settings.AppConfig.CurrentSong
+	if settings.AppConfig.CurrentSong == "" {
 		m.title = "Viewing Song List"
 	}
 
@@ -282,8 +282,26 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		length:      120,
+		length:      timeToMinutes(settings.AppConfig.SongList[0][settings.AppConfig.CurrentSongIndex]),
 		progress:    0,
 		progressBar: pb,
 	}
+}
+
+func timeToMinutes(timeStr string) int {
+	parts := strings.Split(timeStr, ":")
+	if len(parts) != 2 {
+		return 0
+	}
+	hours, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0
+	}
+
+	minutes, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0
+	}
+
+	return (hours * 60) + minutes
 }

@@ -1,8 +1,8 @@
 package config
 
 import (
-	"Melodex/src/backend/settings"
 	"Melodex/src/log"
+	"Melodex/src/settings"
 	"bufio"
 	"fmt"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func DefaultConfig() *Config {
+func DefaultConfig(promptUser bool) *Config {
 	user := os.Getenv("USER")
 	if user == "" {
 		user = "unknown"
@@ -19,22 +19,25 @@ func DefaultConfig() *Config {
 	basePath := filepath.Join("/home", user)
 	defaultPlaylist := filepath.Join(basePath, "example_playlist")
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Set default playlist? (y/n): ")
-	input, _ := reader.ReadString('\n')
-	input = strings.ToLower(strings.TrimSpace(input))
+	if promptUser {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Set default playlist? (y/n): ")
+		input, _ := reader.ReadString('\n')
+		input = strings.ToLower(strings.TrimSpace(input))
 
-	if input == "y" || input == "yes" {
-		fmt.Print("Enter playlist path (e.g., /home/user/music): ")
-		customPlaylist, _ := reader.ReadString('\n')
-		defaultPlaylist = strings.TrimSpace(customPlaylist)
+		if input == "y" || input == "yes" {
+			fmt.Print("Enter playlist path (e.g., /home/user/music): ")
+			customPlaylist, _ := reader.ReadString('\n')
+			defaultPlaylist = strings.TrimSpace(customPlaylist)
+			settings.SetPlaylistPath(defaultPlaylist)
+		}
 	}
 
 	return &Config{
 		General: General{
 			User:            user,
 			DefaultPlaylist: defaultPlaylist,
-			DefaultVolume:   "100%",
+			DefaultVolume:   "75%",
 		},
 		Playlist: Playlist{
 			Playlists: []string{
@@ -52,8 +55,7 @@ func DefaultConfig() *Config {
 }
 
 func GenerateDefaultConfig() error {
-	configPath := settings.AppConfig.ConfigDir + settings.AppConfig.ConfigFile
-	if err := SaveConfig(configPath, DefaultConfig()); err != nil {
+	if err := SaveConfig(configFilePath, DefaultConfig(false)); err != nil {
 		log.Log.Errorf("Failed to generate default config: %v", err)
 		return err
 	}

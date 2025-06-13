@@ -1,16 +1,15 @@
 package caching
 
 import (
+	"Melodex/src/settings"
 	"encoding/json"
 	"fmt"
 	"github.com/charmbracelet/bubbles/table"
 	"os"
-	"path/filepath"
 )
 
-func saveCache(cachePath string, rows []table.Row) error {
-	cacheDir := filepath.Dir(cachePath)
-	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil {
+func saveCache(rows []table.Row) error {
+	if err := os.MkdirAll(settings.AppConfig.CacheDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -19,5 +18,5 @@ func saveCache(cachePath string, rows []table.Row) error {
 		return fmt.Errorf("failed to serialize cache data: %w", err)
 	}
 
-	return os.WriteFile(cachePath, data, 0644)
+	return os.WriteFile(settings.AppConfig.CacheDir+settings.AppConfig.PlaylistName+".cache", data, 0644)
 }

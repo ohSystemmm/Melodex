@@ -3,25 +3,21 @@ package caching
 import (
 	"Melodex/src/log"
 	"github.com/charmbracelet/bubbles/table"
-	"path/filepath"
 )
 
-func GenerateSongList(directory, cacheDir string) ([]table.Row, error) {
-	playlistName := filepath.Base(directory)
-	cachePath := getCachePath(cacheDir, playlistName)
-
-	rows, err := loadCache(cachePath)
+func GenerateSongList() ([]table.Row, error) {
+	rows, err := loadCache()
 	if err == nil {
-		log.Log.Infof("Cache loaded: %s", cachePath)
+		log.Log.Info("Cache loaded")
 		return rows, nil
 	}
 
-	songNames, err := getAllSongNames(directory)
+	songNames, err := getAllSongNames()
 	if err != nil {
 		return nil, err
 	}
 
-	durations, err := getAllDurations(directory)
+	durations, err := getAllDurations()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +27,7 @@ func GenerateSongList(directory, cacheDir string) ([]table.Row, error) {
 		songList[i] = table.Row{songNames[i], durations[i]}
 	}
 
-	if err = saveCache(cachePath, songList); err != nil {
+	if err = saveCache(songList); err != nil {
 		log.Log.Warnf("Warning: Could not save playlist cache: %v", err)
 	}
 

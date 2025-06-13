@@ -1,4 +1,0 @@
-package settings
-
-func SetupMelodex() {
-}

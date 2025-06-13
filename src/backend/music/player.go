@@ -1,42 +1,114 @@
 package music
 
 import (
-	"Melodex/src/backend/config"
 	"Melodex/src/log"
-	vlc "github.com/adrg/libvlc-go/v3"
 )
 
-var (
-	player    *vlc.Player
-	media     *vlc.Media
-	songIndex int
-)
-
-func InitVLC() {
-	var err error
-
-	if err = vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Log.Errorf("Error initializing VLC: %v", err)
-	}
-
-	player, err = vlc.NewPlayer()
-	if err != nil {
-		log.Log.Errorf("Error creating VLC player: %v", err)
-	}
-
-	muted, err := player.IsMuted()
-	if err != nil {
-		log.Log.Errorf("Error checking if player is muted: %v", err)
-	} else if muted {
-		if err = player.SetMute(false); err != nil {
-			log.Log.Errorf("Error unmuting player: %v", err)
+func PlaySong(songPath string) {
+	if player.IsPlaying() {
+		if err := player.Stop(); err != nil {
+			log.Log.Errorf("Error stopping player: %v", err)
+			return
 		}
 	}
 
-	err = player.SetVolume(config.GetVolume())
-	log.Log.Infof("Set volume to %d", config.GetVolume())
+	_, err := player.LoadMediaFromPath(songPath)
 	if err != nil {
-		log.Log.Errorf("Error setting volume to %d: %v", config.GetVolume(), err)
+		log.Log.Errorf("Error loading song: %v", err)
+		return
 	}
-	songIndex = 0
+
+	err = player.Play()
+	if err = player.Play(); err != nil {
+		log.Log.Errorf("Error playing song: %v", err)
+		return
+	}
+}
+
+func PauseSong() {
+	err := player.SetPause(player.IsPlaying())
+	if err != nil {
+		log.Log.Errorf("Error toggling pause: %v", err)
+	}
+}
+
+func IsPlaying() bool {
+	return player.IsPlaying()
+}
+
+func Stop() {
+	if player.IsPlaying() {
+		err := player.Stop()
+		if err != nil {
+			log.Log.Errorf("Error stopping player: %v", err)
+		}
+	}
+}
+
+func SetMute(option bool) {
+	var err error
+
+	if option {
+		err = player.SetMute(true)
+		if err != nil {
+			log.Log.Errorf("Error toggling mute: %v", err)
+		}
+	} else {
+		err = player.SetMute(false)
+		if err != nil {
+			log.Log.Errorf("Error toggling mute: %v", err)
+		}
+	}
+}
+
+func IsMuted() bool {
+	state, err := player.IsMuted()
+	if err != nil {
+		log.Log.Errorf("Error checking if player is muted: %v", err)
+	}
+	return state
+}
+
+func CurrentMediaPosition() float32 {
+	position, err := player.MediaPosition()
+	if err != nil {
+		log.Log.Errorf("Error getting media position: %v", err)
+		return 0.0
+	}
+	return position
+}
+
+func SetMediaPosition(position float32) {
+	err := player.SetMediaPosition(position)
+	if err != nil {
+		log.Log.Errorf("Error setting media position: %v", err)
+	}
+}
+
+func ChangeVolumeBy(factor int) {
+	currentVolume, err := player.Volume()
+	if err != nil {
+		log.Log.Errorf("Error getting volume: %v", err)
+	}
+
+	newVolume := currentVolume + factor
+	if newVolume >= 100 {
+		newVolume = 100
+	} else if newVolume < 0 {
+		newVolume = 0
+	}
+
+	err = player.SetVolume(newVolume)
+	if err != nil {
+		log.Log.Errorf("Error setting volume from %d to %d: %v", currentVolume, newVolume, err)
+	}
+}
+
+func SongLength() int {
+	length, err := player.MediaLength()
+	if err != nil {
+		log.Log.Errorf("Error getting media length: %v", err)
+	}
+
+	return length / 1000
 }
