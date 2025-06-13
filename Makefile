@@ -28,9 +28,11 @@ uninstall:
 
 help:
 	@echo "Makefile commands:"
-	@echo "  make build   - Build the project"
-	@echo "  make run     - Build and run the project"
-	@echo "  make clean   - Remove binary files"
-	@echo "  make deps    - Install/update dependencies"
-	@echo "  make fmt     - Format the code"
-	@echo "  make test    - Run tests"
+	@echo "  make build     - Build the project"
+	@echo "  make run       - Build and run the project"
+	@echo "  make clean     - Remove binary files"
+	@echo "  make deps      - Install/update dependencies"
+	@echo "  make fmt       - Format the code"
+	@echo "  make test      - Run tests"
+	@echo "  make install   - Installs the project"
+	@echo "  make uninstall - Uninstalls the project"
