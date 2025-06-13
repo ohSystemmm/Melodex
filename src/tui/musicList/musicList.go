@@ -1,11 +1,11 @@
 package musicList
 
 import (
-	"Melodex/src/backend/music"
-	"Melodex/src/log"
-	"Melodex/src/services"
+	"Melodex/src/settings"
 	"strings"
 
+	"Melodex/src/backend/music"
+	"Melodex/src/services"
 	SharedState "Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -40,7 +40,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch action.String() {
 		case "ctrl+c":
-			//music.Cleanup(//TODO)
+			music.Cleanup()
 			return m, tea.Quit
 		case "up":
 			m.list.MoveUp(1)
@@ -67,18 +67,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				switch action.String() {
 				case "q":
-					err := music.CleanUp()
-					if err != nil {
-						log.Log.Error("Error while cleaning up music: %s", err)
-					}
+					music.Cleanup()
 					return m, tea.Quit
 				case "enter":
 					m.sharedState.Paused = false
 				case " ":
-					err := music.PauseSong()
-					if err != nil {
-						log.Log.Error("Error while pausing song: %s", err)
-					}
+					music.PauseSong()
 				case "f":
 					m.sharedState.Searching = true
 					return m, m.searchBar.Focus()
@@ -92,21 +86,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					switch action.String() {
 					case "q":
-						err := music.CleanUp()
-						if err != nil {
-							log.Log.Error("Error while cleaning up music: %s", err)
-						}
+						music.Cleanup()
 						return m, tea.Quit
 					case "enter":
 						m.sharedState.Paused = false
-						services.SetCurrentSong(m.list.SelectedRow()[0])
-						//connection.Play()
-						//connection.SetSongLength(music.SongLength()//TODO)
-					case " ":
-						err := music.PauseSong()
-						if err != nil {
-							log.Log.Error("Error while pausing song: %s", err)
+						settings.SetCurrentSong(m.list.SelectedRow()[0])
+						settings.SetSongLength(m.list.SelectedRow()[1])
+						for i, song := range settings.AppConfig.SongList {
+							if len(song) > 0 && len(m.list.SelectedRow()) > 0 && song[0] == m.list.SelectedRow()[0] {
+								settings.SetCurrentSongIndex(i)
+								break
+							}
 						}
+						music.PlaySong(settings.AppConfig.PlaylistPath + m.list.SelectedRow()[0])
+					case " ":
+						music.PauseSong()
 					case "f":
 						m.sharedState.Searching = true
 						return m, m.searchBar.Focus()
@@ -205,7 +199,7 @@ func (m Model) View() string {
 		Render(
 			lipg.NewStyle().
 				Bold(true).Render(" " +
-				m.playlistName + services.GetPlaylistName() +
+				m.playlistName +
 				strings.Repeat(" ", padding) +
 				searchBar))
 
@@ -224,10 +218,8 @@ func (m Model) View() string {
 	}
 }
 
-// New initializes the music list
 func New(sharedState *SharedState.SharedState) Model {
-
-	rows := services.SongList()
+	rows := services.GenerateMusicList()
 
 	longestTitle, longestTime := 35, 6
 
@@ -238,7 +230,7 @@ func New(sharedState *SharedState.SharedState) Model {
 
 	columns := []table.Column{
 		{Title: "Title", Width: longestTitle},
-		{Title: " Length", Width: longestTime},
+		{Title: "Length", Width: longestTime},
 	}
 
 	t := table.New(
@@ -259,7 +251,7 @@ func New(sharedState *SharedState.SharedState) Model {
 	sB.Placeholder = "Search"
 
 	sB.Prompt = " "
-	playlistName := services.GetPlaylistName()
+	playlistName := "Playlist: " + settings.AppConfig.PlaylistName
 
 	return Model{
 		sharedState:    sharedState,
@@ -271,7 +263,6 @@ func New(sharedState *SharedState.SharedState) Model {
 	}
 }
 
-// defineTableStyles sets the table styles
 func defineTableStyles() table.Styles {
 	styles := table.DefaultStyles()
 	styles.Selected = styles.Selected.

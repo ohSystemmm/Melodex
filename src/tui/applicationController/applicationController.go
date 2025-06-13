@@ -1,15 +1,14 @@
 package applicationController
 
 import (
-	"Melodex/src/backend/config"
-	"Melodex/src/backend/music"
-	"Melodex/src/log"
 	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"Melodex/src/backend/config"
+	"Melodex/src/backend/music"
 	"Melodex/src/tui/sharedState"
 
 	"github.com/charmbracelet/bubbles/progress"
@@ -31,9 +30,15 @@ type Model struct {
 	sleep     bool
 	timeBegin time.Time
 }
+type TickMsg struct{}
 
+func tick() tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg {
+		return TickMsg{}
+	})
+}
 func (m Model) Init() tea.Cmd {
-	return nil
+	return tick()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -74,43 +79,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.volume <= 0 {
 					m.volume = 0
 				}
-				music.PutVolume(-5) //TODO
+				music.ChangeVolumeBy(-5)
 
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
-				music.PutVolume(5) //TODO
+				music.ChangeVolumeBy(5)
+
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
 			case "m":
-				var err error
-				if music.IsMuted() {
-					err = music.SetMute(false)
-					if err != nil {
-						log.Log.Error("Error while setting mute: %s", err)
-					}
-					err = music.SetVolume(100)
-					if err != nil {
-						log.Log.Error("Error while setting volume: %s", err)
-					}
-					m.volume = 100
-				} else {
-					err = music.SetMute(true)
-					if err != nil {
-						log.Log.Error("Error while setting mute: %s", err)
-					}
-					err = music.SetVolume(0)
-					if err != nil {
-						log.Log.Error("Error while setting volume: %s", err)
-					}
+				if !music.IsMuted() {
+					music.SetMute(true)
 					m.volume = 0
+				} else {
+					music.SetMute(false)
+					m.volume = config.GetVolume()
 				}
-				log.Log.Infof("Volume is now %d", music.GetVolume())
-
-				// TODO
 			}
 		}
 	}
@@ -199,7 +187,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 		pB:          pb,
 		sleep:       false,
 		timeSet:     tS,
-		volume:      config.GetDefaultVolume(),
+		volume:      config.GetVolume(),
 	}
 }
 

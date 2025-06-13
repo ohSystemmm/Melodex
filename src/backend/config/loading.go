@@ -1,21 +1,23 @@
 package config
 
-//func LoadConfig(cfgFile string) (Config, error) {
-//	if cfgFile == "" {
-//		cfgFile = filepath.Join(settings.AppConfig.ConfigDir, settings.AppConfig.ConfigFile)
-//	}
-//
-//	data, err := os.ReadFile(cfgFile)
-//	if err != nil {
-//		log.Log.Warnf("Config file not found: %s. Falling back to default.", cfgFile)
-//		return GenerateDefaultConfig(), err
-//	}
-//
-//	var cfg Config
-//	if err = toml.Unmarshal(data, &cfg); err != nil {
-//		log.Log.Warnf("Error parsing config file: %s. Using default settings.", cfgFile)
-//		return GenerateDefaultConfig(), err
-//	}
-//
-//	return cfg, nil
-//}
+import (
+	"Melodex/src/log"
+	"github.com/pelletier/go-toml/v2"
+	"os"
+)
+
+func LoadConfig() *Config {
+	data, err := os.ReadFile(configFilePath)
+	if err != nil {
+		log.Log.Errorf("Error loading config file (%s): %v", configFilePath, err)
+		return DefaultConfig(true)
+	}
+
+	var cfg Config
+	if err = toml.Unmarshal(data, &cfg); err != nil {
+		log.Log.Errorf("Error parsing config file (%s): %v", configFilePath, err)
+		return DefaultConfig(false)
+	}
+
+	return &cfg
+}

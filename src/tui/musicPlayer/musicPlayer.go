@@ -1,9 +1,9 @@
 package musicPlayer
 
 import (
+	"Melodex/src/backend/config"
 	"Melodex/src/backend/music"
 	"Melodex/src/log"
-	"Melodex/src/services"
 	"Melodex/src/settings"
 	"Melodex/src/tui/sharedState"
 	"fmt"
@@ -51,26 +51,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch action.String() {
 			case "right":
 				m.progress = min(m.progress+5, m.length)
-				//err := music.SetMediaPosition(0.05)
-				//if err != nil {
-				//	log.Log.Errorf("Error setting media position: %v", err)
-				//}
+				music.SetMediaPosition(music.CurrentMediaPosition() + 0.05)
 			case "left":
 				m.progress = max(m.progress-5, 0)
-				//err := music.SetMediaPosition(-0.05)
-				//if err != nil {
-				//	log.Log.Errorf("Error setting media position: %v", err)
-				//}
+				music.SetMediaPosition(music.CurrentMediaPosition() - 0.05)
 			case "b":
-				//err := music.NextSong()
-				//if err != nil {
-				//	log.Log.Errorf("Error getting next song: %v", err)
-				//}
+				music.PlayPreviousSong()
+				settings.DecreaseUpdateCurrentSong()
 			case "n":
-				//err := music.NextSong()
-				//if err != nil {
-				//	log.Log.Errorf("Error getting next song: %v", err)
-				//} //TODO
+				music.PlayNextSong()
+				settings.IncreaseUpdateCurrentSong()
+				//if m.sharedState.Shuffling {
+				//	m.sharedState.Shuffling = false
+				//} else {
+				//	m.sharedState.Shuffling = true
+				//}
+				//settings.SetShuffle(m.sharedState.Shuffling)
+				//log.Log.Infof("shuffled %v", m.sharedState.Shuffling)
 			case ".":
 				switch m.sharedState.SongOption {
 				case -1:
@@ -81,8 +78,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.sharedState.SongOption = -1
 				}
 
-				music.SetMode(m.sharedState.SongOption)
+				settings.SetMode(m.sharedState.SongOption)
 				log.Log.Infof("Mode: %v", m.sharedState.SongOption)
+				/* NOTE
+				* -1 = No Repeat
+				*  0 = Repeat Playlist
+				*  1 = Repeat Song
+				 */
 			case " ":
 				//if music.IsPlaying() && m.sharedState.Paused {
 				//	m.sharedState.Paused = !m.sharedState.Paused
@@ -92,6 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
+	m.length = timeToMinutes(settings.AppConfig.CurrentSongLength)
 	return m, nil
 }
 
@@ -117,7 +120,7 @@ func (m Model) View() string {
 
 	var elements = []string{}
 
-	elements = append(elements, getGreeting()+", @"+settings.AppConfig.SystemUser+"!")
+	elements = append(elements, getGreeting()+", @"+config.GetUser()+"!")
 
 	if m.height >= 23 {
 		elements = append(elements,
@@ -184,8 +187,8 @@ func (m Model) View() string {
 	}
 
 	control += totalTime
-	m.title = "Currently Playing:\n" + services.GetCurrentSong()
-	if services.GetCurrentSong() == "" {
+	m.title = "Currently Playing:\n" + settings.AppConfig.CurrentSong
+	if settings.AppConfig.CurrentSong == "" {
 		m.title = "Viewing Song List"
 	}
 
@@ -279,8 +282,26 @@ func New(sharedState *sharedState.SharedState) Model {
 
 	return Model{
 		sharedState: sharedState,
-		length:      10,
+		length:      timeToMinutes(settings.AppConfig.SongList[0][settings.AppConfig.CurrentSongIndex]),
 		progress:    0,
 		progressBar: pb,
 	}
+}
+
+func timeToMinutes(timeStr string) int {
+	parts := strings.Split(timeStr, ":")
+	if len(parts) != 2 {
+		return 0
+	}
+	hours, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0
+	}
+
+	minutes, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0
+	}
+
+	return (hours * 60) + minutes
 }

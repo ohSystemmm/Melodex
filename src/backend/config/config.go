@@ -8,9 +8,8 @@ type Config struct {
 
 type General struct {
 	User            string `toml:"user"`
-	SetUp           string `toml:"setup"`
-	DefaultVolume   string `toml:"default_volume"`
 	DefaultPlaylist string `toml:"default_playlist"`
+	DefaultVolume   string `toml:"default_volume"`
 }
 
 type Playlist struct {
@@ -18,9 +17,17 @@ type Playlist struct {
 }
 
 type Design struct {
-	BorderColor      string `toml:"border"`
-	ForegroundColor  string `toml:"foreground"`
-	BackgroundColor  string `toml:"background"`
-	VolumeBarColor   string `toml:"volume_bar"`
-	MusicSliderColor string `toml:"music_slider"`
+	Border     string `toml:"border"`
+	Foreground string `toml:"foreground"`
+	Background string `toml:"background"`
+}
+
+var (
+	loadedConfig   *Config
+	configFilePath string
+)
+
+func InitConfig() {
+	configFilePath = "/home/ohsystemmm/.config/melodex/melodex.toml"
+	loadedConfig = LoadConfig()
 }

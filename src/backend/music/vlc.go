@@ -7,84 +7,50 @@ import (
 )
 
 var (
-	player     *vlc.Player
-	mediaList  *vlc.MediaList
-	listPlayer *vlc.ListPlayer
-	mode       int
-	shuffle    bool
+	player *vlc.Player
+	media  *vlc.Media
 )
-
-/* NOTE mode
-* -1 = No Repeat
-*  0 = Repeat Playlist
-*  1 = Repeat Song
- */
-
-func SetMode(passedMode int) {
-	mode = passedMode
-}
-func SetShuffle(passedShuffle bool) {
-	shuffle = passedShuffle
-}
 
 func InitVLC() {
 	var err error
 
 	if err = vlc.Init("--no-video", "--quiet"); err != nil {
 		log.Log.Errorf("Error initializing VLC: %v", err)
-		return
 	}
 
 	player, err = vlc.NewPlayer()
 	if err != nil {
 		log.Log.Errorf("Error creating VLC player: %v", err)
-		return
 	}
 
-	mediaList, err = vlc.NewMediaList()
+	muted, err := player.IsMuted()
 	if err != nil {
-		log.Log.Errorf("Error creating media list: %v", err)
-		return
+		log.Log.Errorf("Error checking if player is muted: %v", err)
+	} else if muted {
+		if err = player.SetMute(false); err != nil {
+			log.Log.Errorf("Error unmuting player: %v", err)
+		}
 	}
 
-	listPlayer, err = vlc.NewListPlayer()
+	err = player.SetVolume(config.GetVolume())
+	log.Log.Infof("Set volume to %d", config.GetVolume())
 	if err != nil {
-		log.Log.Errorf("Error creating list player: %v", err)
+		log.Log.Errorf("Error setting volume to %d: %v", config.GetVolume(), err)
 	}
-
-	err = player.SetVolume(config.GetDefaultVolume())
-	if err != nil {
-		log.Log.Errorf("Error setting volume to %d: %v", config.GetDefaultVolume(), err)
-	}
-
-	log.Log.Infof("Setting volume to %d", config.GetDefaultVolume())
-	log.Log.Infof("VLC initialized successfully!")
-
 }
 
-func CleanUp() error {
-	var err error
-
-	err = player.Release()
-	if err != nil {
-		return err
+func Cleanup() {
+	if player != nil {
+		err := player.Release()
+		if err != nil {
+			log.Log.Errorf("Error releasing player: %v", err)
+		}
 	}
 
-	err = mediaList.Release()
-	if err != nil {
-		return err
+	if media != nil {
+		err := vlc.Release()
+		if err != nil {
+			log.Log.Errorf("Error releasing VLC: %v", err)
+		}
 	}
-
-	err = listPlayer.Release()
-	if err != nil {
-		return err
-	}
-
-	err = vlc.Release()
-	if err != nil {
-		return err
-	}
-
-	log.Log.Info("VLC cleaned up successfully!")
-	return nil
 }

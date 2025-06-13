@@ -4,21 +4,24 @@ import (
 	"Melodex/src/settings"
 	"github.com/sirupsen/logrus"
 	"os"
-	"path/filepath"
 )
 
 var Log *logrus.Logger
 
 func init() {
 	Log = logrus.New()
+	var (
+		logDir  = settings.AppConfig.LogDir
+		logFile = settings.AppConfig.LogFile
+		logPath = logDir + logFile
+	)
 
-	err := os.MkdirAll(settings.AppConfig.LogDir, 0755)
+	err := os.MkdirAll(logDir, 0755)
 	if err != nil {
 		Log.Fatal("Failed to create log directory:", err)
 	}
 
-	logFilePath := filepath.Join(settings.AppConfig.LogDir, settings.AppConfig.LogFile)
-	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		Log.Fatal("Failed to open log file:", err)
 	}
