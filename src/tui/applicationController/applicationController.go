@@ -49,8 +49,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		parsedTime, _ = parseUserDuration(m.timeSet.Value())
 	}
 
-	if m.sleep && time.Since(m.timeBegin) > parsedTime {
-		music.PauseSong()
+	if m.sleep && time.Since(m.timeBegin) >= parsedTime {
+		//music.PauseSong() //TODO
+		m.sleep = false
 	}
 
 	switch action := msg.(type) {
@@ -79,12 +80,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.volume = 0
 				}
 				music.ChangeVolumeBy(-5)
+
 			case "k":
 				m.volume = max(m.volume+5, 0)
 				if m.volume >= 100 {
 					m.volume = 100
 				}
 				music.ChangeVolumeBy(5)
+
 			case "t":
 				m.sharedState.SettingTime = true
 				return m, m.timeSet.Focus()
@@ -176,7 +179,7 @@ func New(newSharedState *sharedState.SharedState) Model {
 
 	tS := textinput.New()
 	tS.Width = 8
-	tS.Placeholder = "30s"
+	tS.Placeholder = "00:30:00"
 	tS.Prompt = " "
 
 	return Model{
