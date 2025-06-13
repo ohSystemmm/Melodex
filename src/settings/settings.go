@@ -1,9 +1,10 @@
 package settings
 
 import (
-	"github.com/charmbracelet/bubbles/table"
 	"os"
 	"path/filepath"
+
+	"github.com/charmbracelet/bubbles/table"
 )
 
 type Config struct {

@@ -4,8 +4,9 @@ import (
 	"Melodex/src/settings"
 	"encoding/json"
 	"fmt"
-	"github.com/charmbracelet/bubbles/table"
 	"os"
+
+	"github.com/charmbracelet/bubbles/table"
 )
 
 func saveCache(rows []table.Row) error {
